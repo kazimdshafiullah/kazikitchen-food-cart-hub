@@ -64,7 +64,7 @@ const UserManagement = () => {
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
-    role: "",
+    role: "staff", // Set a default value to avoid empty string
     password: "",
     confirmPassword: ""
   });
