@@ -37,7 +37,7 @@ const mockExpenses = [
 
 const ExpenseManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [expenses, setExpenses] = useState(mockExpenses);
   const [addExpenseOpen, setAddExpenseOpen] = useState(false);
   
@@ -55,7 +55,7 @@ const ExpenseManagement = () => {
       expense.item.toLowerCase().includes(searchTerm.toLowerCase()) ||
       expense.vendor.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesCategory = categoryFilter ? expense.category === categoryFilter : true;
+    const matchesCategory = categoryFilter === "all" ? true : expense.category === categoryFilter;
     
     return matchesSearch && matchesCategory;
   });
@@ -141,7 +141,7 @@ const ExpenseManagement = () => {
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Categories</SelectItem>
+              <SelectItem value="all">All Categories</SelectItem>
               <SelectItem value="ingredients">Ingredients</SelectItem>
               <SelectItem value="utilities">Utilities</SelectItem>
               <SelectItem value="wages">Wages</SelectItem>
