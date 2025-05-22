@@ -17,6 +17,7 @@ import {
   Bar, Pie, Cell, Legend, Tooltip as RechartTooltip 
 } from "recharts";
 import * as RechartsPrimitive from "recharts";
+import { DateRange } from "react-day-picker";
 
 // Sample data for charts
 const salesData = [
@@ -57,10 +58,18 @@ const salesVsTargetData = [
 ];
 
 const Reports = () => {
-  const [dateRange, setDateRange] = useState({
+  // Change the type here to DateRange to match what DatePickerWithRange expects
+  const [dateRange, setDateRange] = useState<DateRange>({
     from: subMonths(new Date(), 1),
     to: new Date(),
   });
+
+  // Handle date change with proper typing
+  const handleDateChange = (range: DateRange | undefined) => {
+    if (range) {
+      setDateRange(range);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -76,7 +85,7 @@ const Reports = () => {
       <div className="flex flex-col sm:flex-row gap-4 items-end">
         <DatePickerWithRange 
           date={dateRange} 
-          onDateChange={setDateRange} 
+          onDateChange={handleDateChange} 
         />
         <Button className="w-full sm:w-auto">
           <FileText className="mr-2 h-4 w-4" /> Generate Report
