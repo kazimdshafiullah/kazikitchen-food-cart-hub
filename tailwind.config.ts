@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,15 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// KaziKitchen custom colors
+				'kazi': {
+					'orange': '#FF6B35',
+					'red': '#C44536',
+					'green': '#7FB069',
+					'light-green': '#4CB944',
+					'cream': '#FFF8F0',
+					'dark': '#2D2D2A',
 				}
 			},
 			borderRadius: {
