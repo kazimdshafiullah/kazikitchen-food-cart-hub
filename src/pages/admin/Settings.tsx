@@ -1,0 +1,358 @@
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from "@/components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter
+} from "@/components/ui/card";
+import { toast } from "@/components/ui/sonner";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+
+const StoreSettingsTab = () => {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Store Information</CardTitle>
+          <CardDescription>
+            Update your store details and contact information
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Store Name</label>
+            <Input defaultValue="Kazi Kitchen" />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Store Description</label>
+            <Textarea defaultValue="Authentic and delicious food delivered to your doorstep" rows={3} />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Email Address</label>
+              <Input type="email" defaultValue="contact@kazikitchen.com" />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Phone Number</label>
+              <Input defaultValue="+1 (555) 123-4567" />
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Store Address</label>
+            <Textarea defaultValue="123 Main Street, Suite 101, Anytown, CA 12345" rows={2} />
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button className="ml-auto" onClick={() => toast.success("Store information updated!")}>
+            Save Changes
+          </Button>
+        </CardFooter>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Store Hours</CardTitle>
+          <CardDescription>
+            Set your business hours and availability
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day, i) => (
+            <div key={i} className="flex items-center justify-between border-b pb-2 last:border-0">
+              <div className="flex items-center space-x-2">
+                <Switch id={`day-${i}`} defaultChecked={i < 6} />
+                <label htmlFor={`day-${i}`} className="text-sm font-medium cursor-pointer">
+                  {day}
+                </label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Input 
+                  type="time" 
+                  className="w-32" 
+                  defaultValue={i < 6 ? "09:00" : "10:00"} 
+                  disabled={i === 6} 
+                />
+                <span>to</span>
+                <Input 
+                  type="time" 
+                  className="w-32" 
+                  defaultValue={i < 6 ? "21:00" : "18:00"} 
+                  disabled={i === 6} 
+                />
+              </div>
+            </div>
+          ))}
+        </CardContent>
+        <CardFooter>
+          <Button className="ml-auto" onClick={() => toast.success("Store hours updated!")}>
+            Save Hours
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+};
+
+const DeliverySettingsTab = () => {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Delivery Options</CardTitle>
+          <CardDescription>
+            Configure your store's delivery settings
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b">
+            <div className="space-y-0.5">
+              <label className="text-sm font-medium">Enable Delivery</label>
+              <p className="text-xs text-muted-foreground">Allow customers to get orders delivered</p>
+            </div>
+            <Switch defaultChecked />
+          </div>
+          
+          <div className="flex items-center justify-between pb-2 border-b">
+            <div className="space-y-0.5">
+              <label className="text-sm font-medium">Enable Pickup</label>
+              <p className="text-xs text-muted-foreground">Allow customers to pick up orders</p>
+            </div>
+            <Switch defaultChecked />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Free Delivery Minimum</label>
+            <Input type="number" defaultValue="35" />
+            <p className="text-xs text-muted-foreground">
+              Minimum order amount for free delivery (0 for no free delivery)
+            </p>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Delivery Fee</label>
+            <Input type="number" defaultValue="5" />
+            <p className="text-xs text-muted-foreground">
+              Standard delivery fee for orders below the free delivery minimum
+            </p>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Delivery Radius (miles)</label>
+            <Input type="number" defaultValue="10" />
+            <p className="text-xs text-muted-foreground">
+              Maximum distance for delivery from your store location
+            </p>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Estimated Delivery Time (minutes)</label>
+            <div className="grid grid-cols-2 gap-4">
+              <Input type="number" defaultValue="30" placeholder="Minimum" />
+              <Input type="number" defaultValue="45" placeholder="Maximum" />
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button className="ml-auto" onClick={() => toast.success("Delivery settings updated!")}>
+            Save Settings
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+};
+
+const NotificationSettingsTab = () => {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Email Notifications</CardTitle>
+          <CardDescription>
+            Configure when you receive email notifications
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <label className="text-sm font-medium">New Orders</label>
+                <p className="text-xs text-muted-foreground">Receive emails when new orders are placed</p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <label className="text-sm font-medium">Cancelled Orders</label>
+                <p className="text-xs text-muted-foreground">Receive emails when orders are cancelled</p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <label className="text-sm font-medium">Low Stock Alerts</label>
+                <p className="text-xs text-muted-foreground">Get notified when products are running low</p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <label className="text-sm font-medium">Customer Reviews</label>
+                <p className="text-xs text-muted-foreground">Get notified when customers leave reviews</p>
+              </div>
+              <Switch />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Customer Notifications</CardTitle>
+          <CardDescription>
+            Configure automated emails sent to customers
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <label className="text-sm font-medium">Order Confirmations</label>
+              <p className="text-xs text-muted-foreground">Send order confirmation emails to customers</p>
+            </div>
+            <Switch defaultChecked />
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <label className="text-sm font-medium">Delivery Updates</label>
+              <p className="text-xs text-muted-foreground">Send status updates when orders are being delivered</p>
+            </div>
+            <Switch defaultChecked />
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <label className="text-sm font-medium">Marketing Emails</label>
+              <p className="text-xs text-muted-foreground">Send promotional emails to customers</p>
+            </div>
+            <Switch defaultChecked />
+          </div>
+          
+          <div className="space-y-2 mt-4">
+            <label className="text-sm font-medium">Email Sender Name</label>
+            <Input defaultValue="Kazi Kitchen" />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Reply-To Email</label>
+            <Input type="email" defaultValue="no-reply@kazikitchen.com" />
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button className="ml-auto" onClick={() => toast.success("Notification settings updated!")}>
+            Save Settings
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+};
+
+const Settings = () => {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
+        <p className="text-muted-foreground">Manage your store preferences and configurations</p>
+      </div>
+      
+      <Tabs defaultValue="store" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="store">Store</TabsTrigger>
+          <TabsTrigger value="delivery">Delivery</TabsTrigger>
+          <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="account">Account</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="store">
+          <StoreSettingsTab />
+        </TabsContent>
+        
+        <TabsContent value="delivery">
+          <DeliverySettingsTab />
+        </TabsContent>
+        
+        <TabsContent value="notifications">
+          <NotificationSettingsTab />
+        </TabsContent>
+        
+        <TabsContent value="account">
+          <Card>
+            <CardHeader>
+              <CardTitle>Admin Account</CardTitle>
+              <CardDescription>
+                Update your administrator account information
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Admin Email</label>
+                <Input type="email" defaultValue="admin@kazikitchen.com" />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Current Password</label>
+                <Input type="password" />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">New Password</label>
+                  <Input type="password" />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Confirm New Password</label>
+                  <Input type="password" />
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button className="ml-auto" onClick={() => toast.success("Account settings updated!")}>
+                Update Account
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default Settings;

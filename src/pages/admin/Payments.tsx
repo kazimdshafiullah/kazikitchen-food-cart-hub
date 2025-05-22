@@ -1,0 +1,294 @@
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/components/ui/sonner";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { CreditCard, DollarSign, ChevronsUpDown, ShieldAlert } from "lucide-react";
+
+const PaymentMethodTab = () => {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <CreditCard className="mr-2 h-5 w-5" />
+            Stripe Integration
+          </CardTitle>
+          <CardDescription>
+            Configure your Stripe payment gateway settings
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">API Key</label>
+            <Input type="password" value="pk_test_••••••••••••••••••••••••••" readOnly />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Secret Key</label>
+            <Input type="password" value="sk_test_••••••••••••••••••••••••••" readOnly />
+          </div>
+          
+          <div className="flex items-center space-x-2 pt-2">
+            <Switch id="stripe-live" />
+            <label htmlFor="stripe-live" className="text-sm font-medium cursor-pointer">
+              Enable Live Mode
+            </label>
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button variant="outline">Reset Keys</Button>
+          <Button onClick={() => toast.success("Settings saved!")}>Save Settings</Button>
+        </CardFooter>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <DollarSign className="mr-2 h-5 w-5" />
+            Cash on Delivery
+          </CardTitle>
+          <CardDescription>
+            Configure cash on delivery payment options
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Switch id="cod-enabled" defaultChecked />
+            <label htmlFor="cod-enabled" className="text-sm font-medium cursor-pointer">
+              Enable Cash on Delivery
+            </label>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Minimum Order Value</label>
+            <Input type="number" placeholder="0.00" defaultValue="10.00" />
+            <p className="text-xs text-muted-foreground">
+              Set to 0 for no minimum order requirement
+            </p>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Maximum Order Value</label>
+            <Input type="number" placeholder="100.00" defaultValue="200.00" />
+            <p className="text-xs text-muted-foreground">
+              Set to 0 for no maximum order limit
+            </p>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button className="ml-auto" onClick={() => toast.success("Settings saved!")}>
+            Save Settings
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+};
+
+const TransactionHistoryTab = () => {
+  const transactions = [
+    { id: "TXN-1001", date: "2025-05-22", customer: "John Doe", amount: 45.99, method: "Stripe", status: "completed" },
+    { id: "TXN-1002", date: "2025-05-21", customer: "Sarah Lee", amount: 78.50, method: "Stripe", status: "completed" },
+    { id: "TXN-1003", date: "2025-05-21", customer: "Mike Chen", amount: 23.75, method: "COD", status: "pending" },
+    { id: "TXN-1004", date: "2025-05-20", customer: "Emily Wong", amount: 124.00, method: "Stripe", status: "completed" },
+    { id: "TXN-1005", date: "2025-05-19", customer: "Alex Johnson", amount: 67.25, method: "COD", status: "completed" },
+    { id: "TXN-1006", date: "2025-05-18", customer: "Lisa Garcia", amount: 98.50, method: "Stripe", status: "failed" },
+  ];
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Transaction History</CardTitle>
+        <CardDescription>View all payment transactions</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Transaction ID</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead>Method</TableHead>
+              <TableHead>Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {transactions.map(transaction => (
+              <TableRow key={transaction.id}>
+                <TableCell className="font-medium">{transaction.id}</TableCell>
+                <TableCell>{transaction.date}</TableCell>
+                <TableCell>{transaction.customer}</TableCell>
+                <TableCell>${transaction.amount.toFixed(2)}</TableCell>
+                <TableCell>{transaction.method}</TableCell>
+                <TableCell>
+                  <div className={`capitalize inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                    transaction.status === "completed" ? "bg-green-100 text-green-800" :
+                    transaction.status === "pending" ? "bg-yellow-100 text-yellow-800" : 
+                    "bg-red-100 text-red-800"
+                  }`}>
+                    {transaction.status}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+      <CardFooter className="flex justify-between">
+        <div className="text-sm text-muted-foreground">
+          Showing 6 of 124 transactions
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" size="sm" disabled>
+            Previous
+          </Button>
+          <Button variant="outline" size="sm">
+            Next
+          </Button>
+        </div>
+      </CardFooter>
+    </Card>
+  );
+};
+
+const PaymentSecurityTab = () => {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <ShieldAlert className="mr-2 h-5 w-5" />
+            Fraud Protection
+          </CardTitle>
+          <CardDescription>
+            Configure fraud detection and prevention settings
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Switch id="fraud-protection" defaultChecked />
+            <label htmlFor="fraud-protection" className="text-sm font-medium cursor-pointer">
+              Enable Fraud Protection
+            </label>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Risk Threshold</label>
+            <div className="flex items-center space-x-2">
+              <Input type="range" min="0" max="100" defaultValue="70" className="w-full" />
+              <span className="text-sm font-medium">70</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Set the risk threshold for flagging suspicious transactions
+            </p>
+          </div>
+          
+          <div className="pt-2">
+            <h4 className="text-sm font-medium mb-2">Suspicious Activity Alerts</h4>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Switch id="alert-email" defaultChecked />
+                <label htmlFor="alert-email" className="text-sm cursor-pointer">
+                  Email Notifications
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch id="alert-dashboard" defaultChecked />
+                <label htmlFor="alert-dashboard" className="text-sm cursor-pointer">
+                  Dashboard Alerts
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch id="alert-sms" />
+                <label htmlFor="alert-sms" className="text-sm cursor-pointer">
+                  SMS Notifications
+                </label>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button className="ml-auto" onClick={() => toast.success("Security settings saved!")}>
+            Save Settings
+          </Button>
+        </CardFooter>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>PCI Compliance</CardTitle>
+          <CardDescription>
+            Payment Card Industry Data Security Standard compliance status
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md bg-green-50 p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-green-800">Compliance Status: Compliant</h3>
+                <div className="mt-2 text-sm text-green-700">
+                  <p>Your payment processing methods meet all PCI DSS requirements.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-6">
+            <h4 className="text-sm font-medium mb-2">Last Compliance Scan</h4>
+            <p className="text-sm">May 15, 2025 - No issues detected</p>
+            
+            <h4 className="text-sm font-medium mt-4 mb-2">Next Scheduled Scan</h4>
+            <p className="text-sm">June 15, 2025</p>
+            
+            <Button variant="outline" className="mt-4">
+              Run Manual Scan
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+const Payments = () => {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight">Payments</h2>
+        <p className="text-muted-foreground">Configure payment methods and view transaction history</p>
+      </div>
+      
+      <Tabs defaultValue="methods" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="methods">Payment Methods</TabsTrigger>
+          <TabsTrigger value="transactions">Transactions</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="methods">
+          <PaymentMethodTab />
+        </TabsContent>
+        
+        <TabsContent value="transactions">
+          <TransactionHistoryTab />
+        </TabsContent>
+        
+        <TabsContent value="security">
+          <PaymentSecurityTab />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default Payments;

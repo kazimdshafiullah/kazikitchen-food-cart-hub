@@ -12,6 +12,17 @@ import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
 
+// Admin Pages
+import { AdminLayout, useAdminAuth } from "./components/AdminLayout";
+import AdminLogin from "./pages/admin/AdminLogin";
+import Dashboard from "./pages/admin/Dashboard";
+import Orders from "./pages/admin/Orders";
+import Marketing from "./pages/admin/Marketing";
+import Offers from "./pages/admin/Offers";
+import Payments from "./pages/admin/Payments";
+import Customers from "./pages/admin/Customers";
+import Settings from "./pages/admin/Settings";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -21,13 +32,29 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Main Store Routes */}
           <Route path="/" element={<Layout />}>
             <Route index element={<Index />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
-            <Route path="*" element={<NotFound />} />
           </Route>
+          
+          {/* Admin Routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route path="/admin/dashboard" element={<Dashboard />} />
+            <Route path="/admin/orders" element={<Orders />} />
+            <Route path="/admin/marketing" element={<Marketing />} />
+            <Route path="/admin/offers" element={<Offers />} />
+            <Route path="/admin/payments" element={<Payments />} />
+            <Route path="/admin/customers" element={<Customers />} />
+            <Route path="/admin/settings" element={<Settings />} />
+            <Route index element={<Dashboard />} />
+          </Route>
+          
+          {/* 404 Page */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
