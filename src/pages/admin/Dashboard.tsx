@@ -1,14 +1,123 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DollarSign, Users, ShoppingBag, TrendingUp, Clock, AlertCircle } from "lucide-react";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
+import {
+  DollarSign,
+  Users,
+  ShoppingBag,
+  TrendingUp,
+  Clock,
+  AlertCircle,
+  Calendar,
+  Package,
+  PackageCheck
+} from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from "recharts";
+
+// Mock data for charts
+const dailyOrdersData = [
+  { name: "Mon", orders: 15 },
+  { name: "Tue", orders: 22 },
+  { name: "Wed", orders: 18 },
+  { name: "Thu", orders: 25 },
+  { name: "Fri", orders: 32 },
+  { name: "Sat", orders: 38 },
+  { name: "Sun", orders: 30 },
+];
+
+const monthlyRevenueData = [
+  { name: "Jan", revenue: 4200 },
+  { name: "Feb", revenue: 3800 },
+  { name: "Mar", revenue: 5100 },
+  { name: "Apr", revenue: 5400 },
+  { name: "May", revenue: 6200 },
+  { name: "Jun", revenue: 7800 },
+];
+
+const categoryData = [
+  { name: "Spice Blends", value: 35 },
+  { name: "Ready Meals", value: 25 },
+  { name: "Curry Pastes", value: 20 },
+  { name: "Cooking Sauces", value: 15 },
+  { name: "Specialty Items", value: 5 },
+];
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+
+const OrdersByStatusChart = () => {
+  const data = [
+    { name: "Pending", value: 3 },
+    { name: "Confirmed", value: 5 },
+    { name: "Processing", value: 12 },
+    { name: "Shipped", value: 8 },
+    { name: "Delivered", value: 45 },
+    { name: "Cancelled", value: 4 },
+  ];
+
+  return (
+    <ResponsiveContainer width="100%" height={250}>
+      <PieChart>
+        <Pie
+          data={data}
+          cx="50%"
+          cy="50%"
+          labelLine={false}
+          outerRadius={80}
+          fill="#8884d8"
+          dataKey="value"
+          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+        >
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip />
+        <Legend />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+};
 
 const Dashboard = () => {
+  const [timeRange, setTimeRange] = useState("week");
+  
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <p className="text-muted-foreground">Overview of your store's performance</p>
+      </div>
+      
+      <div className="flex justify-end">
+        <Select defaultValue="week" onValueChange={setTimeRange}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select time range" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="today">Today</SelectItem>
+            <SelectItem value="week">This Week</SelectItem>
+            <SelectItem value="month">This Month</SelectItem>
+            <SelectItem value="quarter">This Quarter</SelectItem>
+            <SelectItem value="year">This Year</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       
       <Tabs defaultValue="overview" className="space-y-4">
@@ -73,6 +182,38 @@ const Dashboard = () => {
             </Card>
           </div>
 
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Daily Orders</CardTitle>
+                <CardDescription>Orders received per day this week</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={dailyOrdersData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="orders" fill="#8884d8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Orders by Status</CardTitle>
+                <CardDescription>Distribution of orders by current status</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <OrdersByStatusChart />
+              </CardContent>
+            </Card>
+          </div>
+          
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
             <Card className="col-span-4">
               <CardHeader>
@@ -116,17 +257,101 @@ const Dashboard = () => {
                     <p className="text-xs text-muted-foreground">API connection intermittent</p>
                   </div>
                 </div>
+                <div className="flex items-start space-x-2">
+                  <PackageCheck className="h-5 w-5 text-blue-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">New Order Notifications</p>
+                    <p className="text-xs text-muted-foreground">3 new orders need confirmation</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
         
         <TabsContent value="analytics" className="space-y-4">
-          <Card className="p-6">
-            <h3 className="text-xl font-medium mb-4">Analytics data will be displayed here</h3>
-            <p className="text-muted-foreground">
-              This section will contain charts and detailed statistics about your store's performance.
-            </p>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Monthly Revenue</CardTitle>
+                <CardDescription>Revenue trends over the past 6 months</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={monthlyRevenueData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => [`$${value}`, 'Revenue']} />
+                      <Legend />
+                      <Line type="monotone" dataKey="revenue" stroke="#8884d8" activeDot={{ r: 8 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Sales by Category</CardTitle>
+                <CardDescription>Product category distribution</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={categoryData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {categoryData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Customer Acquisition</CardTitle>
+              <CardDescription>New customer sign-ups over time</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={[
+                      { month: 'Jan', newCustomers: 65 },
+                      { month: 'Feb', newCustomers: 59 },
+                      { month: 'Mar', newCustomers: 80 },
+                      { month: 'Apr', newCustomers: 81 },
+                      { month: 'May', newCustomers: 95 },
+                      { month: 'Jun', newCustomers: 108 },
+                    ]}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="newCustomers" fill="#00C49F" name="New Customers" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
           </Card>
         </TabsContent>
         
