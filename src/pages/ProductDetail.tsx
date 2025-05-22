@@ -4,7 +4,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/context/CartContext";
-import { getProductById, getProductsByCategory } from "@/data/products";
+import { getProductById, getProductsByCategory, categories } from "@/data/products";
 import { ShoppingCart, Plus, Minus, ChevronLeft } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import { toast } from "@/components/ui/sonner";
