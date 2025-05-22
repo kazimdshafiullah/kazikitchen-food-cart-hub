@@ -1,7 +1,7 @@
 
 import { Outlet, Navigate } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarProvider, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { LayoutDashboard, ShoppingCart, Tag, CreditCard, BarChart3, Settings, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, ShoppingCart, Tag, CreditCard, BarChart3, Settings, Users, LogOut, Box, Package, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -61,6 +61,20 @@ const AdminLayout = () => {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Products">
+                  <a href="/admin/products">
+                    <Box className="mr-2" /> Products
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Inventory">
+                  <a href="/admin/inventory">
+                    <Package className="mr-2" /> Inventory
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Marketing">
                   <a href="/admin/marketing">
                     <BarChart3 className="mr-2" /> Marketing
@@ -78,6 +92,13 @@ const AdminLayout = () => {
                 <SidebarMenuButton asChild tooltip="Payments">
                   <a href="/admin/payments">
                     <CreditCard className="mr-2" /> Payments
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Site Design">
+                  <a href="/admin/site-design">
+                    <Palette className="mr-2" /> Site Design
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>

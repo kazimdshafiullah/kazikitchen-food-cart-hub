@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
+import { Switch } from "@/components/ui/switch";
 import { Twitter, Facebook, Instagram, Send } from "lucide-react";
 
 const SocialMediaTab = () => {
@@ -222,6 +223,162 @@ const EmailMarketingTab = () => {
   );
 };
 
+const SocialMediaApiTab = () => {
+  const [fbPixelId, setFbPixelId] = useState("");
+  const [fbAccessToken, setFbAccessToken] = useState("");
+  const [igAccessToken, setIgAccessToken] = useState("");
+  const [twitterApiKey, setTwitterApiKey] = useState("");
+  const [twitterApiSecret, setTwitterApiSecret] = useState("");
+  const [tiktokPixelId, setTiktokPixelId] = useState("");
+  
+  const handleSaveSettings = () => {
+    toast.success("Social media API settings saved");
+  };
+  
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Social Media APIs</CardTitle>
+          <CardDescription>
+            Connect your social media accounts for automated marketing
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium">Facebook</h4>
+                <p className="text-sm text-muted-foreground">Facebook Marketing API and Pixel</p>
+              </div>
+              <Switch />
+            </div>
+            
+            <div className="space-y-2 ml-6">
+              <label className="text-sm font-medium">Facebook Pixel ID</label>
+              <Input 
+                placeholder="123456789012345" 
+                value={fbPixelId}
+                onChange={(e) => setFbPixelId(e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2 ml-6">
+              <label className="text-sm font-medium">Facebook Access Token</label>
+              <Input 
+                type="password" 
+                placeholder="•••••••••••••••••" 
+                value={fbAccessToken}
+                onChange={(e) => setFbAccessToken(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium">Instagram</h4>
+                <p className="text-sm text-muted-foreground">Instagram Business API</p>
+              </div>
+              <Switch />
+            </div>
+            
+            <div className="space-y-2 ml-6">
+              <label className="text-sm font-medium">Instagram Access Token</label>
+              <Input 
+                type="password" 
+                placeholder="•••••••••••••••••" 
+                value={igAccessToken}
+                onChange={(e) => setIgAccessToken(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium">Twitter</h4>
+                <p className="text-sm text-muted-foreground">Twitter API for marketing</p>
+              </div>
+              <Switch />
+            </div>
+            
+            <div className="space-y-2 ml-6">
+              <label className="text-sm font-medium">API Key</label>
+              <Input 
+                type="password" 
+                placeholder="•••••••••••••••••" 
+                value={twitterApiKey}
+                onChange={(e) => setTwitterApiKey(e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2 ml-6">
+              <label className="text-sm font-medium">API Secret</label>
+              <Input 
+                type="password" 
+                placeholder="•••••••••••••••••" 
+                value={twitterApiSecret}
+                onChange={(e) => setTwitterApiSecret(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium">TikTok</h4>
+                <p className="text-sm text-muted-foreground">TikTok Pixel for ads</p>
+              </div>
+              <Switch />
+            </div>
+            
+            <div className="space-y-2 ml-6">
+              <label className="text-sm font-medium">TikTok Pixel ID</label>
+              <Input 
+                placeholder="CXXXXXXXXXXXXXXXXXX" 
+                value={tiktokPixelId}
+                onChange={(e) => setTiktokPixelId(e.target.value)}
+              />
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button className="ml-auto" onClick={handleSaveSettings}>
+            Save API Settings
+          </Button>
+        </CardFooter>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Integration Status</CardTitle>
+          <CardDescription>
+            Current status of your social media integrations
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {[
+              { name: "Facebook Pixel", status: "Not connected", statusColor: "bg-red-100 text-red-800" },
+              { name: "Instagram API", status: "Not connected", statusColor: "bg-red-100 text-red-800" },
+              { name: "Twitter API", status: "Not connected", statusColor: "bg-red-100 text-red-800" },
+              { name: "TikTok Pixel", status: "Not connected", statusColor: "bg-red-100 text-red-800" }
+            ].map((integration, i) => (
+              <div key={i} className="flex items-center justify-between py-2">
+                <span className="font-medium">{integration.name}</span>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${integration.statusColor}`}>
+                  {integration.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 const Marketing = () => {
   return (
     <div className="space-y-6">
@@ -234,6 +391,7 @@ const Marketing = () => {
         <TabsList>
           <TabsTrigger value="social">Social Media</TabsTrigger>
           <TabsTrigger value="email">Email Marketing</TabsTrigger>
+          <TabsTrigger value="api">Social APIs</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
         
@@ -243,6 +401,10 @@ const Marketing = () => {
         
         <TabsContent value="email">
           <EmailMarketingTab />
+        </TabsContent>
+        
+        <TabsContent value="api">
+          <SocialMediaApiTab />
         </TabsContent>
         
         <TabsContent value="analytics">

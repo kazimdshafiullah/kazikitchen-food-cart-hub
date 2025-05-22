@@ -133,7 +133,7 @@ const Orders = () => {
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
       order.customer.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = statusFilter ? order.status === statusFilter : true;
+    const matchesStatus = statusFilter && statusFilter !== "all" ? order.status === statusFilter : true;
     
     return matchesSearch && matchesStatus;
   });
