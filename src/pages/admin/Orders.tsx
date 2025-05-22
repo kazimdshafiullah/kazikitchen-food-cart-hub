@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +18,8 @@ import {
   DialogHeader, 
   DialogTitle 
 } from "@/components/ui/dialog";
-import { Eye, Search, Filter } from "lucide-react";
+import { toast } from "@/components/ui/sonner";
+import { Eye, Search, Filter, FileText, Send } from "lucide-react";
 
 // Mock data for demonstration
 const mockOrders = [
@@ -34,6 +36,26 @@ const mockOrders = [
 // Order details dialog component
 const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onClose: () => void }) => {
   if (!order) return null;
+  
+  const handleStatusChange = (newStatus: string) => {
+    order.status = newStatus;
+    
+    // In a real app, you would update the database and then show a notification
+    const notificationMessages = {
+      processing: "Order status updated to 'Processing'. No notification sent.",
+      confirmed: "Order confirmed! Customer notification sent.",
+      shipped: "Order status updated to 'Shipped'. No notification sent.",
+      delivered: "Order marked as delivered! Customer notification sent.",
+      cancelled: "Order cancelled. Customer notification sent."
+    };
+    
+    const message = notificationMessages[newStatus as keyof typeof notificationMessages] || "Order status updated";
+    toast.success(message);
+  };
+  
+  const handleSendNotification = () => {
+    toast.success(`Notification sent to customer: ${order.customer}`);
+  };
   
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -94,17 +116,40 @@ const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onC
           
           <div>
             <p className="text-sm font-medium mb-2">Update Status</p>
-            <Select defaultValue={order.status}>
+            <Select defaultValue={order.status} onValueChange={handleStatusChange}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="processing">Processing</SelectItem>
+                <SelectItem value="confirmed">Confirmed</SelectItem>
                 <SelectItem value="shipped">Shipped</SelectItem>
                 <SelectItem value="delivered">Delivered</SelectItem>
                 <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          
+          <div className="flex justify-between pt-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleSendNotification}
+            >
+              <Send className="mr-1 h-4 w-4" />
+              Send Notification
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="sm"
+              asChild
+            >
+              <Link to={`/admin/invoice/${order.id}`} target="_blank">
+                <FileText className="mr-1 h-4 w-4" />
+                View Invoice
+              </Link>
+            </Button>
           </div>
           
           <div className="flex justify-end space-x-2 pt-2">
@@ -168,7 +213,7 @@ const Orders = () => {
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="">All Statuses</SelectItem>
               <SelectItem value="processing">Processing</SelectItem>
               <SelectItem value="shipped">Shipped</SelectItem>
               <SelectItem value="delivered">Delivered</SelectItem>

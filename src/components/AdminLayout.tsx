@@ -1,7 +1,11 @@
 
-import { Outlet, Navigate } from "react-router-dom";
+import { Outlet, Navigate, Link } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarProvider, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { LayoutDashboard, ShoppingCart, Tag, CreditCard, BarChart3, Settings, Users, LogOut, Box, Package, Palette } from "lucide-react";
+import { 
+  LayoutDashboard, ShoppingCart, Tag, CreditCard, BarChart3, Settings, 
+  Users, LogOut, Box, Package, Palette, FileText, MessageSquare, DollarSign, 
+  ChartBar, UserPlus, Send
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -48,72 +52,107 @@ const AdminLayout = () => {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Dashboard">
-                  <a href="/admin/dashboard">
+                  <Link to="/admin/dashboard">
                     <LayoutDashboard className="mr-2" /> Dashboard
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Orders">
-                  <a href="/admin/orders">
+                  <Link to="/admin/orders">
                     <ShoppingCart className="mr-2" /> Orders
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Products">
-                  <a href="/admin/products">
+                  <Link to="/admin/products">
                     <Box className="mr-2" /> Products
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Inventory">
-                  <a href="/admin/inventory">
+                  <Link to="/admin/inventory">
                     <Package className="mr-2" /> Inventory
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Marketing">
-                  <a href="/admin/marketing">
+                  <Link to="/admin/marketing">
                     <BarChart3 className="mr-2" /> Marketing
-                  </a>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Social Media">
+                  <Link to="/admin/social-media">
+                    <Send className="mr-2" /> Social Media
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Notifications">
+                  <Link to="/admin/notifications">
+                    <MessageSquare className="mr-2" /> Notifications
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Offers">
-                  <a href="/admin/offers">
+                  <Link to="/admin/offers">
                     <Tag className="mr-2" /> Offers
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Payments">
-                  <a href="/admin/payments">
+                  <Link to="/admin/payments">
                     <CreditCard className="mr-2" /> Payments
-                  </a>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Expenses">
+                  <Link to="/admin/expenses">
+                    <DollarSign className="mr-2" /> Expenses
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Reports">
+                  <Link to="/admin/reports">
+                    <ChartBar className="mr-2" /> Reports
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Site Design">
-                  <a href="/admin/site-design">
+                  <Link to="/admin/site-design">
                     <Palette className="mr-2" /> Site Design
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Customers">
-                  <a href="/admin/customers">
+                  <Link to="/admin/customers">
                     <Users className="mr-2" /> Customers
-                  </a>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Users">
+                  <Link to="/admin/users">
+                    <UserPlus className="mr-2" /> Users
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Settings">
-                  <a href="/admin/settings">
+                  <Link to="/admin/settings">
                     <Settings className="mr-2" /> Settings
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
