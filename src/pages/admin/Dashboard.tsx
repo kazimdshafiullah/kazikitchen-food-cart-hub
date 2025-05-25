@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -13,7 +12,11 @@ import {
   AlertCircle,
   Calendar,
   Package,
-  PackageCheck
+  PackageCheck,
+  TrendingDown,
+  Target,
+  Star,
+  Award
 } from "lucide-react";
 import {
   BarChart,
@@ -28,7 +31,9 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  AreaChart,
+  Area
 } from "recharts";
 
 // Mock data for charts
@@ -60,6 +65,33 @@ const categoryData = [
 ];
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+const salesExpenseData = [
+  { month: "Jan", sales: 450000, expenses: 320000, profit: 130000 },
+  { month: "Feb", sales: 380000, expenses: 280000, profit: 100000 },
+  { month: "Mar", sales: 520000, expenses: 350000, profit: 170000 },
+  { month: "Apr", sales: 610000, expenses: 420000, profit: 190000 },
+  { month: "May", sales: 680000, expenses: 480000, profit: 200000 },
+  { month: "Jun", sales: 720000, expenses: 520000, profit: 200000 },
+];
+
+const forecastData = [
+  { month: "Jul", actual: 720000, forecast: 750000 },
+  { month: "Aug", actual: null, forecast: 780000 },
+  { month: "Sep", actual: null, forecast: 820000 },
+  { month: "Oct", actual: null, forecast: 850000 },
+  { month: "Nov", actual: null, forecast: 900000 },
+  { month: "Dec", actual: null, forecast: 950000 },
+];
+
+const productPerformanceData = [
+  { name: "Beef Curry", sales: 1250, revenue: 187500, trend: "up" },
+  { name: "Chicken Biryani", sales: 980, revenue: 147000, trend: "up" },
+  { name: "Fish Curry", sales: 850, revenue: 119000, trend: "stable" },
+  { name: "Vegetable Curry", sales: 720, revenue: 86400, trend: "down" },
+  { name: "Mutton Curry", sales: 650, revenue: 97500, trend: "up" },
+  { name: "Dal & Rice", sales: 420, revenue: 42000, trend: "down" },
+];
 
 const OrdersByStatusChart = () => {
   const data = [
@@ -124,6 +156,7 @@ const Dashboard = () => {
         <TabsList className="bg-white shadow-sm">
           <TabsTrigger value="overview" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">Overview</TabsTrigger>
           <TabsTrigger value="analytics" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">Analytics</TabsTrigger>
+          <TabsTrigger value="business" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">Business Analytics</TabsTrigger>
           <TabsTrigger value="reports" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">Reports</TabsTrigger>
         </TabsList>
         
@@ -353,6 +386,197 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="business" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card className="bg-gradient-to-r from-emerald-400 to-emerald-600 text-white shadow-lg">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
+                <DollarSign className="h-4 w-4 text-emerald-100" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">৳7,20,000</div>
+                <p className="text-xs text-emerald-100">
+                  +15.2% from last month
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-r from-red-400 to-red-600 text-white shadow-lg">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
+                <TrendingDown className="h-4 w-4 text-red-100" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">৳5,20,000</div>
+                <p className="text-xs text-red-100">
+                  +8.3% from last month
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white shadow-lg">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Net Profit</CardTitle>
+                <TrendingUp className="h-4 w-4 text-yellow-100" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">৳2,00,000</div>
+                <p className="text-xs text-yellow-100">
+                  +28.5% from last month
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-r from-indigo-400 to-indigo-600 text-white shadow-lg">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Profit Margin</CardTitle>
+                <Target className="h-4 w-4 text-indigo-100" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">27.8%</div>
+                <p className="text-xs text-indigo-100">
+                  +2.1% from last month
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-gray-900">Sales vs Expenses</CardTitle>
+                <CardDescription>Monthly comparison of sales and expenses</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={salesExpenseData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => [`৳${value.toLocaleString()}`, '']} />
+                      <Legend />
+                      <Bar dataKey="sales" fill="#10b981" name="Sales" />
+                      <Bar dataKey="expenses" fill="#ef4444" name="Expenses" />
+                      <Bar dataKey="profit" fill="#3b82f6" name="Profit" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-gray-900">Revenue Forecast</CardTitle>
+                <CardDescription>6-month revenue projection</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={forecastData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => [`৳${value?.toLocaleString() || 'N/A'}`, '']} />
+                      <Legend />
+                      <Area type="monotone" dataKey="actual" stackId="1" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} name="Actual" />
+                      <Area type="monotone" dataKey="forecast" stackId="2" stroke="#10b981" fill="#10b981" fillOpacity={0.6} strokeDasharray="5 5" name="Forecast" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card className="col-span-2 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-gray-900 flex items-center">
+                  <Award className="mr-2 h-5 w-5 text-yellow-500" />
+                  Product Performance
+                </CardTitle>
+                <CardDescription>Sales and revenue by product</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {productPerformanceData.map((product, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-2 rounded-full ${index === 0 ? 'bg-yellow-100' : index === 1 ? 'bg-gray-100' : index === 2 ? 'bg-orange-100' : 'bg-blue-100'}`}>
+                          {index === 0 ? (
+                            <Star className="h-4 w-4 text-yellow-600" />
+                          ) : (
+                            <Package className="h-4 w-4 text-gray-600" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{product.name}</p>
+                          <p className="text-sm text-gray-500">{product.sales} orders</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium text-gray-900">৳{product.revenue.toLocaleString()}</p>
+                        <div className="flex items-center text-sm">
+                          {product.trend === 'up' ? (
+                            <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+                          ) : product.trend === 'down' ? (
+                            <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
+                          ) : (
+                            <div className="h-3 w-3 bg-gray-400 rounded-full mr-1" />
+                          )}
+                          <span className={`${product.trend === 'up' ? 'text-green-600' : product.trend === 'down' ? 'text-red-600' : 'text-gray-600'}`}>
+                            {product.trend === 'up' ? 'Rising' : product.trend === 'down' ? 'Falling' : 'Stable'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-gray-900">Key Insights</CardTitle>
+                <CardDescription>Business performance highlights</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-3 bg-green-50 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <TrendingUp className="h-4 w-4 text-green-600" />
+                    <p className="text-sm font-medium text-green-800">Best Performer</p>
+                  </div>
+                  <p className="text-xs text-green-600 mt-1">Beef Curry leads with 1,250 orders</p>
+                </div>
+                
+                <div className="p-3 bg-red-50 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <TrendingDown className="h-4 w-4 text-red-600" />
+                    <p className="text-sm font-medium text-red-800">Needs Attention</p>
+                  </div>
+                  <p className="text-xs text-red-600 mt-1">Dal & Rice sales declining</p>
+                </div>
+                
+                <div className="p-3 bg-blue-50 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <Target className="h-4 w-4 text-blue-600" />
+                    <p className="text-sm font-medium text-blue-800">Growth Target</p>
+                  </div>
+                  <p className="text-xs text-blue-600 mt-1">On track for 32% revenue growth</p>
+                </div>
+                
+                <div className="p-3 bg-purple-50 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <DollarSign className="h-4 w-4 text-purple-600" />
+                    <p className="text-sm font-medium text-purple-800">Cost Optimization</p>
+                  </div>
+                  <p className="text-xs text-purple-600 mt-1">Food costs at 28% of revenue</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
         
         <TabsContent value="reports" className="space-y-4">
