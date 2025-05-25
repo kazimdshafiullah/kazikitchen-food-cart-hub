@@ -26,7 +26,7 @@ const Notifications = () => {
     senderName: "KaziKitchen",
     orderReceivedTemplate: "Thank you for your order #{{order_id}}! We've received it and are preparing it with care. Est. delivery: {{delivery_time}}",
     orderConfirmedTemplate: "Your Kazi Kitchen order #{{order_id}} is confirmed and being prepared. Est. delivery: {{delivery_time}}",
-    orderDeliveredTemplate: "Your Kazi Kitchen order #{{order_id}} has been delivered! Enjoy your meal. Please rate your experience: https://kz.kt/fb/{{order_id}}",
+    orderDeliveredTemplate: "Your Kazi Kitchen order #{{order_id}} has been delivered! Enjoy your meal from Kazi Kitchen. Rate us: {{rating_url}}",
     enableAutoSMS: true
   });
 
@@ -60,11 +60,17 @@ const Notifications = () => {
   });
 
   const handleSaveEmailSettings = () => {
-    toast.success("Email notification settings saved");
+    toast({
+      title: "Success",
+      description: "Email notification settings saved"
+    });
   };
 
   const handleSaveSmsSettings = () => {
-    toast.success("SMS notification settings saved");
+    toast({
+      title: "Success", 
+      description: "SMS notification settings saved"
+    });
   };
 
   const handleSaveChatSettings = () => {
@@ -85,11 +91,18 @@ const Notifications = () => {
     const { recipientEmail, recipientPhone, notificationType } = testNotificationForm;
     
     if (!recipientEmail && !recipientPhone) {
-      toast.error("Please enter an email address or phone number");
+      toast({
+        title: "Error",
+        description: "Please enter an email address or phone number",
+        variant: "destructive"
+      });
       return;
     }
 
-    toast.success("Test notification sent successfully");
+    toast({
+      title: "Success",
+      description: "Test notification sent successfully"
+    });
   };
 
   return (
