@@ -1,10 +1,9 @@
-
 import { Outlet, Navigate, Link } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarProvider, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, ShoppingCart, Tag, CreditCard, BarChart3, Settings, 
   Users, LogOut, Box, Package, Palette, FileText, MessageSquare, DollarSign, 
-  ChartBar, UserPlus, Send
+  ChartBar, UserPlus, Send, Bell
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -96,6 +95,13 @@ const AdminLayout = () => {
                 <SidebarMenuButton asChild tooltip="Notifications">
                   <Link to="/admin/notifications">
                     <MessageSquare className="mr-2" /> Notifications
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Chat Management">
+                  <Link to="/admin/chat-management">
+                    <Bell className="mr-2" /> Chat Management
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

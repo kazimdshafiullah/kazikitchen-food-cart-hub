@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -7,8 +6,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/sonner";
-import { MessageSquare, Mail } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { MessageSquare, Mail, Phone, Bell } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Notifications = () => {
@@ -30,7 +29,29 @@ const Notifications = () => {
     orderDeliveredTemplate: "Your Kazi Kitchen order #{{order_id}} has been delivered! Enjoy your meal. Please rate your experience: https://kz.kt/fb/{{order_id}}",
     enableAutoSMS: true
   });
-  
+
+  // Live chat notification settings
+  const [chatSettings, setChatSettings] = useState({
+    enableEmailNotifications: true,
+    adminEmailTemplate: "New chat message from {{customer_name}} ({{customer_email}}):\n\n{{message}}\n\nReply at: {{chat_url}}",
+    enableBrowserNotifications: true,
+    notifyAdminRoles: ["admin", "support"],
+    autoResponseEnabled: true,
+    autoResponseMessage: "Thank you for contacting us! We'll get back to you shortly during business hours (9 AM - 9 PM)."
+  });
+
+  // SMS Integration settings
+  const [smsIntegration, setSmsIntegration] = useState({
+    provider: "twilio", // or "nexmo", "msg91"
+    apiKey: "",
+    authToken: "",
+    fromNumber: "",
+    enableOrderPlaced: true,
+    enableDeliveryComplete: true,
+    orderPlacedTemplate: "Hi {{customer_name}}, your order #{{order_id}} has been placed successfully! Total: ৳{{total}}. Est. delivery: {{delivery_time}}",
+    deliveryCompleteTemplate: "Hi {{customer_name}}, your order #{{order_id}} has been delivered! Enjoy your meal from Kazi Kitchen. Rate us: {{rating_url}}"
+  });
+
   // Test notification form
   const [testNotificationForm, setTestNotificationForm] = useState({
     recipientPhone: "",
@@ -44,6 +65,20 @@ const Notifications = () => {
 
   const handleSaveSmsSettings = () => {
     toast.success("SMS notification settings saved");
+  };
+
+  const handleSaveChatSettings = () => {
+    toast({
+      title: "Success",
+      description: "Live chat settings saved successfully"
+    });
+  };
+
+  const handleSaveSmsIntegration = () => {
+    toast({
+      title: "Success", 
+      description: "SMS integration settings saved successfully"
+    });
   };
 
   const handleTestNotification = () => {
@@ -61,7 +96,7 @@ const Notifications = () => {
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Customer Notifications</h2>
-        <p className="text-muted-foreground">Manage email and SMS notifications sent to customers</p>
+        <p className="text-muted-foreground">Manage email, SMS, and live chat notifications</p>
       </div>
 
       <Tabs defaultValue="email" className="space-y-4">
@@ -73,6 +108,14 @@ const Notifications = () => {
           <TabsTrigger value="sms">
             <MessageSquare className="mr-2 h-4 w-4" />
             SMS Notifications
+          </TabsTrigger>
+          <TabsTrigger value="sms-integration">
+            <Phone className="mr-2 h-4 w-4" />
+            SMS Integration
+          </TabsTrigger>
+          <TabsTrigger value="live-chat">
+            <Bell className="mr-2 h-4 w-4" />
+            Live Chat
           </TabsTrigger>
           <TabsTrigger value="test">Test Notifications</TabsTrigger>
         </TabsList>
@@ -257,6 +300,231 @@ const Notifications = () => {
             </CardContent>
             <CardFooter>
               <Button onClick={handleSaveSmsSettings}>Save SMS Settings</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        {/* SMS Integration Tab */}
+        <TabsContent value="sms-integration" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>SMS Integration Settings</CardTitle>
+              <CardDescription>Configure SMS provider for order notifications</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="smsProvider">SMS Provider</Label>
+                <Select
+                  value={smsIntegration.provider}
+                  onValueChange={(value) => setSmsIntegration({ ...smsIntegration, provider: value })}
+                >
+                  <SelectTrigger id="smsProvider">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="twilio">Twilio</SelectItem>
+                    <SelectItem value="nexmo">Vonage (Nexmo)</SelectItem>
+                    <SelectItem value="msg91">MSG91</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="apiKey">API Key</Label>
+                  <Input
+                    id="apiKey"
+                    type="password"
+                    value={smsIntegration.apiKey}
+                    onChange={(e) => setSmsIntegration({ ...smsIntegration, apiKey: e.target.value })}
+                    placeholder="Enter your SMS provider API key"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="authToken">Auth Token</Label>
+                  <Input
+                    id="authToken"
+                    type="password"
+                    value={smsIntegration.authToken}
+                    onChange={(e) => setSmsIntegration({ ...smsIntegration, authToken: e.target.value })}
+                    placeholder="Enter your auth token"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="fromNumber">From Number</Label>
+                <Input
+                  id="fromNumber"
+                  value={smsIntegration.fromNumber}
+                  onChange={(e) => setSmsIntegration({ ...smsIntegration, fromNumber: e.target.value })}
+                  placeholder="+1234567890"
+                />
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    checked={smsIntegration.enableOrderPlaced}
+                    onCheckedChange={(checked) => setSmsIntegration({ ...smsIntegration, enableOrderPlaced: checked })}
+                    id="order-placed-sms"
+                  />
+                  <Label htmlFor="order-placed-sms">Send SMS when order is placed</Label>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="orderPlacedSms">Order Placed SMS Template</Label>
+                  <Textarea
+                    id="orderPlacedSms"
+                    rows={3}
+                    className="font-mono text-sm"
+                    maxLength={160}
+                    value={smsIntegration.orderPlacedTemplate}
+                    onChange={(e) => setSmsIntegration({ ...smsIntegration, orderPlacedTemplate: e.target.value })}
+                  />
+                  <p className="text-xs text-right text-muted-foreground">
+                    {smsIntegration.orderPlacedTemplate.length}/160 characters
+                  </p>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    checked={smsIntegration.enableDeliveryComplete}
+                    onCheckedChange={(checked) => setSmsIntegration({ ...smsIntegration, enableDeliveryComplete: checked })}
+                    id="delivery-complete-sms"
+                  />
+                  <Label htmlFor="delivery-complete-sms">Send SMS when delivery is complete</Label>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="deliveryCompleteSms">Delivery Complete SMS Template</Label>
+                  <Textarea
+                    id="deliveryCompleteSms"
+                    rows={3}
+                    className="font-mono text-sm"
+                    maxLength={160}
+                    value={smsIntegration.deliveryCompleteTemplate}
+                    onChange={(e) => setSmsIntegration({ ...smsIntegration, deliveryCompleteTemplate: e.target.value })}
+                  />
+                  <p className="text-xs text-right text-muted-foreground">
+                    {smsIntegration.deliveryCompleteTemplate.length}/160 characters
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <p className="text-sm font-medium mb-2">Available placeholders:</p>
+                <ul className="text-sm text-muted-foreground list-disc list-inside">
+                  <li>{"{{customer_name}} - Customer's name"}</li>
+                  <li>{"{{order_id}} - Order number"}</li>
+                  <li>{"{{total}} - Order total amount"}</li>
+                  <li>{"{{delivery_time}} - Estimated delivery time"}</li>
+                  <li>{"{{rating_url}} - Link to rate the order"}</li>
+                </ul>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={handleSaveSmsIntegration}>Save SMS Integration</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        {/* Live Chat Settings Tab */}
+        <TabsContent value="live-chat" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Live Chat Notification Settings</CardTitle>
+              <CardDescription>Configure how admins are notified about new chat messages</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  checked={chatSettings.enableEmailNotifications}
+                  onCheckedChange={(checked) => setChatSettings({ ...chatSettings, enableEmailNotifications: checked })}
+                  id="chat-email-notifications"
+                />
+                <Label htmlFor="chat-email-notifications">Send email notifications for new chat messages</Label>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="adminEmailTemplate">Admin Email Template</Label>
+                <Textarea
+                  id="adminEmailTemplate"
+                  rows={4}
+                  className="font-mono text-sm"
+                  value={chatSettings.adminEmailTemplate}
+                  onChange={(e) => setChatSettings({ ...chatSettings, adminEmailTemplate: e.target.value })}
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  checked={chatSettings.enableBrowserNotifications}
+                  onCheckedChange={(checked) => setChatSettings({ ...chatSettings, enableBrowserNotifications: checked })}
+                  id="chat-browser-notifications"
+                />
+                <Label htmlFor="chat-browser-notifications">Show browser notifications for new messages</Label>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Admin Roles that can respond to chats</Label>
+                <div className="flex gap-2">
+                  {["admin", "support", "manager"].map((role) => (
+                    <div key={role} className="flex items-center space-x-2">
+                      <Switch 
+                        checked={chatSettings.notifyAdminRoles.includes(role)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setChatSettings({ 
+                              ...chatSettings, 
+                              notifyAdminRoles: [...chatSettings.notifyAdminRoles, role] 
+                            });
+                          } else {
+                            setChatSettings({ 
+                              ...chatSettings, 
+                              notifyAdminRoles: chatSettings.notifyAdminRoles.filter(r => r !== role) 
+                            });
+                          }
+                        }}
+                        id={`role-${role}`}
+                      />
+                      <Label htmlFor={`role-${role}`} className="capitalize">{role}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  checked={chatSettings.autoResponseEnabled}
+                  onCheckedChange={(checked) => setChatSettings({ ...chatSettings, autoResponseEnabled: checked })}
+                  id="auto-response"
+                />
+                <Label htmlFor="auto-response">Send automatic response to new chats</Label>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="autoResponseMessage">Auto Response Message</Label>
+                <Textarea
+                  id="autoResponseMessage"
+                  rows={3}
+                  value={chatSettings.autoResponseMessage}
+                  onChange={(e) => setChatSettings({ ...chatSettings, autoResponseMessage: e.target.value })}
+                />
+              </div>
+
+              <div className="pt-2">
+                <p className="text-sm font-medium mb-2">Available placeholders:</p>
+                <ul className="text-sm text-muted-foreground list-disc list-inside">
+                  <li>{"{{customer_name}} - Customer's name"}</li>
+                  <li>{"{{customer_email}} - Customer's email"}</li>
+                  <li>{"{{message}} - Chat message content"}</li>
+                  <li>{"{{chat_url}} - Link to chat conversation"}</li>
+                </ul>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={handleSaveChatSettings}>Save Chat Settings</Button>
             </CardFooter>
           </Card>
         </TabsContent>
