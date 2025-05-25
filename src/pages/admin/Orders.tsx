@@ -53,21 +53,33 @@ const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onC
     };
     
     const message = notificationMessages[newStatus as keyof typeof notificationMessages] || "Order status updated";
-    toast.success(message);
+    toast({
+      title: "Success",
+      description: message
+    });
   };
   
   const handleConfirmOrder = () => {
     order.status = "confirmed";
-    toast.success(`Order ${order.id} confirmed! Customer has been notified.`);
+    toast({
+      title: "Success",
+      description: `Order ${order.id} confirmed! Customer has been notified.`
+    });
   };
   
   const handleMarkAsFake = () => {
     order.isFake = true;
-    toast.success(`Order ${order.id} marked as fake and moved to fake orders list.`);
+    toast({
+      title: "Success", 
+      description: `Order ${order.id} marked as fake and moved to fake orders list.`
+    });
   };
   
   const handleSendNotification = () => {
-    toast.success(`Notification sent to customer: ${order.customer}`);
+    toast({
+      title: "Success",
+      description: `Notification sent to customer: ${order.customer}`
+    });
   };
   
   return (

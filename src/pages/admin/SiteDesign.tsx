@@ -63,7 +63,10 @@ const BannersTab = () => {
       banner.id === selectedBanner.id ? selectedBanner : banner
     );
     setBanners(updatedBanners);
-    toast.success("Banner updated successfully");
+    toast({
+      title: "Success",
+      description: "Banner updated successfully"
+    });
   };
   
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,7 +77,10 @@ const BannersTab = () => {
         ...selectedBanner,
         image: "/placeholder.svg"  // In reality, this would be the uploaded image URL
       });
-      toast.success("Image uploaded successfully");
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully"
+      });
     }
   };
   
@@ -209,19 +215,28 @@ const ThemeTab = () => {
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       // In a real app, this would upload the file to a server
-      toast.success("Logo uploaded successfully");
+      toast({
+        title: "Success",
+        description: "Logo uploaded successfully"
+      });
     }
   };
   
   const handleFaviconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       // In a real app, this would upload the file to a server
-      toast.success("Favicon uploaded successfully");
+      toast({
+        title: "Success",
+        description: "Favicon uploaded successfully"
+      });
     }
   };
   
   const handleSaveTheme = () => {
-    toast.success("Theme settings saved");
+    toast({
+      title: "Success",
+      description: "Theme settings saved"
+    });
   };
   
   return (
@@ -795,7 +810,7 @@ const SiteDesign = () => {
       </div>
       
       <Tabs defaultValue="banners" className="space-y-4">
-        <TabsList className="grid grid-cols-5 w-full">
+        <TabsList className="grid grid-cols-4 w-full">
           <TabsTrigger value="banners">Banners</TabsTrigger>
           <TabsTrigger value="theme">Theme</TabsTrigger>
           <TabsTrigger value="layout">Layout</TabsTrigger>
