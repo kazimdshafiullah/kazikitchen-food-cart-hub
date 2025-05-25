@@ -71,7 +71,10 @@ const Invoice = () => {
   };
 
   const handleDownload = () => {
-    toast.success("PDF download functionality would be implemented here");
+    toast({
+      title: "Success",
+      description: "PDF download functionality would be implemented here",
+    });
   };
 
   const calculateSubtotal = () => {
