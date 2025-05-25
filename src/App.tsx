@@ -1,82 +1,74 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-
+import Layout from "./components/Layout";
 import Index from "./pages/Index";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
-import Layout from "./components/Layout";
-
-// Admin Pages
-import { AdminLayout, useAdminAuth } from "./components/AdminLayout";
+import { AdminLayout } from "./components/AdminLayout";
 import AdminLogin from "./pages/admin/AdminLogin";
 import Dashboard from "./pages/admin/Dashboard";
 import Orders from "./pages/admin/Orders";
-import Invoice from "./pages/admin/Invoice";
 import Products from "./pages/admin/Products";
 import Inventory from "./pages/admin/Inventory";
 import Marketing from "./pages/admin/Marketing";
 import SocialMedia from "./pages/admin/SocialMedia";
 import Notifications from "./pages/admin/Notifications";
+import ChatManagement from "./pages/admin/ChatManagement";
 import Offers from "./pages/admin/Offers";
 import Payments from "./pages/admin/Payments";
-import Customers from "./pages/admin/Customers";
-import SiteDesign from "./pages/admin/SiteDesign";
-import Settings from "./pages/admin/Settings";
-import UserManagement from "./pages/admin/UserManagement";
 import ExpenseManagement from "./pages/admin/ExpenseManagement";
 import Reports from "./pages/admin/Reports";
+import SiteDesign from "./pages/admin/SiteDesign";
+import Customers from "./pages/admin/Customers";
+import UserManagement from "./pages/admin/UserManagement";
+import Settings from "./pages/admin/Settings";
+import Invoice from "./pages/admin/Invoice";
+import { Toaster } from "@/components/ui/toaster";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Router>
         <Routes>
-          {/* Main Store Routes */}
           <Route path="/" element={<Layout />}>
             <Route index element={<Index />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
+            <Route path="product/:id" element={<ProductDetail />} />
+            <Route path="cart" element={<Cart />} />
+            <Route path="checkout" element={<Checkout />} />
           </Route>
           
-          {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminLayout />}>
-            <Route path="/admin/dashboard" element={<Dashboard />} />
-            <Route path="/admin/orders" element={<Orders />} />
-            <Route path="/admin/invoice/:id" element={<Invoice />} />
-            <Route path="/admin/products" element={<Products />} />
-            <Route path="/admin/inventory" element={<Inventory />} />
-            <Route path="/admin/marketing" element={<Marketing />} />
-            <Route path="/admin/social-media" element={<SocialMedia />} />
-            <Route path="/admin/notifications" element={<Notifications />} />
-            <Route path="/admin/offers" element={<Offers />} />
-            <Route path="/admin/payments" element={<Payments />} />
-            <Route path="/admin/customers" element={<Customers />} />
-            <Route path="/admin/site-design" element={<SiteDesign />} />
-            <Route path="/admin/settings" element={<Settings />} />
-            <Route path="/admin/users" element={<UserManagement />} />
-            <Route path="/admin/expenses" element={<ExpenseManagement />} />
-            <Route path="/admin/reports" element={<Reports />} />
-            <Route index element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="products" element={<Products />} />
+            <Route path="inventory" element={<Inventory />} />
+            <Route path="marketing" element={<Marketing />} />
+            <Route path="social-media" element={<SocialMedia />} />
+            <Route path="notifications" element={<Notifications />} />
+            <Route path="chat-management" element={<ChatManagement />} />
+            <Route path="offers" element={<Offers />} />
+            <Route path="payments" element={<Payments />} />
+            <Route path="expenses" element={<ExpenseManagement />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="site-design" element={<SiteDesign />} />
+            <Route path="customers" element={<Customers />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
           
-          {/* 404 Page */}
+          <Route path="/admin/invoice/:orderId" element={<Invoice />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+        <Toaster />
+      </Router>
+    </QueryClientProvider>
+  );
+}
 
 export default App;

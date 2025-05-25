@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,8 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "@/components/ui/sonner";
-import { Image, Palette, Upload, LayoutDashboard, Save } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/hooks/use-toast";
+import { Image, Palette, Upload, LayoutDashboard, Save, Trash2, Edit, Plus, Move, RotateCcw, Crop, Filter } from "lucide-react";
 
 // Mock banner data
 const initialBanners = [
@@ -363,43 +365,268 @@ const ThemeTab = () => {
   );
 };
 
+const LayoutDesignTab = () => {
+  const [layoutSettings, setLayoutSettings] = useState({
+    headerHeight: [80],
+    footerHeight: [120],
+    containerMaxWidth: [1200],
+    spacing: [16],
+    borderRadius: [8],
+    sectionPadding: [40]
+  });
+  
+  const [headerSettings, setHeaderSettings] = useState({
+    showLogo: true,
+    logoPosition: "left",
+    showNavigation: true,
+    navPosition: "center",
+    showCartIcon: true,
+    headerStyle: "default",
+    headerBackground: "#ffffff",
+    headerTextColor: "#000000"
+  });
+  
+  const handleSaveLayout = () => {
+    toast({
+      title: "Success",
+      description: "Layout settings saved successfully"
+    });
+  };
+  
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Layout Dimensions</CardTitle>
+          <CardDescription>Adjust spacing and sizing</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label>Header Height: {layoutSettings.headerHeight[0]}px</Label>
+            <Slider
+              value={layoutSettings.headerHeight}
+              onValueChange={(value) => setLayoutSettings({...layoutSettings, headerHeight: value})}
+              max={200}
+              min={60}
+              step={10}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label>Container Max Width: {layoutSettings.containerMaxWidth[0]}px</Label>
+            <Slider
+              value={layoutSettings.containerMaxWidth}
+              onValueChange={(value) => setLayoutSettings({...layoutSettings, containerMaxWidth: value})}
+              max={1400}
+              min={800}
+              step={50}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label>Border Radius: {layoutSettings.borderRadius[0]}px</Label>
+            <Slider
+              value={layoutSettings.borderRadius}
+              onValueChange={(value) => setLayoutSettings({...layoutSettings, borderRadius: value})}
+              max={30}
+              min={0}
+              step={2}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label>Section Padding: {layoutSettings.sectionPadding[0]}px</Label>
+            <Slider
+              value={layoutSettings.sectionPadding}
+              onValueChange={(value) => setLayoutSettings({...layoutSettings, sectionPadding: value})}
+              max={100}
+              min={20}
+              step={10}
+            />
+          </div>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Header Configuration</CardTitle>
+          <CardDescription>Customize header appearance</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Label>Show Logo</Label>
+            <Switch 
+              checked={headerSettings.showLogo}
+              onCheckedChange={(checked) => setHeaderSettings({...headerSettings, showLogo: checked})}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label>Logo Position</Label>
+            <Select 
+              value={headerSettings.logoPosition} 
+              onValueChange={(value) => setHeaderSettings({...headerSettings, logoPosition: value})}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="left">Left</SelectItem>
+                <SelectItem value="center">Center</SelectItem>
+                <SelectItem value="right">Right</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label>Header Style</Label>
+            <Select 
+              value={headerSettings.headerStyle} 
+              onValueChange={(value) => setHeaderSettings({...headerSettings, headerStyle: value})}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="default">Default</SelectItem>
+                <SelectItem value="minimal">Minimal</SelectItem>
+                <SelectItem value="bold">Bold</SelectItem>
+                <SelectItem value="transparent">Transparent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Background Color</Label>
+              <div className="flex items-center space-x-2">
+                <div 
+                  className="w-8 h-8 rounded border" 
+                  style={{ backgroundColor: headerSettings.headerBackground }}
+                />
+                <Input 
+                  value={headerSettings.headerBackground}
+                  onChange={(e) => setHeaderSettings({...headerSettings, headerBackground: e.target.value})}
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Text Color</Label>
+              <div className="flex items-center space-x-2">
+                <div 
+                  className="w-8 h-8 rounded border" 
+                  style={{ backgroundColor: headerSettings.headerTextColor }}
+                />
+                <Input 
+                  value={headerSettings.headerTextColor}
+                  onChange={(e) => setHeaderSettings({...headerSettings, headerTextColor: e.target.value})}
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button onClick={handleSaveLayout}>
+            <Save className="mr-2 h-4 w-4" />
+            Save Layout
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+};
+
 const MediaLibraryTab = () => {
   const [mediaItems, setMediaItems] = useState([
-    { id: 1, name: "hero-image.jpg", type: "image", url: "/placeholder.svg", size: "1.2 MB", date: "2025-05-10" },
-    { id: 2, name: "menu-background.jpg", type: "image", url: "/placeholder.svg", size: "0.8 MB", date: "2025-05-12" },
-    { id: 3, name: "logo.svg", type: "image", url: "/placeholder.svg", size: "0.2 MB", date: "2025-05-01" },
-    { id: 4, name: "product-showcase.jpg", type: "image", url: "/placeholder.svg", size: "1.5 MB", date: "2025-05-15" },
+    { id: 1, name: "hero-image.jpg", type: "image", url: "/placeholder.svg", size: "1.2 MB", date: "2025-05-10", category: "hero" },
+    { id: 2, name: "menu-background.jpg", type: "image", url: "/placeholder.svg", size: "0.8 MB", date: "2025-05-12", category: "background" },
+    { id: 3, name: "logo.svg", type: "image", url: "/placeholder.svg", size: "0.2 MB", date: "2025-05-01", category: "logo" },
+    { id: 4, name: "product-showcase.jpg", type: "image", url: "/placeholder.svg", size: "1.5 MB", date: "2025-05-15", category: "product" },
   ]);
+  
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [imageEditMode, setImageEditMode] = useState<number | null>(null);
+  const [imageTransforms, setImageTransforms] = useState({
+    resize: [100],
+    rotate: [0],
+    brightness: [100],
+    contrast: [100],
+    saturation: [100]
+  });
+  
+  const categories = ["all", "logo", "hero", "background", "product", "banner"];
+  
+  const filteredItems = selectedCategory === "all" 
+    ? mediaItems 
+    : mediaItems.filter(item => item.category === selectedCategory);
   
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      // In a real app, this would upload the file to a server
       const file = e.target.files[0];
       const newItem = {
         id: mediaItems.length + 1,
         name: file.name,
         type: file.type.startsWith("image/") ? "image" : "file",
-        url: "/placeholder.svg", // In reality, this would be the uploaded file URL
+        url: "/placeholder.svg",
         size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split('T')[0],
+        category: "product"
       };
       
       setMediaItems([newItem, ...mediaItems]);
-      toast.success("File uploaded successfully");
+      toast({
+        title: "Success",
+        description: "File uploaded successfully"
+      });
     }
+  };
+  
+  const handleDeleteImage = (id: number) => {
+    setMediaItems(mediaItems.filter(item => item.id !== id));
+    toast({
+      title: "Success",
+      description: "Image deleted successfully"
+    });
+  };
+  
+  const handleImageTransform = (id: number) => {
+    toast({
+      title: "Success",
+      description: "Image transformations applied"
+    });
+    setImageEditMode(null);
   };
   
   return (
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Media Library</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Image className="h-5 w-5" />
+            Media Library & Image Editor
+          </CardTitle>
           <CardDescription>
-            Upload and manage images for your website
+            Upload, organize and edit images for your website
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="mb-6">
+          <div className="mb-6 space-y-4">
+            <div className="flex items-center gap-4">
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Filter by category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map(category => (
+                    <SelectItem key={category} value={category}>
+                      {category.charAt(0).toUpperCase() + category.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
             <Input 
               type="file" 
               id="media-upload" 
@@ -409,28 +636,129 @@ const MediaLibraryTab = () => {
               multiple
             />
             <label htmlFor="media-upload">
-              <Button className="w-full py-8 h-auto flex flex-col" variant="outline">
-                <Upload className="h-6 w-6 mb-2" />
-                <span>Drop files here or click to upload</span>
-                <span className="text-xs text-muted-foreground mt-1">Supports: JPG, PNG, GIF up to 5MB</span>
+              <Button className="w-full py-8 h-auto flex flex-col" variant="outline" asChild>
+                <div>
+                  <Upload className="h-6 w-6 mb-2" />
+                  <span>Drop files here or click to upload</span>
+                  <span className="text-xs text-muted-foreground mt-1">Supports: JPG, PNG, GIF, SVG up to 10MB</span>
+                </div>
               </Button>
             </label>
           </div>
           
+          {imageEditMode && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Edit className="h-4 w-4" />
+                  Image Editor
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Resize: {imageTransforms.resize[0]}%</Label>
+                  <Slider
+                    value={imageTransforms.resize}
+                    onValueChange={(value) => setImageTransforms({...imageTransforms, resize: value})}
+                    max={200}
+                    min={10}
+                    step={10}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Rotate: {imageTransforms.rotate[0]}°</Label>
+                  <Slider
+                    value={imageTransforms.rotate}
+                    onValueChange={(value) => setImageTransforms({...imageTransforms, rotate: value})}
+                    max={360}
+                    min={0}
+                    step={15}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Brightness: {imageTransforms.brightness[0]}%</Label>
+                    <Slider
+                      value={imageTransforms.brightness}
+                      onValueChange={(value) => setImageTransforms({...imageTransforms, brightness: value})}
+                      max={200}
+                      min={0}
+                      step={10}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Contrast: {imageTransforms.contrast[0]}%</Label>
+                    <Slider
+                      value={imageTransforms.contrast}
+                      onValueChange={(value) => setImageTransforms({...imageTransforms, contrast: value})}
+                      max={200}
+                      min={0}
+                      step={10}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Saturation: {imageTransforms.saturation[0]}%</Label>
+                    <Slider
+                      value={imageTransforms.saturation}
+                      onValueChange={(value) => setImageTransforms({...imageTransforms, saturation: value})}
+                      max={200}
+                      min={0}
+                      step={10}
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button onClick={() => handleImageTransform(imageEditMode)}>
+                    <Save className="mr-2 h-4 w-4" />
+                    Apply Changes
+                  </Button>
+                  <Button variant="outline" onClick={() => setImageEditMode(null)}>
+                    Cancel
+                  </Button>
+                  <Button variant="outline" onClick={() => setImageTransforms({
+                    resize: [100], rotate: [0], brightness: [100], contrast: [100], saturation: [100]
+                  })}>
+                    <RotateCcw className="mr-2 h-4 w-4" />
+                    Reset
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {mediaItems.map(item => (
+            {filteredItems.map(item => (
               <div key={item.id} className="border rounded-md overflow-hidden">
-                <div className="aspect-square bg-gray-100 relative">
+                <div className="aspect-square bg-gray-100 relative group">
                   <img src={item.url} alt={item.name} className="w-full h-full object-cover" />
-                  <div className="absolute top-2 right-2 flex space-x-1">
-                    <Button size="icon" variant="outline" className="h-6 w-6 rounded-full bg-white">
-                      <Trash2 className="h-3 w-3" />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <Button 
+                      size="icon" 
+                      variant="outline" 
+                      className="h-8 w-8 bg-white"
+                      onClick={() => setImageEditMode(item.id)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      size="icon" 
+                      variant="outline" 
+                      className="h-8 w-8 bg-white"
+                      onClick={() => handleDeleteImage(item.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
                 <div className="p-2">
                   <p className="text-xs font-medium truncate">{item.name}</p>
                   <p className="text-xs text-muted-foreground">{item.size}</p>
+                  <p className="text-xs text-muted-foreground capitalize">{item.category}</p>
                 </div>
               </div>
             ))}
@@ -463,14 +791,15 @@ const SiteDesign = () => {
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Site Design</h2>
-        <p className="text-muted-foreground">Customize the look and feel of your website</p>
+        <p className="text-muted-foreground">Customize every aspect of your website's appearance</p>
       </div>
       
       <Tabs defaultValue="banners" className="space-y-4">
-        <TabsList>
+        <TabsList className="grid grid-cols-5 w-full">
           <TabsTrigger value="banners">Banners</TabsTrigger>
           <TabsTrigger value="theme">Theme</TabsTrigger>
-          <TabsTrigger value="media">Media Library</TabsTrigger>
+          <TabsTrigger value="layout">Layout</TabsTrigger>
+          <TabsTrigger value="media">Media & Images</TabsTrigger>
         </TabsList>
         
         <TabsContent value="banners">
@@ -479,6 +808,10 @@ const SiteDesign = () => {
         
         <TabsContent value="theme">
           <ThemeTab />
+        </TabsContent>
+        
+        <TabsContent value="layout">
+          <LayoutDesignTab />
         </TabsContent>
         
         <TabsContent value="media">

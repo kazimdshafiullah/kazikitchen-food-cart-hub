@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -18,8 +17,10 @@ import {
   DialogHeader, 
   DialogTitle 
 } from "@/components/ui/dialog";
-import { toast } from "@/components/ui/sonner";
-import { Check, Eye, Search, Filter, FileText, Send, Clock, AlertTriangle, MessageCircle } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "@/hooks/use-toast";
+import { Check, Eye, Search, Filter, FileText, Send, Clock, AlertTriangle, MessageCircle, ChefHat, CheckCircle } from "lucide-react";
 
 // Mock data for demonstration with BDT currency and Meta integration
 const mockOrders = [
@@ -217,6 +218,98 @@ const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onC
   );
 };
 
+// Kitchen preparation items for active orders
+const getKitchenItems = () => {
+  const activeOrders = mockOrders.filter(order => 
+    order.status === "confirmed" || order.status === "processing"
+  );
+  
+  const kitchenItems = [];
+  activeOrders.forEach(order => {
+    // Mock items for each order
+    kitchenItems.push(
+      { orderId: order.id, item: "Vegetable Curry", quantity: 2, priority: order.status === "confirmed" ? "high" : "normal" },
+      { orderId: order.id, item: "Chicken Biryani", quantity: 1, priority: order.status === "confirmed" ? "high" : "normal" }
+    );
+  });
+  
+  return kitchenItems;
+};
+
+const KitchenPreparation = () => {
+  const [kitchenItems, setKitchenItems] = useState(getKitchenItems());
+  const [completedItems, setCompletedItems] = useState<string[]>([]);
+  
+  const handleMarkComplete = (orderId: string, item: string) => {
+    const itemKey = `${orderId}-${item}`;
+    setCompletedItems([...completedItems, itemKey]);
+    toast({
+      title: "Item Completed",
+      description: `${item} for order ${orderId} marked as ready`
+    });
+  };
+  
+  const isItemCompleted = (orderId: string, item: string) => {
+    return completedItems.includes(`${orderId}-${item}`);
+  };
+  
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <ChefHat className="h-5 w-5" />
+          Kitchen Preparation
+        </CardTitle>
+        <CardDescription>
+          Items that need to be prepared for active orders
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {kitchenItems.length === 0 ? (
+            <p className="text-muted-foreground text-center py-4">No items to prepare</p>
+          ) : (
+            kitchenItems.map((item, index) => (
+              <div 
+                key={`${item.orderId}-${item.item}-${index}`}
+                className={`flex items-center justify-between p-3 border rounded-lg ${
+                  isItemCompleted(item.orderId, item.item) ? 'bg-green-50 border-green-200' : 'bg-white'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Badge variant={item.priority === "high" ? "destructive" : "secondary"}>
+                    {item.priority === "high" ? "URGENT" : "NORMAL"}
+                  </Badge>
+                  <div>
+                    <p className="font-medium">{item.quantity}x {item.item}</p>
+                    <p className="text-sm text-muted-foreground">Order: {item.orderId}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {isItemCompleted(item.orderId, item.item) ? (
+                    <Badge variant="default" className="bg-green-500">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Ready
+                    </Badge>
+                  ) : (
+                    <Button 
+                      size="sm" 
+                      onClick={() => handleMarkComplete(item.orderId, item.item)}
+                    >
+                      <Check className="h-4 w-4 mr-1" />
+                      Mark Ready
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 const Orders = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -252,6 +345,8 @@ const Orders = () => {
         <h2 className="text-3xl font-bold tracking-tight">Orders</h2>
         <p className="text-muted-foreground">Manage customer orders and track delivery status</p>
       </div>
+      
+      <KitchenPreparation />
       
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
