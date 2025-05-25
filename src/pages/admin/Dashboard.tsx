@@ -43,12 +43,12 @@ const dailyOrdersData = [
 ];
 
 const monthlyRevenueData = [
-  { name: "Jan", revenue: 4200 },
-  { name: "Feb", revenue: 3800 },
-  { name: "Mar", revenue: 5100 },
-  { name: "Apr", revenue: 5400 },
-  { name: "May", revenue: 6200 },
-  { name: "Jun", revenue: 7800 },
+  { name: "Jan", revenue: 125000 },
+  { name: "Feb", revenue: 112000 },
+  { name: "Mar", revenue: 153000 },
+  { name: "Apr", revenue: 162000 },
+  { name: "May", revenue: 186000 },
+  { name: "Jun", revenue: 234000 },
 ];
 
 const categoryData = [
@@ -59,7 +59,7 @@ const categoryData = [
   { name: "Specialty Items", value: 5 },
 ];
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 const OrdersByStatusChart = () => {
   const data = [
@@ -99,15 +99,15 @@ const Dashboard = () => {
   const [timeRange, setTimeRange] = useState("week");
   
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">Overview of your store's performance</p>
+    <div className="space-y-6 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-6">
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h2 className="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h2>
+        <p className="text-gray-600 mt-2">Overview of your restaurant's performance</p>
       </div>
       
       <div className="flex justify-end">
         <Select defaultValue="week" onValueChange={setTimeRange}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px] bg-white shadow-sm">
             <SelectValue placeholder="Select time range" />
           </SelectTrigger>
           <SelectContent>
@@ -121,61 +121,61 @@ const Dashboard = () => {
       </div>
       
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="reports">Reports</TabsTrigger>
+        <TabsList className="bg-white shadow-sm">
+          <TabsTrigger value="overview" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">Overview</TabsTrigger>
+          <TabsTrigger value="analytics" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">Analytics</TabsTrigger>
+          <TabsTrigger value="reports" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">Reports</TabsTrigger>
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
+            <Card className="bg-gradient-to-r from-green-400 to-green-600 text-white shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                <DollarSign className="h-4 w-4 text-green-100" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">$12,345</div>
-                <p className="text-xs text-muted-foreground">
+                <div className="text-2xl font-bold">৳3,70,350</div>
+                <p className="text-xs text-green-100">
                   +18% from last month
                 </p>
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className="bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">New Customers</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <Users className="h-4 w-4 text-blue-100" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">+189</div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-blue-100">
                   +12% from last month
                 </p>
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className="bg-gradient-to-r from-purple-400 to-purple-600 text-white shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-                <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+                <ShoppingBag className="h-4 w-4 text-purple-100" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">423</div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-purple-100">
                   +8% from last month
                 </p>
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className="bg-gradient-to-r from-orange-400 to-orange-600 text-white shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Active Offers</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                <TrendingUp className="h-4 w-4 text-orange-100" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">5</div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-orange-100">
                   2 ending this week
                 </p>
               </CardContent>
@@ -183,9 +183,9 @@ const Dashboard = () => {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-            <Card>
+            <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle>Daily Orders</CardTitle>
+                <CardTitle className="text-gray-900">Daily Orders</CardTitle>
                 <CardDescription>Orders received per day this week</CardDescription>
               </CardHeader>
               <CardContent>
@@ -196,16 +196,16 @@ const Dashboard = () => {
                       <XAxis dataKey="name" />
                       <YAxis />
                       <Tooltip />
-                      <Bar dataKey="orders" fill="#8884d8" />
+                      <Bar dataKey="orders" fill="#3b82f6" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle>Orders by Status</CardTitle>
+                <CardTitle className="text-gray-900">Orders by Status</CardTitle>
                 <CardDescription>Distribution of orders by current status</CardDescription>
               </CardHeader>
               <CardContent>
@@ -215,53 +215,53 @@ const Dashboard = () => {
           </div>
           
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4">
+            <Card className="col-span-4 shadow-lg">
               <CardHeader>
-                <CardTitle>Recent Orders</CardTitle>
+                <CardTitle className="text-gray-900">Recent Orders</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {["5 min ago", "32 min ago", "1 hour ago", "3 hours ago"].map((time, i) => (
-                    <div key={i} className="flex items-center justify-between border-b pb-2">
+                    <div key={i} className="flex items-center justify-between border-b pb-3 hover:bg-gray-50 p-2 rounded">
                       <div className="flex items-center">
-                        <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+                        <Clock className="mr-3 h-5 w-5 text-blue-500" />
                         <div>
-                          <p className="text-sm font-medium">Order #{10245 + i}</p>
-                          <p className="text-xs text-muted-foreground">{time}</p>
+                          <p className="text-sm font-medium text-gray-900">Order #{10245 + i}</p>
+                          <p className="text-xs text-gray-500">{time}</p>
                         </div>
                       </div>
-                      <div className="text-sm font-medium">${45 + i * 12}.99</div>
+                      <div className="text-sm font-medium text-gray-900">৳{(1349 + i * 360).toFixed(2)}</div>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
             
-            <Card className="col-span-3">
+            <Card className="col-span-3 shadow-lg">
               <CardHeader>
-                <CardTitle>Alerts</CardTitle>
+                <CardTitle className="text-gray-900">Alerts</CardTitle>
                 <CardDescription>Important notifications</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-start space-x-2">
+                <div className="flex items-start space-x-3 p-3 bg-amber-50 rounded-lg">
                   <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">Low Stock Alert</p>
-                    <p className="text-xs text-muted-foreground">3 products are running low on inventory</p>
+                    <p className="text-sm font-medium text-amber-800">Low Stock Alert</p>
+                    <p className="text-xs text-amber-600">3 products are running low on inventory</p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-2">
+                <div className="flex items-start space-x-3 p-3 bg-red-50 rounded-lg">
                   <AlertCircle className="h-5 w-5 text-red-500 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">Payment Gateway Issue</p>
-                    <p className="text-xs text-muted-foreground">API connection intermittent</p>
+                    <p className="text-sm font-medium text-red-800">Payment Gateway Issue</p>
+                    <p className="text-xs text-red-600">API connection intermittent</p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-2">
+                <div className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
                   <PackageCheck className="h-5 w-5 text-blue-500 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium">New Order Notifications</p>
-                    <p className="text-xs text-muted-foreground">3 new orders need confirmation</p>
+                    <p className="text-sm font-medium text-blue-800">New Order Notifications</p>
+                    <p className="text-xs text-blue-600">3 new orders need confirmation</p>
                   </div>
                 </div>
               </CardContent>
@@ -271,9 +271,9 @@ const Dashboard = () => {
         
         <TabsContent value="analytics" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-            <Card>
+            <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle>Monthly Revenue</CardTitle>
+                <CardTitle className="text-gray-900">Monthly Revenue</CardTitle>
                 <CardDescription>Revenue trends over the past 6 months</CardDescription>
               </CardHeader>
               <CardContent>
@@ -283,18 +283,18 @@ const Dashboard = () => {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
-                      <Tooltip formatter={(value) => [`$${value}`, 'Revenue']} />
+                      <Tooltip formatter={(value) => [`৳${value}`, 'Revenue']} />
                       <Legend />
-                      <Line type="monotone" dataKey="revenue" stroke="#8884d8" activeDot={{ r: 8 }} />
+                      <Line type="monotone" dataKey="revenue" stroke="#3b82f6" activeDot={{ r: 8 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
             
-            <Card>
+            <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle>Sales by Category</CardTitle>
+                <CardTitle className="text-gray-900">Sales by Category</CardTitle>
                 <CardDescription>Product category distribution</CardDescription>
               </CardHeader>
               <CardContent>
@@ -324,9 +324,9 @@ const Dashboard = () => {
             </Card>
           </div>
           
-          <Card>
+          <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle>Customer Acquisition</CardTitle>
+              <CardTitle className="text-gray-900">Customer Acquisition</CardTitle>
               <CardDescription>New customer sign-ups over time</CardDescription>
             </CardHeader>
             <CardContent>
@@ -347,7 +347,7 @@ const Dashboard = () => {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="newCustomers" fill="#00C49F" name="New Customers" />
+                    <Bar dataKey="newCustomers" fill="#10b981" name="New Customers" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -356,9 +356,9 @@ const Dashboard = () => {
         </TabsContent>
         
         <TabsContent value="reports" className="space-y-4">
-          <Card className="p-6">
-            <h3 className="text-xl font-medium mb-4">Reports will be displayed here</h3>
-            <p className="text-muted-foreground">
+          <Card className="p-6 shadow-lg">
+            <h3 className="text-xl font-medium mb-4 text-gray-900">Reports will be displayed here</h3>
+            <p className="text-gray-600">
               This section will contain downloadable reports and data exports.
             </p>
           </Card>

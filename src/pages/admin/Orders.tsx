@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -21,6 +22,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { Check, Eye, Search, Filter, FileText, Send, Clock, AlertTriangle, MessageCircle, ChefHat, CheckCircle } from "lucide-react";
+import KitchenPreparation from "@/components/KitchenPreparation";
 
 // Mock data for demonstration with BDT currency and Meta integration
 const mockOrders = [
@@ -230,98 +232,6 @@ const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onC
   );
 };
 
-// Kitchen preparation items for active orders
-const getKitchenItems = () => {
-  const activeOrders = mockOrders.filter(order => 
-    order.status === "confirmed" || order.status === "processing"
-  );
-  
-  const kitchenItems = [];
-  activeOrders.forEach(order => {
-    // Mock items for each order
-    kitchenItems.push(
-      { orderId: order.id, item: "Vegetable Curry", quantity: 2, priority: order.status === "confirmed" ? "high" : "normal" },
-      { orderId: order.id, item: "Chicken Biryani", quantity: 1, priority: order.status === "confirmed" ? "high" : "normal" }
-    );
-  });
-  
-  return kitchenItems;
-};
-
-const KitchenPreparation = () => {
-  const [kitchenItems, setKitchenItems] = useState(getKitchenItems());
-  const [completedItems, setCompletedItems] = useState<string[]>([]);
-  
-  const handleMarkComplete = (orderId: string, item: string) => {
-    const itemKey = `${orderId}-${item}`;
-    setCompletedItems([...completedItems, itemKey]);
-    toast({
-      title: "Item Completed",
-      description: `${item} for order ${orderId} marked as ready`
-    });
-  };
-  
-  const isItemCompleted = (orderId: string, item: string) => {
-    return completedItems.includes(`${orderId}-${item}`);
-  };
-  
-  return (
-    <Card className="mb-6">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <ChefHat className="h-5 w-5" />
-          Kitchen Preparation
-        </CardTitle>
-        <CardDescription>
-          Items that need to be prepared for active orders
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {kitchenItems.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">No items to prepare</p>
-          ) : (
-            kitchenItems.map((item, index) => (
-              <div 
-                key={`${item.orderId}-${item.item}-${index}`}
-                className={`flex items-center justify-between p-3 border rounded-lg ${
-                  isItemCompleted(item.orderId, item.item) ? 'bg-green-50 border-green-200' : 'bg-white'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Badge variant={item.priority === "high" ? "destructive" : "secondary"}>
-                    {item.priority === "high" ? "URGENT" : "NORMAL"}
-                  </Badge>
-                  <div>
-                    <p className="font-medium">{item.quantity}x {item.item}</p>
-                    <p className="text-sm text-muted-foreground">Order: {item.orderId}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {isItemCompleted(item.orderId, item.item) ? (
-                    <Badge variant="default" className="bg-green-500">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Ready
-                    </Badge>
-                  ) : (
-                    <Button 
-                      size="sm" 
-                      onClick={() => handleMarkComplete(item.orderId, item.item)}
-                    >
-                      <Check className="h-4 w-4 mr-1" />
-                      Mark Ready
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
 const Orders = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -352,18 +262,18 @@ const Orders = () => {
   };
   
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Orders</h2>
-        <p className="text-muted-foreground">Manage customer orders and track delivery status</p>
+    <div className="space-y-6 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-6">
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h2 className="text-3xl font-bold tracking-tight text-gray-900">Orders Management</h2>
+        <p className="text-gray-600 mt-2">Manage customer orders and track delivery status efficiently</p>
       </div>
       
       <KitchenPreparation />
       
       <div className="flex flex-col gap-4">
-        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-4 rounded-lg shadow-sm">
           <div className="relative w-full sm:max-w-xs">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Search orders..."
               className="pl-8 w-full"
@@ -373,8 +283,8 @@ const Orders = () => {
           </div>
         </div>
         
-        <div className="flex flex-wrap gap-2 items-center">
-          <Filter className="h-4 w-4 text-muted-foreground" />
+        <div className="flex flex-wrap gap-2 items-center bg-white p-4 rounded-lg shadow-sm">
+          <Filter className="h-4 w-4 text-gray-400" />
           
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[180px]">
@@ -434,15 +344,16 @@ const Orders = () => {
       </div>
       
       {pendingOrderCount > 0 && statusFilter !== "pending" && (
-        <div className="bg-amber-50 border border-amber-200 rounded-md p-3 flex items-center justify-between">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-amber-500" />
-            <span>You have {pendingOrderCount} pending order{pendingOrderCount !== 1 ? 's' : ''} awaiting confirmation</span>
+            <span className="font-medium text-amber-800">You have {pendingOrderCount} pending order{pendingOrderCount !== 1 ? 's' : ''} awaiting confirmation</span>
           </div>
           <Button 
             variant="outline" 
             size="sm"
             onClick={() => setStatusFilter("pending")}
+            className="border-amber-300 text-amber-700 hover:bg-amber-100"
           >
             View Pending
           </Button>
@@ -450,48 +361,49 @@ const Orders = () => {
       )}
       
       {fakeOrderCount > 0 && fakeFilter !== "fake" && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-3 flex items-center justify-between">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-red-500" />
-            <span>You have {fakeOrderCount} fake order{fakeOrderCount !== 1 ? 's' : ''} detected</span>
+            <span className="font-medium text-red-800">You have {fakeOrderCount} fake order{fakeOrderCount !== 1 ? 's' : ''} detected</span>
           </div>
           <Button 
             variant="outline" 
             size="sm"
             onClick={() => setFakeFilter("fake")}
+            className="border-red-300 text-red-700 hover:bg-red-100"
           >
             View Fake Orders
           </Button>
         </div>
       )}
       
-      <div className="rounded-md border">
+      <div className="rounded-lg border bg-white shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Order ID</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Total</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Source</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+            <TableRow className="bg-gray-50">
+              <TableHead className="font-semibold">Order ID</TableHead>
+              <TableHead className="font-semibold">Customer</TableHead>
+              <TableHead className="font-semibold">Date</TableHead>
+              <TableHead className="font-semibold">Total (BDT)</TableHead>
+              <TableHead className="font-semibold">Status</TableHead>
+              <TableHead className="font-semibold">Source</TableHead>
+              <TableHead className="text-right font-semibold">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredOrders.map(order => (
-              <TableRow key={order.id} className={order.isFake ? "bg-red-50" : ""}>
+              <TableRow key={order.id} className={`hover:bg-gray-50 ${order.isFake ? "bg-red-50" : ""}`}>
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
                     {order.id}
                     {order.isFake && <AlertTriangle className="h-4 w-4 text-red-500" />}
                   </div>
                 </TableCell>
-                <TableCell>{order.customer}</TableCell>
+                <TableCell className="font-medium">{order.customer}</TableCell>
                 <TableCell>{order.date}</TableCell>
-                <TableCell>৳{order.total.toFixed(2)}</TableCell>
+                <TableCell className="font-medium">৳{order.total.toLocaleString('en-BD')}</TableCell>
                 <TableCell>
-                  <div className={`capitalize inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                  <div className={`capitalize inline-flex px-3 py-1 rounded-full text-xs font-medium ${
                     order.status === "delivered" ? "bg-green-100 text-green-800" :
                     order.status === "shipped" ? "bg-blue-100 text-blue-800" :
                     order.status === "processing" || order.status === "confirmed" ? "bg-yellow-100 text-yellow-800" :
@@ -502,7 +414,7 @@ const Orders = () => {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className={`capitalize inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                  <div className={`capitalize inline-flex px-3 py-1 rounded-full text-xs font-medium ${
                     order.source === "meta" ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"
                   }`}>
                     {order.source}
@@ -513,6 +425,7 @@ const Orders = () => {
                     variant="ghost"
                     size="icon"
                     onClick={() => handleViewOrder(order)}
+                    className="hover:bg-blue-100"
                   >
                     <Eye className="h-4 w-4" />
                     <span className="sr-only">View order</span>
