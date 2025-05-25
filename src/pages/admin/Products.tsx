@@ -21,7 +21,7 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/sonner";
-import { Edit, Trash2, Search, Box, Plus } from "lucide-react";
+import { Edit, Trash2, Search, Box, Plus, Filter } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 // Clone products for local management
@@ -30,6 +30,7 @@ const initialProducts = [...products];
 const Products = () => {
   const [productList, setProductList] = useState<Product[]>(initialProducts);
   const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -43,11 +44,16 @@ const Products = () => {
     description: "",
   });
 
-  // Filter products based on search term
-  const filteredProducts = productList.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.id.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter products based on search term and category
+  const filteredProducts = productList.filter(product => {
+    const matchesSearch = 
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.id.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = categoryFilter === "all" ? true : product.category === categoryFilter;
+    
+    return matchesSearch && matchesCategory;
+  });
 
   const handleAddProduct = () => {
     if (!newProduct.name || !newProduct.price || !newProduct.category) {
@@ -118,23 +124,42 @@ const Products = () => {
         <p className="text-muted-foreground">Manage your product catalog</p>
       </div>
       
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full sm:max-w-xs">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search products..."
-            className="pl-8 w-full"
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-          />
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search products..."
+              className="pl-8 w-full"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+          </div>
+          
+          <Button 
+            className="w-full sm:w-auto"
+            onClick={() => setIsAddDialogOpen(true)}
+          >
+            <Plus className="mr-2 h-4 w-4" /> Add Product
+          </Button>
         </div>
         
-        <Button 
-          className="w-full sm:w-auto"
-          onClick={() => setIsAddDialogOpen(true)}
-        >
-          <Plus className="mr-2 h-4 w-4" /> Add Product
-        </Button>
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filter by category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       
       {/* Products Table */}
@@ -146,7 +171,7 @@ const Products = () => {
                 <TableHead>ID</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Category</TableHead>
-                <TableHead>Price</TableHead>
+                <TableHead>Price (BDT)</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -158,7 +183,7 @@ const Products = () => {
                   <TableCell>
                     {categories.find(cat => cat.id === product.category)?.name || product.category}
                   </TableCell>
-                  <TableCell>${product.price.toFixed(2)}</TableCell>
+                  <TableCell>৳{(product.price * 25).toFixed(2)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end space-x-1">
                       <Button
@@ -233,7 +258,7 @@ const Products = () => {
             </div>
             
             <div>
-              <label className="text-sm font-medium">Price ($)</label>
+              <label className="text-sm font-medium">Price (BDT)</label>
               <Input 
                 type="number"
                 min="0"
@@ -335,13 +360,13 @@ const Products = () => {
               </div>
               
               <div>
-                <label className="text-sm font-medium">Price ($)</label>
+                <label className="text-sm font-medium">Price (BDT)</label>
                 <Input 
                   type="number"
                   min="0"
                   step="0.01"
-                  value={selectedProduct.price.toString()}
-                  onChange={(e) => setSelectedProduct({...selectedProduct, price: parseFloat(e.target.value) || selectedProduct.price})}
+                  value={(selectedProduct.price * 25).toString()}
+                  onChange={(e) => setSelectedProduct({...selectedProduct, price: (parseFloat(e.target.value) || selectedProduct.price * 25) / 25})}
                 />
               </div>
               
@@ -397,7 +422,6 @@ const Products = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Delete Product Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>

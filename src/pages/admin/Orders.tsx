@@ -19,21 +19,20 @@ import {
   DialogTitle 
 } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/sonner";
-import { Check, Eye, Search, Filter, FileText, Send, Clock } from "lucide-react";
+import { Check, Eye, Search, Filter, FileText, Send, Clock, AlertTriangle, MessageCircle } from "lucide-react";
 
-// Mock data for demonstration
+// Mock data for demonstration with BDT currency and Meta integration
 const mockOrders = [
-  { id: "ORD-1001", customer: "John Doe", date: "2025-05-20", total: 45.99, status: "delivered" },
-  { id: "ORD-1002", customer: "Sarah Lee", date: "2025-05-20", total: 78.50, status: "processing" },
-  { id: "ORD-1003", customer: "Mike Chen", date: "2025-05-19", total: 23.75, status: "delivered" },
-  { id: "ORD-1004", customer: "Emily Wong", date: "2025-05-19", total: 124.00, status: "shipped" },
-  { id: "ORD-1005", customer: "Alex Johnson", date: "2025-05-18", total: 67.25, status: "processing" },
-  { id: "ORD-1006", customer: "Lisa Garcia", date: "2025-05-18", total: 98.50, status: "cancelled" },
-  { id: "ORD-1007", customer: "David Kim", date: "2025-05-17", total: 34.99, status: "delivered" },
-  { id: "ORD-1008", customer: "Rachel Green", date: "2025-05-16", total: 55.25, status: "shipped" },
-  // Adding new pending orders
-  { id: "ORD-1009", customer: "Taylor Swift", date: "2025-05-21", total: 42.75, status: "pending" },
-  { id: "ORD-1010", customer: "James Wilson", date: "2025-05-21", total: 67.80, status: "pending" },
+  { id: "ORD-1001", customer: "John Doe", date: "2025-05-20", total: 1150.75, status: "delivered", source: "website", isFake: false },
+  { id: "ORD-1002", customer: "Sarah Lee", date: "2025-05-20", total: 1962.50, status: "processing", source: "website", isFake: false },
+  { id: "ORD-1003", customer: "Mike Chen", date: "2025-05-19", total: 593.75, status: "delivered", source: "meta", isFake: false },
+  { id: "ORD-1004", customer: "Emily Wong", date: "2025-05-19", total: 3100.00, status: "shipped", source: "website", isFake: false },
+  { id: "ORD-1005", customer: "Alex Johnson", date: "2025-05-18", total: 1681.25, status: "processing", source: "meta", isFake: false },
+  { id: "ORD-1006", customer: "Lisa Garcia", date: "2025-05-18", total: 2462.50, status: "cancelled", source: "website", isFake: true },
+  { id: "ORD-1007", customer: "David Kim", date: "2025-05-17", total: 874.75, status: "delivered", source: "website", isFake: false },
+  { id: "ORD-1008", customer: "Rachel Green", date: "2025-05-16", total: 1381.25, status: "shipped", source: "meta", isFake: false },
+  { id: "ORD-1009", customer: "Taylor Swift", date: "2025-05-21", total: 1068.75, status: "pending", source: "website", isFake: false },
+  { id: "ORD-1010", customer: "James Wilson", date: "2025-05-21", total: 1695.00, status: "pending", source: "meta", isFake: true },
 ];
 
 // Order details dialog component
@@ -43,12 +42,11 @@ const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onC
   const handleStatusChange = (newStatus: string) => {
     order.status = newStatus;
     
-    // In a real app, you would update the database and then show a notification
     const notificationMessages = {
       pending: "Order is pending confirmation. No notification sent.",
-      processing: "Order status updated to 'Processing'. No notification sent.",
+      processing: "Order status updated to 'Processing'. Customer notification sent.",
       confirmed: "Order confirmed! Customer notification sent.",
-      shipped: "Order status updated to 'Shipped'. No notification sent.",
+      shipped: "Order status updated to 'Shipped'. Customer notification sent.",
       delivered: "Order marked as delivered! Customer notification sent.",
       cancelled: "Order cancelled. Customer notification sent."
     };
@@ -62,6 +60,11 @@ const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onC
     toast.success(`Order ${order.id} confirmed! Customer has been notified.`);
   };
   
+  const handleMarkAsFake = () => {
+    order.isFake = true;
+    toast.success(`Order ${order.id} marked as fake and moved to fake orders list.`);
+  };
+  
   const handleSendNotification = () => {
     toast.success(`Notification sent to customer: ${order.customer}`);
   };
@@ -70,7 +73,19 @@ const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onC
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Order {order.id}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            Order {order.id}
+            {order.source === "meta" && (
+              <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                Meta
+              </span>
+            )}
+            {order.isFake && (
+              <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                Fake
+              </span>
+            )}
+          </DialogTitle>
           <DialogDescription>Order details and management</DialogDescription>
         </DialogHeader>
         
@@ -86,7 +101,7 @@ const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onC
             </div>
             <div>
               <p className="text-sm font-medium">Total</p>
-              <p className="text-sm text-muted-foreground">${order.total.toFixed(2)}</p>
+              <p className="text-sm text-muted-foreground">৳{order.total.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-sm font-medium">Status</p>
@@ -107,19 +122,19 @@ const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onC
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Vegetable Curry x 2</span>
-                <span>$24.00</span>
+                <span>৳600.00</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Chicken Biryani x 1</span>
-                <span>$12.99</span>
+                <span>৳324.75</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Delivery Fee</span>
-                <span>$5.00</span>
+                <span>৳125.00</span>
               </div>
               <div className="border-t pt-2 font-medium flex justify-between">
                 <span>Total</span>
-                <span>${order.total.toFixed(2)}</span>
+                <span>৳{order.total.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -127,14 +142,24 @@ const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onC
           {order.status === "pending" ? (
             <div className="flex flex-col gap-4">
               <p className="text-sm font-medium">This order is awaiting confirmation</p>
-              <Button 
-                variant="default" 
-                onClick={handleConfirmOrder}
-                className="w-full"
-              >
-                <Check className="mr-2 h-4 w-4" />
-                Confirm Order
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="default" 
+                  onClick={handleConfirmOrder}
+                  className="flex-1"
+                >
+                  <Check className="mr-2 h-4 w-4" />
+                  Confirm Order
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={handleMarkAsFake}
+                  className="flex-1"
+                >
+                  <AlertTriangle className="mr-2 h-4 w-4" />
+                  Mark as Fake
+                </Button>
+              </div>
             </div>
           ) : (
             <div>
@@ -195,6 +220,8 @@ const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onC
 const Orders = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [sourceFilter, setSourceFilter] = useState<string>("all");
+  const [fakeFilter, setFakeFilter] = useState<string>("all");
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
   
@@ -204,12 +231,15 @@ const Orders = () => {
       order.customer.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === "all" ? true : order.status === statusFilter;
+    const matchesSource = sourceFilter === "all" ? true : order.source === sourceFilter;
+    const matchesFake = fakeFilter === "all" ? true : 
+      fakeFilter === "fake" ? order.isFake : !order.isFake;
     
-    return matchesSearch && matchesStatus;
+    return matchesSearch && matchesStatus && matchesSource && matchesFake;
   });
   
-  // Count pending orders for notification badge
   const pendingOrderCount = mockOrders.filter(order => order.status === "pending").length;
+  const fakeOrderCount = mockOrders.filter(order => order.isFake).length;
   
   const handleViewOrder = (order: any) => {
     setSelectedOrder(order);
@@ -223,19 +253,22 @@ const Orders = () => {
         <p className="text-muted-foreground">Manage customer orders and track delivery status</p>
       </div>
       
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full sm:max-w-xs">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search orders..."
-            className="pl-8 w-full"
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-          />
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search orders..."
+              className="pl-8 w-full"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
         
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-wrap gap-2 items-center">
           <Filter className="h-4 w-4 text-muted-foreground" />
+          
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by status" />
@@ -259,6 +292,37 @@ const Orders = () => {
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
+          
+          <Select value={sourceFilter} onValueChange={setSourceFilter}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Source" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Sources</SelectItem>
+              <SelectItem value="website">Website</SelectItem>
+              <SelectItem value="meta">Meta</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Select value={fakeFilter} onValueChange={setFakeFilter}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Order Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Orders</SelectItem>
+              <SelectItem value="real">Real Orders</SelectItem>
+              <SelectItem value="fake">
+                <div className="flex items-center">
+                  <span>Fake Orders</span>
+                  {fakeOrderCount > 0 && (
+                    <span className="ml-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {fakeOrderCount}
+                    </span>
+                  )}
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
       
@@ -278,6 +342,22 @@ const Orders = () => {
         </div>
       )}
       
+      {fakeOrderCount > 0 && fakeFilter !== "fake" && (
+        <div className="bg-red-50 border border-red-200 rounded-md p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-red-500" />
+            <span>You have {fakeOrderCount} fake order{fakeOrderCount !== 1 ? 's' : ''} detected</span>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setFakeFilter("fake")}
+          >
+            View Fake Orders
+          </Button>
+        </div>
+      )}
+      
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -287,16 +367,22 @@ const Orders = () => {
               <TableHead>Date</TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Source</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredOrders.map(order => (
-              <TableRow key={order.id}>
-                <TableCell className="font-medium">{order.id}</TableCell>
+              <TableRow key={order.id} className={order.isFake ? "bg-red-50" : ""}>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2">
+                    {order.id}
+                    {order.isFake && <AlertTriangle className="h-4 w-4 text-red-500" />}
+                  </div>
+                </TableCell>
                 <TableCell>{order.customer}</TableCell>
                 <TableCell>{order.date}</TableCell>
-                <TableCell>${order.total.toFixed(2)}</TableCell>
+                <TableCell>৳{order.total.toFixed(2)}</TableCell>
                 <TableCell>
                   <div className={`capitalize inline-flex px-2 py-1 rounded-full text-xs font-medium ${
                     order.status === "delivered" ? "bg-green-100 text-green-800" :
@@ -306,6 +392,13 @@ const Orders = () => {
                     "bg-red-100 text-red-800"
                   }`}>
                     {order.status}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className={`capitalize inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                    order.source === "meta" ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"
+                  }`}>
+                    {order.source}
                   </div>
                 </TableCell>
                 <TableCell className="text-right">

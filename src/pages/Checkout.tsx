@@ -12,7 +12,10 @@ import { ChevronLeft } from "lucide-react";
 const Checkout = () => {
   const navigate = useNavigate();
   const { cart, subtotal, clearCart } = useCart();
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "online">("cash");
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "bkash" | "ssl">("cash");
+  
+  // Convert USD to BDT (approximate rate: 1 USD = 110 BDT)
+  const bdtSubtotal = subtotal * 110;
   
   if (cart.length === 0) {
     return (
@@ -94,11 +97,11 @@ const Checkout = () => {
                     <Input id="city" required />
                   </div>
                   <div>
-                    <Label htmlFor="state">State/Province</Label>
+                    <Label htmlFor="state">State/Division</Label>
                     <Input id="state" required />
                   </div>
                   <div>
-                    <Label htmlFor="zipCode">Zip/Postal Code</Label>
+                    <Label htmlFor="zipCode">Postal Code</Label>
                     <Input id="zipCode" required />
                   </div>
                 </div>
@@ -111,22 +114,40 @@ const Checkout = () => {
               
               <RadioGroup
                 value={paymentMethod}
-                onValueChange={(value) => setPaymentMethod(value as "cash" | "online")}
+                onValueChange={(value) => setPaymentMethod(value as "cash" | "bkash" | "ssl")}
               >
                 <div className="flex items-center space-x-2 mb-2">
                   <RadioGroupItem value="cash" id="cash" />
                   <Label htmlFor="cash" className="cursor-pointer">Cash on Delivery</Label>
                 </div>
+                <div className="flex items-center space-x-2 mb-2">
+                  <RadioGroupItem value="bkash" id="bkash" />
+                  <Label htmlFor="bkash" className="cursor-pointer">bKash (Mobile Banking)</Label>
+                </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="online" id="online" />
-                  <Label htmlFor="online" className="cursor-pointer">Online Payment (Credit/Debit Card)</Label>
+                  <RadioGroupItem value="ssl" id="ssl" />
+                  <Label htmlFor="ssl" className="cursor-pointer">SSL Commerz (Credit/Debit Card)</Label>
                 </div>
               </RadioGroup>
               
-              {paymentMethod === "online" && (
-                <div className="mt-4 p-4 bg-gray-50 rounded-md">
+              {paymentMethod === "bkash" && (
+                <div className="mt-4 p-4 bg-pink-50 rounded-md">
                   <p className="text-sm text-gray-500 mb-2">
-                    This is a demo site. No actual payment will be processed.
+                    You will be redirected to bKash to complete the payment.
+                  </p>
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <Label htmlFor="bkashNumber">bKash Account Number</Label>
+                      <Input id="bkashNumber" placeholder="01XXXXXXXXX" />
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {paymentMethod === "ssl" && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-md">
+                  <p className="text-sm text-gray-500 mb-2">
+                    You will be redirected to SSL Commerz to complete the payment.
                   </p>
                   <div className="grid grid-cols-1 gap-4">
                     <div>
@@ -178,7 +199,7 @@ const Checkout = () => {
                         {item.product.name} <span className="text-gray-500">x{item.quantity}</span>
                       </h3>
                       <span className="text-sm font-medium">
-                        ${(item.product.price * item.quantity).toFixed(2)}
+                        ৳{(item.product.price * item.quantity * 110).toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -189,15 +210,15 @@ const Checkout = () => {
             <div className="space-y-3 mb-4">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal</span>
-                <span className="font-medium">${subtotal.toFixed(2)}</span>
+                <span className="font-medium">৳{bdtSubtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Shipping</span>
-                <span className="font-medium">Free</span>
+                <span className="text-gray-600">Delivery</span>
+                <span className="font-medium">৳120.00</span>
               </div>
               <div className="pt-3 border-t border-gray-200 flex justify-between">
                 <span className="font-semibold">Total</span>
-                <span className="font-bold text-kazi-red">${subtotal.toFixed(2)}</span>
+                <span className="font-bold text-kazi-red">৳{(bdtSubtotal + 120).toFixed(2)}</span>
               </div>
             </div>
             

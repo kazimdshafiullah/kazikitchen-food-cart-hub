@@ -7,42 +7,43 @@ import { Printer, Download } from "lucide-react";
 
 // Mock order for demonstration - in a real app, fetch from your database
 const getOrderDetails = (orderId: string) => {
-  // Find the order in the mockOrders array by ID
   const mockOrders = [
     { 
       id: "ORD-1001", 
       customer: "John Doe", 
       email: "john@example.com",
-      phone: "+1234567890",
-      address: "123 Main St, Anytown, CA 94000",
+      phone: "+8801234567890",
+      address: "123 Dhanmondi, Dhaka, Bangladesh",
       date: "2025-05-20", 
       items: [
-        { name: "Vegetable Curry", quantity: 2, price: 12.00 },
-        { name: "Chicken Biryani", quantity: 1, price: 12.99 }
+        { name: "Vegetable Curry", quantity: 2, price: 300.00 },
+        { name: "Chicken Biryani", quantity: 1, price: 324.75 }
       ],
-      shipping: 5.00,
+      shipping: 125.00,
       discount: 0,
-      total: 45.99, 
+      total: 1149.75, 
       status: "delivered",
-      paymentMethod: "Cash on Delivery" 
+      paymentMethod: "Cash on Delivery",
+      source: "website"
     },
     { 
       id: "ORD-1002", 
       customer: "Sarah Lee", 
       email: "sarah@example.com",
-      phone: "+0987654321",
-      address: "456 Oak Ave, Another City, NY 10001",
+      phone: "+8800987654321",
+      address: "456 Gulshan, Dhaka, Bangladesh",
       date: "2025-05-20", 
       items: [
-        { name: "Paneer Tikka", quantity: 1, price: 14.50 },
-        { name: "Garlic Naan", quantity: 2, price: 4.00 },
-        { name: "Mango Lassi", quantity: 2, price: 6.00 }
+        { name: "Paneer Tikka", quantity: 1, price: 362.50 },
+        { name: "Garlic Naan", quantity: 2, price: 100.00 },
+        { name: "Mango Lassi", quantity: 2, price: 150.00 }
       ],
-      shipping: 5.00,
+      shipping: 125.00,
       discount: 0,
-      total: 78.50, 
+      total: 1962.50, 
       status: "processing",
-      paymentMethod: "Credit Card" 
+      paymentMethod: "bKash",
+      source: "meta"
     },
   ];
   
@@ -70,9 +71,7 @@ const Invoice = () => {
   };
 
   const handleDownload = () => {
-    // In a real app, generate a PDF here
-    alert("PDF download functionality would go here");
-    // You could use libraries like jspdf, html2canvas, or react-pdf
+    toast.success("PDF download functionality would be implemented here");
   };
 
   const calculateSubtotal = () => {
@@ -101,8 +100,8 @@ const Invoice = () => {
           <div>
             <h1 className="text-2xl font-bold text-kazi-red">KAZI KITCHEN</h1>
             <p className="text-gray-500">123 Culinary Lane</p>
-            <p className="text-gray-500">Foodville, FK 12345</p>
-            <p className="text-gray-500">Phone: (123) 456-7890</p>
+            <p className="text-gray-500">Dhaka, Bangladesh</p>
+            <p className="text-gray-500">Phone: +880 1234-567890</p>
             <p className="text-gray-500">Email: info@kazikitchen.com</p>
           </div>
           <div className="text-right">
@@ -110,6 +109,9 @@ const Invoice = () => {
             <p className="text-gray-500">#{order.id}</p>
             <p className="text-gray-500"><strong>Date:</strong> {order.date}</p>
             <p className="text-gray-500"><strong>Status:</strong> {order.status}</p>
+            {order.source && (
+              <p className="text-gray-500"><strong>Source:</strong> {order.source}</p>
+            )}
           </div>
         </div>
 
@@ -123,7 +125,7 @@ const Invoice = () => {
               <p><strong>Phone:</strong> {order.phone}</p>
             </div>
             <div>
-              <p><strong>Shipping Address:</strong></p>
+              <p><strong>Delivery Address:</strong></p>
               <p>{order.address}</p>
               <p><strong>Payment Method:</strong> {order.paymentMethod}</p>
             </div>
@@ -138,8 +140,8 @@ const Invoice = () => {
               <tr className="text-left border-b">
                 <th className="py-2">Item</th>
                 <th className="py-2 text-center">Quantity</th>
-                <th className="py-2 text-right">Unit Price</th>
-                <th className="py-2 text-right">Amount</th>
+                <th className="py-2 text-right">Unit Price (BDT)</th>
+                <th className="py-2 text-right">Amount (BDT)</th>
               </tr>
             </thead>
             <tbody>
@@ -147,8 +149,8 @@ const Invoice = () => {
                 <tr key={index} className="border-b">
                   <td className="py-2">{item.name}</td>
                   <td className="py-2 text-center">{item.quantity}</td>
-                  <td className="py-2 text-right">${item.price.toFixed(2)}</td>
-                  <td className="py-2 text-right">${(item.price * item.quantity).toFixed(2)}</td>
+                  <td className="py-2 text-right">৳{item.price.toFixed(2)}</td>
+                  <td className="py-2 text-right">৳{(item.price * item.quantity).toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
@@ -161,21 +163,21 @@ const Invoice = () => {
             <div className="w-1/2">
               <div className="flex justify-between py-2">
                 <span>Subtotal:</span>
-                <span>${calculateSubtotal().toFixed(2)}</span>
+                <span>৳{calculateSubtotal().toFixed(2)}</span>
               </div>
               <div className="flex justify-between py-2">
-                <span>Shipping:</span>
-                <span>${order.shipping.toFixed(2)}</span>
+                <span>Delivery:</span>
+                <span>৳{order.shipping.toFixed(2)}</span>
               </div>
               {order.discount > 0 && (
                 <div className="flex justify-between py-2">
                   <span>Discount:</span>
-                  <span>-${order.discount.toFixed(2)}</span>
+                  <span>-৳{order.discount.toFixed(2)}</span>
                 </div>
               )}
               <div className="flex justify-between py-2 font-bold border-t border-gray-300 mt-2">
                 <span>Total:</span>
-                <span>${order.total.toFixed(2)}</span>
+                <span>৳{order.total.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -186,7 +188,7 @@ const Invoice = () => {
           <p className="text-gray-600">Thank you for your order!</p>
           <p className="text-sm text-gray-500 mt-2">
             If you have any questions about this invoice, please contact us at
-            support@kazikitchen.com or call (123) 456-7890
+            support@kazikitchen.com or call +880 1234-567890
           </p>
         </div>
       </Card>

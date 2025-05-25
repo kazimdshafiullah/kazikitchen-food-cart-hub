@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CreditCard, DollarSign, ChevronsUpDown, ShieldAlert } from "lucide-react";
+import { CreditCard, DollarSign, ChevronsUpDown, ShieldAlert, Smartphone } from "lucide-react";
 
 const PaymentMethodTab = () => {
   return (
@@ -14,34 +14,78 @@ const PaymentMethodTab = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <CreditCard className="mr-2 h-5 w-5" />
-            Stripe Integration
+            <Smartphone className="mr-2 h-5 w-5" />
+            bKash Integration
           </CardTitle>
           <CardDescription>
-            Configure your Stripe payment gateway settings
+            Configure your bKash payment gateway for Bangladesh
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">API Key</label>
-            <Input type="password" value="pk_test_••••••••••••••••••••••••••" readOnly />
+            <label className="text-sm font-medium">App Key</label>
+            <Input type="password" value="••••••••••••••••••••••••••" readOnly />
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm font-medium">Secret Key</label>
-            <Input type="password" value="sk_test_••••••••••••••••••••••••••" readOnly />
+            <label className="text-sm font-medium">App Secret</label>
+            <Input type="password" value="••••••••••••••••••••••••••" readOnly />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Username</label>
+            <Input type="password" value="••••••••••••••••••••••••••" readOnly />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Password</label>
+            <Input type="password" value="••••••••••••••••••••••••••" readOnly />
           </div>
           
           <div className="flex items-center space-x-2 pt-2">
-            <Switch id="stripe-live" />
-            <label htmlFor="stripe-live" className="text-sm font-medium cursor-pointer">
+            <Switch id="bkash-live" />
+            <label htmlFor="bkash-live" className="text-sm font-medium cursor-pointer">
               Enable Live Mode
             </label>
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button variant="outline">Reset Keys</Button>
-          <Button onClick={() => toast.success("Settings saved!")}>Save Settings</Button>
+          <Button onClick={() => toast.success("bKash settings saved!")}>Save Settings</Button>
+        </CardFooter>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <CreditCard className="mr-2 h-5 w-5" />
+            SSL Commerz Integration
+          </CardTitle>
+          <CardDescription>
+            Configure your SSL Commerz payment gateway for Bangladesh
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Store ID</label>
+            <Input type="password" value="••••••••••••••••••••••••••" readOnly />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Store Password</label>
+            <Input type="password" value="••••••••••••••••••••••••••" readOnly />
+          </div>
+          
+          <div className="flex items-center space-x-2 pt-2">
+            <Switch id="ssl-live" />
+            <label htmlFor="ssl-live" className="text-sm font-medium cursor-pointer">
+              Enable Live Mode
+            </label>
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button variant="outline">Reset Keys</Button>
+          <Button onClick={() => toast.success("SSL Commerz settings saved!")}>Save Settings</Button>
         </CardFooter>
       </Card>
       
@@ -64,16 +108,16 @@ const PaymentMethodTab = () => {
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm font-medium">Minimum Order Value</label>
-            <Input type="number" placeholder="0.00" defaultValue="10.00" />
+            <label className="text-sm font-medium">Minimum Order Value (BDT)</label>
+            <Input type="number" placeholder="0.00" defaultValue="250.00" />
             <p className="text-xs text-muted-foreground">
               Set to 0 for no minimum order requirement
             </p>
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm font-medium">Maximum Order Value</label>
-            <Input type="number" placeholder="100.00" defaultValue="200.00" />
+            <label className="text-sm font-medium">Maximum Order Value (BDT)</label>
+            <Input type="number" placeholder="5000.00" defaultValue="5000.00" />
             <p className="text-xs text-muted-foreground">
               Set to 0 for no maximum order limit
             </p>
@@ -91,12 +135,12 @@ const PaymentMethodTab = () => {
 
 const TransactionHistoryTab = () => {
   const transactions = [
-    { id: "TXN-1001", date: "2025-05-22", customer: "John Doe", amount: 45.99, method: "Stripe", status: "completed" },
-    { id: "TXN-1002", date: "2025-05-21", customer: "Sarah Lee", amount: 78.50, method: "Stripe", status: "completed" },
-    { id: "TXN-1003", date: "2025-05-21", customer: "Mike Chen", amount: 23.75, method: "COD", status: "pending" },
-    { id: "TXN-1004", date: "2025-05-20", customer: "Emily Wong", amount: 124.00, method: "Stripe", status: "completed" },
-    { id: "TXN-1005", date: "2025-05-19", customer: "Alex Johnson", amount: 67.25, method: "COD", status: "completed" },
-    { id: "TXN-1006", date: "2025-05-18", customer: "Lisa Garcia", amount: 98.50, method: "Stripe", status: "failed" },
+    { id: "TXN-1001", date: "2025-05-22", customer: "John Doe", amount: 1149.75, method: "bKash", status: "completed" },
+    { id: "TXN-1002", date: "2025-05-21", customer: "Sarah Lee", amount: 1962.50, method: "SSL Commerz", status: "completed" },
+    { id: "TXN-1003", date: "2025-05-21", customer: "Mike Chen", amount: 593.75, method: "COD", status: "pending" },
+    { id: "TXN-1004", date: "2025-05-20", customer: "Emily Wong", amount: 3100.00, method: "bKash", status: "completed" },
+    { id: "TXN-1005", date: "2025-05-19", customer: "Alex Johnson", amount: 1681.25, method: "COD", status: "completed" },
+    { id: "TXN-1006", date: "2025-05-18", customer: "Lisa Garcia", amount: 2462.50, method: "SSL Commerz", status: "failed" },
   ];
   
   return (
@@ -112,7 +156,7 @@ const TransactionHistoryTab = () => {
               <TableHead>Transaction ID</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Customer</TableHead>
-              <TableHead>Amount</TableHead>
+              <TableHead>Amount (BDT)</TableHead>
               <TableHead>Method</TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
@@ -123,7 +167,7 @@ const TransactionHistoryTab = () => {
                 <TableCell className="font-medium">{transaction.id}</TableCell>
                 <TableCell>{transaction.date}</TableCell>
                 <TableCell>{transaction.customer}</TableCell>
-                <TableCell>${transaction.amount.toFixed(2)}</TableCell>
+                <TableCell>৳{transaction.amount.toFixed(2)}</TableCell>
                 <TableCell>{transaction.method}</TableCell>
                 <TableCell>
                   <div className={`capitalize inline-flex px-2 py-1 rounded-full text-xs font-medium ${
@@ -221,9 +265,9 @@ const PaymentSecurityTab = () => {
       
       <Card>
         <CardHeader>
-          <CardTitle>PCI Compliance</CardTitle>
+          <CardTitle>Bangladesh Payment Compliance</CardTitle>
           <CardDescription>
-            Payment Card Industry Data Security Standard compliance status
+            Payment gateway compliance status for Bangladesh
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -237,21 +281,21 @@ const PaymentSecurityTab = () => {
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-green-800">Compliance Status: Compliant</h3>
                 <div className="mt-2 text-sm text-green-700">
-                  <p>Your payment processing methods meet all PCI DSS requirements.</p>
+                  <p>Your payment processing methods meet all Bangladesh Bank requirements.</p>
                 </div>
               </div>
             </div>
           </div>
           
           <div className="mt-6">
-            <h4 className="text-sm font-medium mb-2">Last Compliance Scan</h4>
+            <h4 className="text-sm font-medium mb-2">Last Compliance Check</h4>
             <p className="text-sm">May 15, 2025 - No issues detected</p>
             
-            <h4 className="text-sm font-medium mt-4 mb-2">Next Scheduled Scan</h4>
+            <h4 className="text-sm font-medium mt-4 mb-2">Next Scheduled Check</h4>
             <p className="text-sm">June 15, 2025</p>
             
             <Button variant="outline" className="mt-4">
-              Run Manual Scan
+              Run Manual Check
             </Button>
           </div>
         </CardContent>
