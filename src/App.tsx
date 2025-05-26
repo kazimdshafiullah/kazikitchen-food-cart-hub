@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Layout from "./components/Layout";
@@ -26,6 +25,7 @@ import Customers from "./pages/admin/Customers";
 import UserManagement from "./pages/admin/UserManagement";
 import Settings from "./pages/admin/Settings";
 import Invoice from "./pages/admin/Invoice";
+import ServerAnalytics from "./pages/admin/ServerAnalytics";
 import { Toaster } from "@/components/ui/toaster";
 
 const queryClient = new QueryClient();
@@ -60,6 +60,7 @@ function App() {
             <Route path="customers" element={<Customers />} />
             <Route path="users" element={<UserManagement />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="server-analytics" element={<ServerAnalytics />} />
           </Route>
           
           <Route path="/admin/invoice/:orderId" element={<Invoice />} />

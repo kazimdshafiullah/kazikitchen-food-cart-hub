@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,7 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/sonner";
-import { Search, Edit, Trash2, Plus, Package } from "lucide-react";
+import { Search, Edit, Trash2, Plus, Package, Minus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 // Mock inventory data
@@ -85,6 +84,8 @@ const Inventory = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
+  const [removeQuantity, setRemoveQuantity] = useState(0);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [newItem, setNewItem] = useState<Partial<InventoryItem>>({
     id: "",
@@ -156,6 +157,30 @@ const Inventory = () => {
     setSelectedItem(null);
   };
 
+  const handleRemoveQuantity = () => {
+    if (!selectedItem || removeQuantity <= 0) {
+      toast.error("Please enter a valid quantity to remove");
+      return;
+    }
+    
+    if (removeQuantity > selectedItem.quantity) {
+      toast.error("Cannot remove more than available quantity");
+      return;
+    }
+    
+    const updatedInventory = inventory.map(item => 
+      item.id === selectedItem.id 
+        ? { ...item, quantity: item.quantity - removeQuantity }
+        : item
+    );
+    
+    setInventory(updatedInventory);
+    toast.success(`Removed ${removeQuantity} ${selectedItem.unit} of ${selectedItem.name}`);
+    setIsRemoveDialogOpen(false);
+    setSelectedItem(null);
+    setRemoveQuantity(0);
+  };
+
   const openEditDialog = (item: InventoryItem) => {
     setSelectedItem({...item});
     setIsEditDialogOpen(true);
@@ -164,6 +189,11 @@ const Inventory = () => {
   const openDeleteDialog = (item: InventoryItem) => {
     setSelectedItem(item);
     setIsDeleteDialogOpen(true);
+  };
+
+  const openRemoveDialog = (item: InventoryItem) => {
+    setSelectedItem(item);
+    setIsRemoveDialogOpen(true);
   };
 
   return (
@@ -273,6 +303,16 @@ const Inventory = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openRemoveDialog(item)}
+                        className="text-orange-500 hover:text-orange-600"
+                        title="Remove quantity"
+                      >
+                        <Minus className="h-4 w-4" />
+                        <span className="sr-only">Remove quantity</span>
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -487,6 +527,52 @@ const Inventory = () => {
             </Button>
             <Button onClick={handleEditItem}>
               Update Item
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Remove Quantity Dialog */}
+      <Dialog open={isRemoveDialogOpen} onOpenChange={setIsRemoveDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Remove Inventory Quantity</DialogTitle>
+            <DialogDescription>
+              Remove quantity from inventory (e.g., items used, damaged, or expired)
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedItem && (
+            <div className="space-y-4 py-4">
+              <div>
+                <p className="font-medium">{selectedItem.name}</p>
+                <p className="text-sm text-muted-foreground">Current quantity: {selectedItem.quantity} {selectedItem.unit}</p>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium">Quantity to Remove</label>
+                <Input 
+                  type="number"
+                  min="1"
+                  max={selectedItem.quantity}
+                  value={removeQuantity.toString()}
+                  onChange={(e) => setRemoveQuantity(parseInt(e.target.value) || 0)}
+                  placeholder="Enter quantity to remove"
+                />
+              </div>
+              
+              <div className="text-sm text-muted-foreground">
+                Remaining after removal: {selectedItem.quantity - removeQuantity} {selectedItem.unit}
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsRemoveDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleRemoveQuantity} variant="destructive">
+              Remove Quantity
             </Button>
           </DialogFooter>
         </DialogContent>

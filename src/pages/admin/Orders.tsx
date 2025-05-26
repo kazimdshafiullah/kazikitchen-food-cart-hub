@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -21,8 +20,9 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Check, Eye, Search, Filter, FileText, Send, Clock, AlertTriangle, MessageCircle, ChefHat, CheckCircle } from "lucide-react";
+import { Check, Eye, Search, Filter, FileText, Send, Clock, AlertTriangle, MessageCircle, ChefHat, CheckCircle, Plus } from "lucide-react";
 import KitchenPreparation from "@/components/KitchenPreparation";
+import ManualOrderCreation from "@/components/ManualOrderCreation";
 
 // Mock data for demonstration with BDT currency and Meta integration
 const mockOrders = [
@@ -239,6 +239,7 @@ const Orders = () => {
   const [fakeFilter, setFakeFilter] = useState<string>("all");
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
+  const [isManualOrderOpen, setIsManualOrderOpen] = useState(false);
   
   const filteredOrders = mockOrders.filter(order => {
     const matchesSearch = 
@@ -261,11 +262,28 @@ const Orders = () => {
     setOrderDetailsOpen(true);
   };
   
+  const handleCreateManualOrder = (newOrder: any) => {
+    // In a real app, this would be sent to the backend
+    console.log("New manual order created:", newOrder);
+    // You could add this to the mockOrders array for demonstration
+  };
+  
   return (
     <div className="space-y-6 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-6">
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-3xl font-bold tracking-tight text-gray-900">Orders Management</h2>
-        <p className="text-gray-600 mt-2">Manage customer orders and track delivery status efficiently</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900">Orders Management</h2>
+            <p className="text-gray-600 mt-2">Manage customer orders and track delivery status efficiently</p>
+          </div>
+          <Button 
+            onClick={() => setIsManualOrderOpen(true)}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Create Manual Order
+          </Button>
+        </div>
       </div>
       
       <KitchenPreparation />
@@ -441,6 +459,12 @@ const Orders = () => {
         order={selectedOrder}
         open={orderDetailsOpen}
         onClose={() => setOrderDetailsOpen(false)}
+      />
+      
+      <ManualOrderCreation 
+        open={isManualOrderOpen}
+        onClose={() => setIsManualOrderOpen(false)}
+        onOrderCreated={handleCreateManualOrder}
       />
     </div>
   );
