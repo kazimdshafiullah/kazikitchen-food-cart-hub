@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -36,10 +36,72 @@ const SocialMedia = () => {
     pixelId: "",
     accessToken: ""
   });
+
+  // Facebook Pixel Integration
+  useEffect(() => {
+    if (facebookSettings.enabled && facebookSettings.pixelId) {
+      // Initialize Facebook Pixel
+      const fbPixelScript = document.createElement('script');
+      fbPixelScript.innerHTML = `
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '${facebookSettings.pixelId}');
+        fbq('track', 'PageView');
+      `;
+      document.head.appendChild(fbPixelScript);
+
+      // Add noscript fallback
+      const noscript = document.createElement('noscript');
+      noscript.innerHTML = `
+        <img height="1" width="1" style="display:none" 
+             src="https://www.facebook.com/tr?id=${facebookSettings.pixelId}&ev=PageView&noscript=1"/>
+      `;
+      document.head.appendChild(noscript);
+
+      console.log('Facebook Pixel initialized with ID:', facebookSettings.pixelId);
+      
+      // Track page view
+      if (window.fbq) {
+        window.fbq('track', 'PageView');
+      }
+    }
+  }, [facebookSettings.enabled, facebookSettings.pixelId]);
   
   // Generic handler for any social media settings
   const handleSaveSettings = (platform: string) => {
-    toast.success(`${platform} settings saved successfully`);
+    // Save settings to localStorage for persistence
+    if (platform === "Facebook") {
+      localStorage.setItem('facebookSettings', JSON.stringify(facebookSettings));
+      if (facebookSettings.enabled && facebookSettings.pixelId) {
+        toast.success(`Facebook Pixel activated with ID: ${facebookSettings.pixelId}`);
+      } else {
+        toast.success('Facebook settings saved successfully');
+      }
+    } else {
+      toast.success(`${platform} settings saved successfully`);
+    }
+  };
+
+  // Load settings from localStorage on component mount
+  useEffect(() => {
+    const savedFacebookSettings = localStorage.getItem('facebookSettings');
+    if (savedFacebookSettings) {
+      setFacebookSettings(JSON.parse(savedFacebookSettings));
+    }
+  }, []);
+
+  // Helper function to track Facebook events
+  const trackFacebookEvent = (eventName: string, parameters = {}) => {
+    if (facebookSettings.enabled && window.fbq) {
+      window.fbq('track', eventName, parameters);
+      console.log(`Facebook event tracked: ${eventName}`, parameters);
+    }
   };
 
   return (
@@ -82,15 +144,15 @@ const SocialMedia = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="pixel-id">Facebook Pixel ID</Label>
+                <Label htmlFor="pixel-id">Facebook Pixel ID *</Label>
                 <Input
                   id="pixel-id"
-                  placeholder="Enter your Facebook Pixel ID"
+                  placeholder="Enter your Facebook Pixel ID (e.g., 1234567890123456)"
                   value={facebookSettings.pixelId}
                   onChange={(e) => setFacebookSettings({...facebookSettings, pixelId: e.target.value})}
                 />
                 <p className="text-sm text-muted-foreground">
-                  The Pixel ID is used for tracking conversions and retargeting ads
+                  The Pixel ID is used for tracking conversions and retargeting ads. Find it in your Facebook Ads Manager.
                 </p>
               </div>
               
@@ -143,6 +205,43 @@ const SocialMedia = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Test Facebook Pixel */}
+              <div className="pt-2 border-t">
+                <h4 className="text-sm font-medium mb-2">Test Facebook Pixel</h4>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Test your Facebook Pixel integration with sample events
+                </p>
+                
+                <div className="flex flex-wrap gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => trackFacebookEvent('ViewContent', { content_type: 'product', content_ids: ['test_product'] })}
+                    disabled={!facebookSettings.enabled || !facebookSettings.pixelId}
+                  >
+                    Test View Content
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => trackFacebookEvent('AddToCart', { content_type: 'product', content_ids: ['test_product'], value: 29.99, currency: 'BDT' })}
+                    disabled={!facebookSettings.enabled || !facebookSettings.pixelId}
+                  >
+                    Test Add to Cart
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => trackFacebookEvent('Purchase', { value: 49.99, currency: 'BDT', content_ids: ['test_product'] })}
+                    disabled={!facebookSettings.enabled || !facebookSettings.pixelId}
+                  >
+                    Test Purchase
+                  </Button>
+                </div>
+              </div>
               
               <div className="pt-2 border-t">
                 <h4 className="text-sm font-medium mb-2">Facebook Catalog Integration</h4>
@@ -191,6 +290,29 @@ const SocialMedia = () => {
 </noscript>
 <!-- End Facebook Pixel Code -->`}
               />
+            </CardContent>
+          </Card>
+
+          {/* Facebook Pixel Status */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Pixel Status</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-2">
+                <div className={`w-3 h-3 rounded-full ${facebookSettings.enabled && facebookSettings.pixelId ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                <span className="text-sm">
+                  {facebookSettings.enabled && facebookSettings.pixelId 
+                    ? `Facebook Pixel Active (ID: ${facebookSettings.pixelId})` 
+                    : 'Facebook Pixel Inactive'
+                  }
+                </span>
+              </div>
+              {facebookSettings.enabled && facebookSettings.pixelId && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Your Facebook Pixel is now tracking events on your website. Check Facebook Events Manager to view data.
+                </p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

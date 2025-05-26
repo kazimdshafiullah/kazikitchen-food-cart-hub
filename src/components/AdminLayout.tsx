@@ -1,9 +1,10 @@
+
 import { Outlet, Navigate, Link } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarProvider, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { 
   LayoutDashboard, ShoppingCart, Tag, CreditCard, BarChart3, Settings, 
   Users, LogOut, Box, Package, Palette, FileText, MessageSquare, DollarSign, 
-  ChartBar, UserPlus, Send, Bell
+  ChartBar, UserPlus, Send, Bell, TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -88,6 +89,13 @@ const AdminLayout = () => {
                 <SidebarMenuButton asChild tooltip="Social Media">
                   <Link to="/admin/social-media">
                     <Send className="mr-2" /> Social Media
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Customer Analytics">
+                  <Link to="/admin/customer-analytics">
+                    <TrendingUp className="mr-2" /> Customer Analytics
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
