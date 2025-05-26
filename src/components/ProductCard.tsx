@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { ShoppingCart } from "lucide-react";
-import { Product } from "@/data/products";
+import { Product } from "@/hooks/useProducts";
+import { toast } from "@/components/ui/sonner";
 
 interface ProductCardProps {
   product: Product;
@@ -15,14 +16,24 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product, 1);
+    // Convert the database product to cart format
+    const cartProduct = {
+      id: product.id,
+      name: product.name,
+      price: Number(product.price),
+      image: product.image_url || "/placeholder.svg",
+      category: "food", // Default category for cart
+      description: product.description || ""
+    };
+    addToCart(cartProduct, 1);
+    toast.success(`Added ${product.name} to cart`);
   };
 
   return (
-    <Link to={`/product/${product.id}`} className="product-card">
+    <Link to={`/product/${product.id}`} className="product-card bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
       <div className="aspect-square overflow-hidden">
         <img
-          src={product.image}
+          src={product.image_url || "/placeholder.svg"}
           alt={product.name}
           className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
         />
@@ -30,12 +41,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
       <div className="p-4 flex flex-col flex-1">
         <h3 className="text-lg font-semibold">{product.name}</h3>
         <p className="text-sm text-gray-500 mt-1 mb-2 flex-1">
-          {product.description.substring(0, 60)}
-          {product.description.length > 60 ? "..." : ""}
+          {product.description ? (
+            product.description.length > 60 
+              ? `${product.description.substring(0, 60)}...` 
+              : product.description
+          ) : "Delicious food item"}
         </p>
         <div className="flex items-center justify-between mt-auto">
           <span className="text-lg font-bold text-kazi-red">
-            ${product.price.toFixed(2)}
+            ৳{Number(product.price).toFixed(2)}
           </span>
           <Button 
             size="sm" 

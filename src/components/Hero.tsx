@@ -36,7 +36,7 @@ const Hero = () => {
         <div className="md:w-1/2 mt-10 md:mt-0">
           <div className="aspect-square max-w-md mx-auto md:ml-auto rounded-full overflow-hidden border-8 border-white shadow-xl">
             <img 
-              src="/placeholder.svg" 
+              src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=500" 
               alt="Delicious Food" 
               className="w-full h-full object-cover"
             />
