@@ -24,9 +24,9 @@ import { Check, Eye, Search, Filter, FileText, Send, Clock, AlertTriangle, Messa
 import KitchenPreparation from "@/components/KitchenPreparation";
 import ManualOrderCreation from "@/components/ManualOrderCreation";
 
-// Mock data for demonstration with BDT currency and Meta integration
+// Mock data for demonstration with BDT currency and Meta integration - matching Invoice.tsx
 const mockOrders = [
-  { id: "ORD-1001", customer: "John Doe", date: "2025-05-20", total: 1150.75, status: "delivered", source: "website", isFake: false },
+  { id: "ORD-1001", customer: "John Doe", date: "2025-05-20", total: 1149.75, status: "delivered", source: "website", isFake: false },
   { id: "ORD-1002", customer: "Sarah Lee", date: "2025-05-20", total: 1962.50, status: "processing", source: "website", isFake: false },
   { id: "ORD-1003", customer: "Mike Chen", date: "2025-05-19", total: 593.75, status: "delivered", source: "meta", isFake: false },
   { id: "ORD-1004", customer: "Emily Wong", date: "2025-05-19", total: 3100.00, status: "shipped", source: "website", isFake: false },
@@ -136,12 +136,12 @@ const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onC
             <p className="text-sm font-medium mb-2">Order Items</p>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Vegetable Curry x 2</span>
+                <span>Sample Item x 2</span>
                 <span>৳600.00</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Chicken Biryani x 1</span>
-                <span>৳324.75</span>
+                <span>Sample Item x 1</span>
+                <span>৳300.00</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Delivery Fee</span>

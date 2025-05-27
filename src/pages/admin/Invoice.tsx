@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Printer, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
-// Mock order for demonstration - in a real app, fetch from your database
+// Comprehensive mock orders for demonstration - matching Orders.tsx data
 const getOrderDetails = (orderId: string) => {
   console.log("Fetching order details for ID:", orderId);
   
@@ -46,9 +46,8 @@ const getOrderDetails = (orderId: string) => {
       total: 1962.50, 
       status: "processing",
       paymentMethod: "bKash",
-      source: "meta"
+      source: "website"
     },
-    // Adding more mock orders to ensure we have data for different IDs
     { 
       id: "ORD-1003", 
       customer: "Mike Chen", 
@@ -64,6 +63,139 @@ const getOrderDetails = (orderId: string) => {
       discount: 50,
       total: 593.75, 
       status: "delivered",
+      paymentMethod: "bKash",
+      source: "meta"
+    },
+    { 
+      id: "ORD-1004", 
+      customer: "Emily Wong", 
+      email: "emily@example.com",
+      phone: "+8802222222222",
+      address: "321 Banani, Dhaka, Bangladesh",
+      date: "2025-05-19", 
+      items: [
+        { name: "Beef Curry", quantity: 2, price: 550.00 },
+        { name: "Basmati Rice", quantity: 3, price: 120.00 },
+        { name: "Naan Bread", quantity: 4, price: 80.00 }
+      ],
+      shipping: 125.00,
+      discount: 0,
+      total: 3100.00, 
+      status: "shipped",
+      paymentMethod: "SSL Commerz",
+      source: "website"
+    },
+    { 
+      id: "ORD-1005", 
+      customer: "Alex Johnson", 
+      email: "alex@example.com",
+      phone: "+8803333333333",
+      address: "654 Mirpur, Dhaka, Bangladesh",
+      date: "2025-05-18", 
+      items: [
+        { name: "Chicken Tikka", quantity: 2, price: 400.00 },
+        { name: "Dal Curry", quantity: 1, price: 180.00 },
+        { name: "Roti", quantity: 6, price: 50.00 }
+      ],
+      shipping: 125.00,
+      discount: 75,
+      total: 1681.25, 
+      status: "processing",
+      paymentMethod: "bKash",
+      source: "meta"
+    },
+    { 
+      id: "ORD-1006", 
+      customer: "Lisa Garcia", 
+      email: "lisa@example.com",
+      phone: "+8804444444444",
+      address: "987 Wari, Dhaka, Bangladesh",
+      date: "2025-05-18", 
+      items: [
+        { name: "Mutton Biryani", quantity: 1, price: 650.00 },
+        { name: "Raita", quantity: 2, price: 80.00 },
+        { name: "Dessert", quantity: 1, price: 200.00 }
+      ],
+      shipping: 125.00,
+      discount: 0,
+      total: 2462.50, 
+      status: "cancelled",
+      paymentMethod: "Cash on Delivery",
+      source: "website"
+    },
+    { 
+      id: "ORD-1007", 
+      customer: "David Kim", 
+      email: "david@example.com",
+      phone: "+8805555555555",
+      address: "147 Mohammadpur, Dhaka, Bangladesh",
+      date: "2025-05-17", 
+      items: [
+        { name: "Prawn Curry", quantity: 1, price: 480.00 },
+        { name: "Fried Rice", quantity: 1, price: 250.00 },
+        { name: "Soft Drink", quantity: 2, price: 60.00 }
+      ],
+      shipping: 125.00,
+      discount: 40.25,
+      total: 874.75, 
+      status: "delivered",
+      paymentMethod: "bKash",
+      source: "website"
+    },
+    { 
+      id: "ORD-1008", 
+      customer: "Rachel Green", 
+      email: "rachel@example.com",
+      phone: "+8806666666666",
+      address: "852 Tejgaon, Dhaka, Bangladesh",
+      date: "2025-05-16", 
+      items: [
+        { name: "Vegetable Biryani", quantity: 2, price: 320.00 },
+        { name: "Chicken Soup", quantity: 1, price: 150.00 },
+        { name: "Salad", quantity: 1, price: 120.00 }
+      ],
+      shipping: 125.00,
+      discount: 0,
+      total: 1381.25, 
+      status: "shipped",
+      paymentMethod: "SSL Commerz",
+      source: "meta"
+    },
+    { 
+      id: "ORD-1009", 
+      customer: "Taylor Swift", 
+      email: "taylor@example.com",
+      phone: "+8807777777777",
+      address: "963 Ramna, Dhaka, Bangladesh",
+      date: "2025-05-21", 
+      items: [
+        { name: "Fish Biryani", quantity: 1, price: 380.00 },
+        { name: "Mixed Vegetables", quantity: 2, price: 140.00 },
+        { name: "Lassi", quantity: 2, price: 100.00 }
+      ],
+      shipping: 125.00,
+      discount: 0,
+      total: 1068.75, 
+      status: "pending",
+      paymentMethod: "Cash on Delivery",
+      source: "website"
+    },
+    { 
+      id: "ORD-1010", 
+      customer: "James Wilson", 
+      email: "james@example.com",
+      phone: "+8808888888888",
+      address: "741 Kalabagan, Dhaka, Bangladesh",
+      date: "2025-05-21", 
+      items: [
+        { name: "Lamb Curry", quantity: 1, price: 750.00 },
+        { name: "Pilaf Rice", quantity: 2, price: 180.00 },
+        { name: "Yogurt", quantity: 1, price: 80.00 }
+      ],
+      shipping: 125.00,
+      discount: 0,
+      total: 1695.00, 
+      status: "pending",
       paymentMethod: "bKash",
       source: "meta"
     },
@@ -128,7 +260,7 @@ const Invoice = () => {
         <h2 className="text-xl font-semibold mb-2">Invoice not found</h2>
         <p className="text-gray-600">{error || `Order ID: ${id || orderId}`}</p>
         <p className="text-sm text-gray-500 mt-2">
-          Available orders: ORD-1001, ORD-1002, ORD-1003
+          Available orders: ORD-1001, ORD-1002, ORD-1003, ORD-1004, ORD-1005, ORD-1006, ORD-1007, ORD-1008, ORD-1009, ORD-1010
         </p>
       </div>
     </div>
