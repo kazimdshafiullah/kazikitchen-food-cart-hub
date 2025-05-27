@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
@@ -19,6 +18,12 @@ const Checkout = () => {
   
   // Convert USD to BDT (approximate rate: 1 USD = 110 BDT)
   const bdtSubtotal = subtotal * 110;
+  
+  // Available order IDs that exist in the mock data
+  const availableOrderIds = [
+    "ORD-1001", "ORD-1002", "ORD-1003", "ORD-1004", "ORD-1005",
+    "ORD-1006", "ORD-1007", "ORD-1008", "ORD-1009", "ORD-1010"
+  ];
   
   if (cart.length === 0 && !orderPlaced) {
     return (
@@ -65,8 +70,9 @@ const Checkout = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Generate a demo order ID
-    const newOrderId = `ORD-${Math.floor(Math.random() * 9000) + 1000}`;
+    // Use a random order ID from the available ones
+    const randomIndex = Math.floor(Math.random() * availableOrderIds.length);
+    const newOrderId = availableOrderIds[randomIndex];
     setOrderId(newOrderId);
     
     toast.success(`Order ${newOrderId} placed successfully! This is a demo order.`);
