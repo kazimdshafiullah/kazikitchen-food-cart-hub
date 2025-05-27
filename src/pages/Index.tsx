@@ -64,11 +64,11 @@ const Index = () => {
       <Hero />
       
       {/* Categories Section */}
-      <section id="categories" className="py-12 bg-gray-50">
+      <section id="categories" className="py-8 md:py-12 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-8">Food Categories</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8">Food Categories</h2>
           {categoriesLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="space-y-3">
                   <Skeleton className="aspect-square w-full rounded-lg" />
@@ -77,7 +77,7 @@ const Index = () => {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
               {categories?.map((category) => (
                 <CategoryCard 
                   key={category.id}
@@ -92,11 +92,11 @@ const Index = () => {
       </section>
       
       {/* Featured Products */}
-      <section className="py-12">
+      <section className="py-8 md:py-12">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-8">Featured Items</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8">Featured Items</h2>
           {featuredLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="space-y-3">
                   <Skeleton className="aspect-square w-full rounded-lg" />
@@ -106,7 +106,7 @@ const Index = () => {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {featuredProducts?.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -116,11 +116,11 @@ const Index = () => {
       </section>
       
       {/* Popular Products */}
-      <section id="popular" className="py-12 bg-gray-50">
+      <section id="popular" className="py-8 md:py-12 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-8">Popular Items</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8">Popular Items</h2>
           {popularLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="space-y-3">
                   <Skeleton className="aspect-square w-full rounded-lg" />
@@ -130,7 +130,7 @@ const Index = () => {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {popularProducts?.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -140,15 +140,16 @@ const Index = () => {
       </section>
       
       {/* All Products / Category Products / Search Results */}
-      <section className="py-12">
+      <section className="py-8 md:py-12">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-2">{title}</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-2">{title}</h2>
           
           {/* Category filter buttons */}
           {!searchQuery && categories && (
-            <div className="mb-8 flex flex-wrap gap-2">
+            <div className="mb-6 md:mb-8 flex flex-wrap gap-2">
               <Button
                 variant={activeCategory === null ? "default" : "outline"}
+                size="sm"
                 onClick={() => {
                   setTitle("All Products");
                   setActiveCategory(null);
@@ -161,6 +162,7 @@ const Index = () => {
                 <Button
                   key={category.id}
                   variant={activeCategory === category.id ? "default" : "outline"}
+                  size="sm"
                   onClick={() => {
                     setTitle(category.name);
                     setActiveCategory(category.id);
@@ -174,7 +176,7 @@ const Index = () => {
           )}
           
           {isDisplayLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="space-y-3">
                   <Skeleton className="aspect-square w-full rounded-lg" />
@@ -184,7 +186,7 @@ const Index = () => {
               ))}
             </div>
           ) : displayProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
               {displayProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

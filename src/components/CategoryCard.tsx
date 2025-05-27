@@ -17,8 +17,8 @@ const CategoryCard = ({ id, name, image }: CategoryCardProps) => {
           className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
         />
       </div>
-      <div className="p-4 text-center">
-        <h3 className="text-lg font-semibold">{name}</h3>
+      <div className="p-3 md:p-4 text-center">
+        <h3 className="text-sm md:text-lg font-semibold">{name}</h3>
       </div>
     </Link>
   );

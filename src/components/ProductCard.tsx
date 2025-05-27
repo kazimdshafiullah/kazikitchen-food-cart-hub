@@ -30,7 +30,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   };
 
   return (
-    <Link to={`/product/${product.id}`} className="product-card bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+    <Link to={`/product/${product.id}`} className="product-card bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden block">
       <div className="aspect-square overflow-hidden">
         <img
           src={product.image_url || "/placeholder.svg"}
@@ -38,9 +38,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
           className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
         />
       </div>
-      <div className="p-4 flex flex-col flex-1">
-        <h3 className="text-lg font-semibold">{product.name}</h3>
-        <p className="text-sm text-gray-500 mt-1 mb-2 flex-1">
+      <div className="p-3 md:p-4 flex flex-col flex-1">
+        <h3 className="text-base md:text-lg font-semibold">{product.name}</h3>
+        <p className="text-xs md:text-sm text-gray-500 mt-1 mb-2 flex-1">
           {product.description ? (
             product.description.length > 60 
               ? `${product.description.substring(0, 60)}...` 
@@ -48,15 +48,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
           ) : "Delicious food item"}
         </p>
         <div className="flex items-center justify-between mt-auto">
-          <span className="text-lg font-bold text-kazi-red">
+          <span className="text-base md:text-lg font-bold text-kazi-red">
             ৳{Number(product.price).toFixed(2)}
           </span>
           <Button 
             size="sm" 
             onClick={handleAddToCart}
-            className="bg-kazi-green hover:bg-kazi-light-green text-white"
+            className="bg-kazi-green hover:bg-kazi-light-green text-white text-xs md:text-sm"
           >
-            <ShoppingCart className="h-4 w-4 mr-1" />
+            <ShoppingCart className="h-3 w-3 md:h-4 md:w-4 mr-1" />
             Add
           </Button>
         </div>
