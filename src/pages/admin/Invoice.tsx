@@ -1,3 +1,4 @@
+
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -56,21 +57,40 @@ const Invoice = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("Invoice component mounted with ID:", id);
     if (id) {
       const orderData = getOrderDetails(id);
+      console.log("Found order data:", orderData);
       setOrder(orderData);
+      setLoading(false);
+    } else {
+      console.log("No ID provided");
       setLoading(false);
     }
   }, [id]);
 
-  if (loading) return <div className="p-8">Loading invoice...</div>;
-  if (!order) return <div className="p-8">Invoice not found</div>;
+  if (loading) return (
+    <div className="p-4 md:p-8 flex items-center justify-center min-h-screen">
+      <div className="text-lg">Loading invoice...</div>
+    </div>
+  );
+  
+  if (!order) return (
+    <div className="p-4 md:p-8 flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <h2 className="text-xl font-semibold mb-2">Invoice not found</h2>
+        <p className="text-gray-600">Order ID: {id}</p>
+      </div>
+    </div>
+  );
 
   const handlePrint = () => {
+    console.log("Print button clicked");
     window.print();
   };
 
   const handleDownload = () => {
+    console.log("Download button clicked");
     toast({
       title: "Success",
       description: "PDF download functionality would be implemented here",
@@ -82,33 +102,33 @@ const Invoice = () => {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="print:hidden flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold">Invoice #{order.id}</h2>
-        <div className="flex gap-2">
-          <Button onClick={handlePrint} variant="outline">
+    <div className="p-4 md:p-6 max-w-4xl mx-auto">
+      <div className="print:hidden flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <h2 className="text-2xl md:text-3xl font-bold">Invoice #{order.id}</h2>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button onClick={handlePrint} variant="outline" className="flex-1 sm:flex-none">
             <Printer className="mr-2 h-4 w-4" />
             Print
           </Button>
-          <Button onClick={handleDownload}>
+          <Button onClick={handleDownload} className="flex-1 sm:flex-none">
             <Download className="mr-2 h-4 w-4" />
             Download PDF
           </Button>
         </div>
       </div>
 
-      <Card className="p-8 mb-6 bg-white">
+      <Card className="p-4 md:p-8 mb-6 bg-white">
         {/* Invoice Header */}
-        <div className="flex justify-between items-start mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start mb-8 gap-6">
           <div>
-            <h1 className="text-2xl font-bold text-kazi-red">KAZI KITCHEN</h1>
-            <p className="text-gray-500">123 Culinary Lane</p>
-            <p className="text-gray-500">Dhaka, Bangladesh</p>
-            <p className="text-gray-500">Phone: +880 1234-567890</p>
-            <p className="text-gray-500">Email: info@kazikitchen.com</p>
+            <h1 className="text-xl md:text-2xl font-bold text-kazi-red">KAZI KITCHEN</h1>
+            <p className="text-gray-500 text-sm md:text-base">123 Culinary Lane</p>
+            <p className="text-gray-500 text-sm md:text-base">Dhaka, Bangladesh</p>
+            <p className="text-gray-500 text-sm md:text-base">Phone: +880 1234-567890</p>
+            <p className="text-gray-500 text-sm md:text-base">Email: info@kazikitchen.com</p>
           </div>
-          <div className="text-right">
-            <h2 className="text-xl font-bold">INVOICE</h2>
+          <div className="text-left md:text-right w-full md:w-auto">
+            <h2 className="text-lg md:text-xl font-bold">INVOICE</h2>
             <p className="text-gray-500">#{order.id}</p>
             <p className="text-gray-500"><strong>Date:</strong> {order.date}</p>
             <p className="text-gray-500"><strong>Status:</strong> {order.status}</p>
@@ -120,65 +140,67 @@ const Invoice = () => {
 
         {/* Customer Information */}
         <div className="mb-8">
-          <h3 className="text-lg font-bold mb-2 pb-2 border-b">Customer Information</h3>
-          <div className="grid grid-cols-2">
+          <h3 className="text-base md:text-lg font-bold mb-2 pb-2 border-b">Customer Information</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p><strong>Name:</strong> {order.customer}</p>
-              <p><strong>Email:</strong> {order.email}</p>
-              <p><strong>Phone:</strong> {order.phone}</p>
+              <p className="text-sm md:text-base"><strong>Name:</strong> {order.customer}</p>
+              <p className="text-sm md:text-base"><strong>Email:</strong> {order.email}</p>
+              <p className="text-sm md:text-base"><strong>Phone:</strong> {order.phone}</p>
             </div>
             <div>
-              <p><strong>Delivery Address:</strong></p>
-              <p>{order.address}</p>
-              <p><strong>Payment Method:</strong> {order.paymentMethod}</p>
+              <p className="text-sm md:text-base"><strong>Delivery Address:</strong></p>
+              <p className="text-sm md:text-base">{order.address}</p>
+              <p className="text-sm md:text-base"><strong>Payment Method:</strong> {order.paymentMethod}</p>
             </div>
           </div>
         </div>
 
         {/* Order Items */}
         <div className="mb-8">
-          <h3 className="text-lg font-bold mb-2 pb-2 border-b">Order Items</h3>
-          <table className="w-full">
-            <thead>
-              <tr className="text-left border-b">
-                <th className="py-2">Item</th>
-                <th className="py-2 text-center">Quantity</th>
-                <th className="py-2 text-right">Unit Price (BDT)</th>
-                <th className="py-2 text-right">Amount (BDT)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {order.items.map((item: any, index: number) => (
-                <tr key={index} className="border-b">
-                  <td className="py-2">{item.name}</td>
-                  <td className="py-2 text-center">{item.quantity}</td>
-                  <td className="py-2 text-right">৳{item.price.toFixed(2)}</td>
-                  <td className="py-2 text-right">৳{(item.price * item.quantity).toFixed(2)}</td>
+          <h3 className="text-base md:text-lg font-bold mb-2 pb-2 border-b">Order Items</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm md:text-base">
+              <thead>
+                <tr className="text-left border-b">
+                  <th className="py-2">Item</th>
+                  <th className="py-2 text-center">Qty</th>
+                  <th className="py-2 text-right">Price (BDT)</th>
+                  <th className="py-2 text-right">Amount (BDT)</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {order.items.map((item: any, index: number) => (
+                  <tr key={index} className="border-b">
+                    <td className="py-2">{item.name}</td>
+                    <td className="py-2 text-center">{item.quantity}</td>
+                    <td className="py-2 text-right">৳{item.price.toFixed(2)}</td>
+                    <td className="py-2 text-right">৳{(item.price * item.quantity).toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Order Summary */}
         <div className="mb-8">
           <div className="flex justify-end">
-            <div className="w-1/2">
-              <div className="flex justify-between py-2">
+            <div className="w-full md:w-1/2">
+              <div className="flex justify-between py-2 text-sm md:text-base">
                 <span>Subtotal:</span>
                 <span>৳{calculateSubtotal().toFixed(2)}</span>
               </div>
-              <div className="flex justify-between py-2">
+              <div className="flex justify-between py-2 text-sm md:text-base">
                 <span>Delivery:</span>
                 <span>৳{order.shipping.toFixed(2)}</span>
               </div>
               {order.discount > 0 && (
-                <div className="flex justify-between py-2">
+                <div className="flex justify-between py-2 text-sm md:text-base">
                   <span>Discount:</span>
                   <span>-৳{order.discount.toFixed(2)}</span>
                 </div>
               )}
-              <div className="flex justify-between py-2 font-bold border-t border-gray-300 mt-2">
+              <div className="flex justify-between py-2 font-bold border-t border-gray-300 mt-2 text-sm md:text-base">
                 <span>Total:</span>
                 <span>৳{order.total.toFixed(2)}</span>
               </div>
@@ -187,9 +209,9 @@ const Invoice = () => {
         </div>
 
         {/* Thank you note */}
-        <div className="text-center mt-12 pt-8 border-t">
-          <p className="text-gray-600">Thank you for your order!</p>
-          <p className="text-sm text-gray-500 mt-2">
+        <div className="text-center mt-8 md:mt-12 pt-8 border-t">
+          <p className="text-gray-600 text-sm md:text-base">Thank you for your order!</p>
+          <p className="text-xs md:text-sm text-gray-500 mt-2">
             If you have any questions about this invoice, please contact us at
             support@kazikitchen.com or call +880 1234-567890
           </p>

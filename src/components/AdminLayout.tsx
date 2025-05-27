@@ -45,20 +45,20 @@ const AdminLayout = () => {
     <div className="min-h-screen w-full">
       <SidebarProvider>
         <div className="min-h-screen flex w-full">
-          <Sidebar className="border-r">
-            <SidebarHeader className="border-b border-sidebar-border text-center">
+          <Sidebar className="border-r bg-white">
+            <SidebarHeader className="border-b border-sidebar-border text-center bg-white">
               <div className="flex items-center justify-between p-4">
-                <h3 className="font-bold text-lg">Kazi Kitchen Admin</h3>
+                <h3 className="font-bold text-lg text-gray-900">Kazi Kitchen Admin</h3>
                 <div className="md:hidden">
                   <SidebarTrigger />
                 </div>
               </div>
             </SidebarHeader>
-            <SidebarContent>
+            <SidebarContent className="bg-white">
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Dashboard">
-                    <Link to="/admin/dashboard">
+                    <Link to="/admin/dashboard" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <LayoutDashboard className="mr-2" /> 
                       <span>Dashboard</span>
                     </Link>
@@ -66,7 +66,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Orders">
-                    <Link to="/admin/orders">
+                    <Link to="/admin/orders" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <ShoppingCart className="mr-2" /> 
                       <span>Orders</span>
                     </Link>
@@ -74,7 +74,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Products">
-                    <Link to="/admin/products">
+                    <Link to="/admin/products" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <Box className="mr-2" /> 
                       <span>Products</span>
                     </Link>
@@ -82,7 +82,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Inventory">
-                    <Link to="/admin/inventory">
+                    <Link to="/admin/inventory" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <Package className="mr-2" /> 
                       <span>Inventory</span>
                     </Link>
@@ -90,7 +90,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Marketing">
-                    <Link to="/admin/marketing">
+                    <Link to="/admin/marketing" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <BarChart3 className="mr-2" /> 
                       <span>Marketing</span>
                     </Link>
@@ -98,7 +98,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Social Media">
-                    <Link to="/admin/social-media">
+                    <Link to="/admin/social-media" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <Send className="mr-2" /> 
                       <span>Social Media</span>
                     </Link>
@@ -106,7 +106,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Customer Analytics">
-                    <Link to="/admin/customer-analytics">
+                    <Link to="/admin/customer-analytics" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <TrendingUp className="mr-2" /> 
                       <span>Customer Analytics</span>
                     </Link>
@@ -114,7 +114,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Notifications">
-                    <Link to="/admin/notifications">
+                    <Link to="/admin/notifications" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <MessageSquare className="mr-2" /> 
                       <span>Notifications</span>
                     </Link>
@@ -122,7 +122,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Chat Management">
-                    <Link to="/admin/chat-management">
+                    <Link to="/admin/chat-management" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <Bell className="mr-2" /> 
                       <span>Chat Management</span>
                     </Link>
@@ -130,7 +130,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Offers">
-                    <Link to="/admin/offers">
+                    <Link to="/admin/offers" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <Tag className="mr-2" /> 
                       <span>Offers</span>
                     </Link>
@@ -138,7 +138,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Payments">
-                    <Link to="/admin/payments">
+                    <Link to="/admin/payments" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <CreditCard className="mr-2" /> 
                       <span>Payments</span>
                     </Link>
@@ -146,7 +146,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Expenses">
-                    <Link to="/admin/expenses">
+                    <Link to="/admin/expenses" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <DollarSign className="mr-2" /> 
                       <span>Expenses</span>
                     </Link>
@@ -154,7 +154,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Reports">
-                    <Link to="/admin/reports">
+                    <Link to="/admin/reports" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <ChartBar className="mr-2" /> 
                       <span>Reports</span>
                     </Link>
@@ -162,7 +162,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Site Design">
-                    <Link to="/admin/site-design">
+                    <Link to="/admin/site-design" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <Palette className="mr-2" /> 
                       <span>Site Design</span>
                     </Link>
@@ -170,7 +170,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Customers">
-                    <Link to="/admin/customers">
+                    <Link to="/admin/customers" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <Users className="mr-2" /> 
                       <span>Customers</span>
                     </Link>
@@ -178,7 +178,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Users">
-                    <Link to="/admin/users">
+                    <Link to="/admin/users" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <UserPlus className="mr-2" /> 
                       <span>Users</span>
                     </Link>
@@ -186,7 +186,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Settings">
-                    <Link to="/admin/settings">
+                    <Link to="/admin/settings" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <Settings className="mr-2" /> 
                       <span>Settings</span>
                     </Link>
@@ -194,7 +194,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarContent>
-            <div className="mt-auto p-4 border-t border-sidebar-border">
+            <div className="mt-auto p-4 border-t border-sidebar-border bg-white">
               <Button 
                 variant="outline" 
                 className="w-full flex items-center justify-center" 
