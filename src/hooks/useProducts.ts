@@ -86,8 +86,8 @@ export const useProduct = (id: string) => {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .single()
-        .eq('id', id);
+        .eq('id', id)
+        .single();
       
       if (error) throw error;
       return data as Product;

@@ -32,8 +32,8 @@ export const useCategory = (id: string) => {
       const { data, error } = await supabase
         .from('categories')
         .select('*')
-        .single()
-        .eq('id', id);
+        .eq('id', id)
+        .single();
       
       if (error) throw error;
       return data as Category;
