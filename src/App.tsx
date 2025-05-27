@@ -42,6 +42,7 @@ function App() {
             <Route path="product/:id" element={<ProductDetail />} />
             <Route path="cart" element={<Cart />} />
             <Route path="checkout" element={<Checkout />} />
+            <Route path="invoice/:orderId" element={<Invoice />} />
           </Route>
           
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -64,9 +65,9 @@ function App() {
             <Route path="users" element={<UserManagement />} />
             <Route path="settings" element={<Settings />} />
             <Route path="server-analytics" element={<ServerAnalytics />} />
+            <Route path="invoice/:id" element={<Invoice />} />
           </Route>
           
-          <Route path="/admin/invoice/:orderId" element={<Invoice />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />

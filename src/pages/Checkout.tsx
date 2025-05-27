@@ -7,17 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/components/ui/sonner";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, FileText } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 const Checkout = () => {
   const navigate = useNavigate();
   const { cart, subtotal, clearCart } = useCart();
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "bkash" | "ssl">("cash");
+  const [orderPlaced, setOrderPlaced] = useState(false);
+  const [orderId, setOrderId] = useState<string>("");
   
   // Convert USD to BDT (approximate rate: 1 USD = 110 BDT)
   const bdtSubtotal = subtotal * 110;
   
-  if (cart.length === 0) {
+  if (cart.length === 0 && !orderPlaced) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
         <div className="max-w-md mx-auto">
@@ -31,11 +34,44 @@ const Checkout = () => {
     );
   }
   
+  if (orderPlaced) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center">
+        <Card className="max-w-md mx-auto p-8">
+          <div className="text-green-600 mb-4">
+            <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-bold mb-4">Order Placed Successfully!</h1>
+          <p className="text-gray-600 mb-4">Order ID: {orderId}</p>
+          <p className="text-gray-500 mb-8">Thank you for your order! This is a demo order.</p>
+          <div className="flex flex-col gap-3">
+            <Button asChild className="w-full">
+              <Link to={`/invoice/${orderId}`}>
+                <FileText className="mr-2 h-4 w-4" />
+                View Invoice
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="w-full">
+              <Link to="/">Continue Shopping</Link>
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Thank you for your order! This is a demo, so no actual order was placed.");
+    
+    // Generate a demo order ID
+    const newOrderId = `ORD-${Math.floor(Math.random() * 9000) + 1000}`;
+    setOrderId(newOrderId);
+    
+    toast.success(`Order ${newOrderId} placed successfully! This is a demo order.`);
     clearCart();
-    navigate("/");
+    setOrderPlaced(true);
   };
   
   return (

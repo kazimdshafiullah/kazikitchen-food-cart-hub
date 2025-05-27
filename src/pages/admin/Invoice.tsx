@@ -8,6 +8,8 @@ import { toast } from "@/hooks/use-toast";
 
 // Mock order for demonstration - in a real app, fetch from your database
 const getOrderDetails = (orderId: string) => {
+  console.log("Fetching order details for ID:", orderId);
+  
   const mockOrders = [
     { 
       id: "ORD-1001", 
@@ -46,28 +48,73 @@ const getOrderDetails = (orderId: string) => {
       paymentMethod: "bKash",
       source: "meta"
     },
+    // Adding more mock orders to ensure we have data for different IDs
+    { 
+      id: "ORD-1003", 
+      customer: "Mike Chen", 
+      email: "mike@example.com",
+      phone: "+8801111111111",
+      address: "789 Uttara, Dhaka, Bangladesh",
+      date: "2025-05-19", 
+      items: [
+        { name: "Fish Curry", quantity: 1, price: 450.00 },
+        { name: "Rice", quantity: 2, price: 71.875 }
+      ],
+      shipping: 125.00,
+      discount: 50,
+      total: 593.75, 
+      status: "delivered",
+      paymentMethod: "bKash",
+      source: "meta"
+    },
   ];
   
-  return mockOrders.find(order => order.id === orderId) || null;
+  // Try to find exact match first
+  let order = mockOrders.find(order => order.id === orderId);
+  
+  // If not found, try to find by partial match (in case of different formatting)
+  if (!order) {
+    order = mockOrders.find(order => order.id.includes(orderId) || orderId.includes(order.id));
+  }
+  
+  console.log("Found order:", order);
+  return order || null;
 };
 
 const Invoice = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id, orderId } = useParams<{ id?: string; orderId?: string }>();
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    console.log("Invoice component mounted with ID:", id);
-    if (id) {
-      const orderData = getOrderDetails(id);
-      console.log("Found order data:", orderData);
-      setOrder(orderData);
+    // Use either id or orderId parameter
+    const paramId = id || orderId;
+    console.log("Invoice component mounted with ID:", paramId);
+    console.log("URL params - id:", id, "orderId:", orderId);
+    
+    if (paramId) {
+      try {
+        const orderData = getOrderDetails(paramId);
+        console.log("Found order data:", orderData);
+        
+        if (orderData) {
+          setOrder(orderData);
+          setError("");
+        } else {
+          setError(`No order found with ID: ${paramId}`);
+        }
+      } catch (err) {
+        console.error("Error fetching order:", err);
+        setError("Error loading order details");
+      }
       setLoading(false);
     } else {
-      console.log("No ID provided");
+      console.log("No ID parameter provided");
+      setError("No order ID provided");
       setLoading(false);
     }
-  }, [id]);
+  }, [id, orderId]);
 
   if (loading) return (
     <div className="p-4 md:p-8 flex items-center justify-center min-h-screen">
@@ -75,11 +122,14 @@ const Invoice = () => {
     </div>
   );
   
-  if (!order) return (
+  if (error || !order) return (
     <div className="p-4 md:p-8 flex items-center justify-center min-h-screen">
       <div className="text-center">
         <h2 className="text-xl font-semibold mb-2">Invoice not found</h2>
-        <p className="text-gray-600">Order ID: {id}</p>
+        <p className="text-gray-600">{error || `Order ID: ${id || orderId}`}</p>
+        <p className="text-sm text-gray-500 mt-2">
+          Available orders: ORD-1001, ORD-1002, ORD-1003
+        </p>
       </div>
     </div>
   );
