@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Layout from "./components/Layout";
@@ -29,6 +28,12 @@ import Settings from "./pages/admin/Settings";
 import Invoice from "./pages/admin/Invoice";
 import ServerAnalytics from "./pages/admin/ServerAnalytics";
 import CustomerAnalytics from "./pages/admin/CustomerAnalytics";
+import KitchenLogin from "./pages/kitchen/KitchenLogin";
+import KitchenLayout from "./components/KitchenLayout";
+import KitchenDashboard from "./pages/kitchen/KitchenDashboard";
+import RiderLogin from "./pages/rider/RiderLogin";
+import RiderLayout from "./components/RiderLayout";
+import RiderDashboard from "./pages/rider/RiderDashboard";
 import { Toaster } from "@/components/ui/toaster";
 
 const queryClient = new QueryClient();
@@ -68,6 +73,18 @@ function App() {
             <Route path="settings" element={<Settings />} />
             <Route path="server-analytics" element={<ServerAnalytics />} />
             <Route path="invoice/:id" element={<Invoice />} />
+          </Route>
+          
+          {/* Kitchen Portal Routes */}
+          <Route path="/kitchen/login" element={<KitchenLogin />} />
+          <Route path="/kitchen" element={<KitchenLayout />}>
+            <Route path="dashboard" element={<KitchenDashboard />} />
+          </Route>
+          
+          {/* Rider Portal Routes */}
+          <Route path="/rider/login" element={<RiderLogin />} />
+          <Route path="/rider" element={<RiderLayout />}>
+            <Route path="dashboard" element={<RiderDashboard />} />
           </Route>
           
           <Route path="*" element={<NotFound />} />
