@@ -20,7 +20,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Check, Eye, Search, Filter, FileText, Send, Clock, AlertTriangle, MessageCircle, ChefHat, CheckCircle, Plus, User, Truck } from "lucide-react";
+import { Check, Eye, Search, Filter, FileText, Clock, AlertTriangle, ChefHat, CheckCircle, Plus, Truck } from "lucide-react";
 import KitchenPreparation from "@/components/KitchenPreparation";
 import ManualOrderCreation from "@/components/ManualOrderCreation";
 
@@ -69,8 +69,8 @@ const mockOrders = [
     source: "meta", 
     isFake: false,
     kitchenStatus: "ready",
-    riderStatus: "assigned",
-    assignedRider: "Rider-001 (John Smith)",
+    riderStatus: "not_assigned",
+    assignedRider: null,
     approvedAt: "2025-05-19 11:30 AM",
     items: [
       { name: "Paneer Tikka", quantity: 1, price: 300 }
@@ -85,7 +85,7 @@ const mockOrders = [
     source: "website", 
     isFake: false,
     kitchenStatus: "completed",
-    riderStatus: "picked_up",
+    riderStatus: "assigned",
     assignedRider: "Rider-002 (Mike Johnson)",
     approvedAt: "2025-05-19 09:15 AM",
     items: [
@@ -110,11 +110,32 @@ const mockOrders = [
   }
 ];
 
-// Mock riders data
+// Mock riders data with status and current orders
 const mockRiders = [
-  { id: "Rider-001", name: "John Smith", status: "available" },
-  { id: "Rider-002", name: "Mike Johnson", status: "busy" },
-  { id: "Rider-003", name: "Sarah Wilson", status: "available" },
+  { 
+    id: "Rider-001", 
+    name: "John Smith", 
+    status: "available", 
+    phone: "+8801712345678",
+    currentOrders: 0,
+    maxOrders: 3
+  },
+  { 
+    id: "Rider-002", 
+    name: "Mike Johnson", 
+    status: "busy", 
+    phone: "+8801712345679",
+    currentOrders: 2,
+    maxOrders: 3
+  },
+  { 
+    id: "Rider-003", 
+    name: "Sarah Wilson", 
+    status: "available", 
+    phone: "+8801712345680",
+    currentOrders: 1,
+    maxOrders: 4
+  },
 ];
 
 // Order details dialog component
@@ -133,8 +154,8 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
       kitchenStatus: "pending"
     });
     toast({
-      title: "Order Approved",
-      description: `Order ${order.id} has been approved and sent to kitchen!`
+      title: "Order Approved & Kitchen Notified",
+      description: `Order ${order.id} approved and sent to kitchen! Customer and kitchen staff notified via email & SMS.`
     });
   };
   
@@ -145,8 +166,8 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
       riderStatus: "assigned"
     });
     toast({
-      title: "Rider Assigned",
-      description: `${rider?.name} has been assigned to order ${order.id}`
+      title: "Rider Assigned & Notified",
+      description: `${rider?.name} assigned to order ${order.id}. Rider notified via email & SMS.`
     });
   };
   
@@ -154,7 +175,7 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
     onUpdateOrder(order.id, { isFake: true });
     toast({
       title: "Order Marked as Fake",
-      description: `Order ${order.id} has been marked as fake`
+      description: `Order ${order.id} has been marked as fake and removed from active processing.`
     });
   };
   
@@ -180,9 +201,13 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
     }
   };
   
+  const canAssignRider = order.status === "approved" && 
+                         (order.kitchenStatus === "ready" || order.kitchenStatus === "completed") && 
+                         order.riderStatus === "not_assigned";
+  
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             Order {order.id}
@@ -238,6 +263,11 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
               <Badge className={getKitchenStatusColor(order.kitchenStatus)}>
                 {order.kitchenStatus.replace('_', ' ').toUpperCase()}
               </Badge>
+              {order.approvedAt && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Approved: {order.approvedAt}
+                </p>
+              )}
             </div>
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -274,14 +304,15 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
           
           {/* Action Buttons */}
           <div className="space-y-4">
-            {order.status === "pending" && (
+            {/* Order Approval Actions */}
+            {order.status === "pending" && !order.isFake && (
               <div className="flex gap-2">
                 <Button 
                   onClick={handleApproveOrder}
                   className="flex-1 bg-green-600 hover:bg-green-700"
                 >
                   <Check className="mr-2 h-4 w-4" />
-                  Approve Order
+                  Approve Order & Notify Kitchen
                 </Button>
                 <Button 
                   variant="destructive" 
@@ -294,21 +325,51 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
               </div>
             )}
             
-            {order.status === "approved" && order.kitchenStatus === "ready" && order.riderStatus === "not_assigned" && (
-              <div>
-                <p className="text-sm font-medium mb-2">Assign Delivery Rider</p>
+            {/* Rider Assignment */}
+            {canAssignRider && (
+              <div className="space-y-3 p-4 border rounded-lg bg-blue-50">
+                <div className="flex items-center gap-2">
+                  <Truck className="h-5 w-5 text-blue-600" />
+                  <p className="font-medium text-blue-900">Ready for Delivery - Assign Rider</p>
+                </div>
+                <p className="text-sm text-blue-700">Food is ready in kitchen. Please assign a delivery rider.</p>
                 <Select onValueChange={handleAssignRider}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a rider" />
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder="Select a rider for delivery" />
                   </SelectTrigger>
                   <SelectContent>
-                    {mockRiders.filter(rider => rider.status === "available").map(rider => (
+                    {mockRiders.filter(rider => rider.status === "available" || rider.currentOrders < rider.maxOrders).map(rider => (
                       <SelectItem key={rider.id} value={rider.id}>
-                        {rider.name} ({rider.status})
+                        <div className="flex items-center justify-between w-full">
+                          <span>{rider.name}</span>
+                          <div className="flex items-center gap-2 ml-4">
+                            <Badge variant={rider.status === "available" ? "secondary" : "outline"} className="text-xs">
+                              {rider.status}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              ({rider.currentOrders}/{rider.maxOrders})
+                            </span>
+                          </div>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+            )}
+
+            {/* Order Status Info */}
+            {order.status === "approved" && order.kitchenStatus !== "ready" && order.kitchenStatus !== "completed" && (
+              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-yellow-600" />
+                  <span className="text-sm font-medium text-yellow-800">
+                    Order is being prepared in kitchen
+                  </span>
+                </div>
+                <p className="text-xs text-yellow-700 mt-1">
+                  Rider assignment will be available once food is ready
+                </p>
               </div>
             )}
           </div>
@@ -330,7 +391,6 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
               <Button variant="outline" onClick={onClose}>
                 Close
               </Button>
-              <Button>Save Changes</Button>
             </div>
           </div>
         </div>
@@ -368,11 +428,16 @@ const Orders = () => {
     return matchesSearch && matchesStatus && matchesSource && matchesFake;
   });
   
-  const pendingOrderCount = orders.filter(order => order.status === "pending").length;
+  const pendingOrderCount = orders.filter(order => order.status === "pending" && !order.isFake).length;
   const fakeOrderCount = orders.filter(order => order.isFake).length;
   const approvedOrderCount = orders.filter(order => order.status === "approved").length;
   const readyForDeliveryCount = orders.filter(order => 
     order.kitchenStatus === "ready" && order.riderStatus === "not_assigned"
+  ).length;
+  const awaitingRiderCount = orders.filter(order => 
+    (order.kitchenStatus === "ready" || order.kitchenStatus === "completed") && 
+    order.riderStatus === "not_assigned" && 
+    order.status === "approved"
   ).length;
   
   const handleViewOrder = (order: any) => {
@@ -391,7 +456,7 @@ const Orders = () => {
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-3xl font-bold tracking-tight text-gray-900">Orders Management</h2>
-            <p className="text-gray-600 mt-2">Complete order lifecycle management from approval to delivery</p>
+            <p className="text-gray-600 mt-2">Complete order lifecycle: Approval → Kitchen → Rider Assignment → Delivery</p>
           </div>
           <Button 
             onClick={() => setIsManualOrderOpen(true)}
@@ -404,7 +469,7 @@ const Orders = () => {
       </div>
 
       {/* Status Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending Approval</CardTitle>
@@ -427,12 +492,22 @@ const Orders = () => {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ready for Delivery</CardTitle>
+            <CardTitle className="text-sm font-medium">Awaiting Rider</CardTitle>
             <Truck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
+            <div className="text-2xl font-bold text-orange-600">{awaitingRiderCount}</div>
+            <p className="text-xs text-muted-foreground">Ready, needs rider</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Out for Delivery</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
             <div className="text-2xl font-bold text-green-600">{readyForDeliveryCount}</div>
-            <p className="text-xs text-muted-foreground">Needs rider assignment</p>
+            <p className="text-xs text-muted-foreground">With riders</p>
           </CardContent>
         </Card>
         <Card>
@@ -523,11 +598,14 @@ const Orders = () => {
         </div>
       </div>
       
+      {/* Alert Banners */}
       {pendingOrderCount > 0 && statusFilter !== "pending" && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-amber-500" />
-            <span className="font-medium text-amber-800">You have {pendingOrderCount} pending order{pendingOrderCount !== 1 ? 's' : ''} awaiting confirmation</span>
+            <span className="font-medium text-amber-800">
+              🔔 {pendingOrderCount} new order{pendingOrderCount !== 1 ? 's' : ''} awaiting your approval
+            </span>
           </div>
           <Button 
             variant="outline" 
@@ -535,24 +613,35 @@ const Orders = () => {
             onClick={() => setStatusFilter("pending")}
             className="border-amber-300 text-amber-700 hover:bg-amber-100"
           >
-            View Pending
+            Review Now
           </Button>
         </div>
       )}
-      
-      {fakeOrderCount > 0 && fakeFilter !== "fake" && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center justify-between shadow-sm">
+
+      {awaitingRiderCount > 0 && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-500" />
-            <span className="font-medium text-red-800">You have {fakeOrderCount} fake order{fakeOrderCount !== 1 ? 's' : ''} detected</span>
+            <Truck className="h-5 w-5 text-orange-500" />
+            <span className="font-medium text-orange-800">
+              🚚 {awaitingRiderCount} order{awaitingRiderCount !== 1 ? 's' : ''} ready for delivery - assign rider{awaitingRiderCount !== 1 ? 's' : ''}
+            </span>
           </div>
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => setFakeFilter("fake")}
-            className="border-red-300 text-red-700 hover:bg-red-100"
+            onClick={() => {
+              const readyOrder = orders.find(order => 
+                (order.kitchenStatus === "ready" || order.kitchenStatus === "completed") && 
+                order.riderStatus === "not_assigned" && 
+                order.status === "approved"
+              );
+              if (readyOrder) {
+                handleViewOrder(readyOrder);
+              }
+            }}
+            className="border-orange-300 text-orange-700 hover:bg-orange-100"
           >
-            View Fake Orders
+            Assign Riders
           </Button>
         </div>
       )}
