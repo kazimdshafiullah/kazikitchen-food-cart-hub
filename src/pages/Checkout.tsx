@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
@@ -6,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/components/ui/sonner";
-import { ChevronLeft, FileText } from "lucide-react";
+import { ChevronLeft, FileText, Package } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 const Checkout = () => {
