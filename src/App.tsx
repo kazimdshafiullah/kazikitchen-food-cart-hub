@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Layout from "./components/Layout";
@@ -31,6 +32,7 @@ import CustomerAnalytics from "./pages/admin/CustomerAnalytics";
 import KitchenLogin from "./pages/kitchen/KitchenLogin";
 import KitchenLayout from "./components/KitchenLayout";
 import KitchenDashboard from "./pages/kitchen/KitchenDashboard";
+import KitchenPreparation from "./components/KitchenPreparation";
 import RiderLogin from "./pages/rider/RiderLogin";
 import RiderLayout from "./components/RiderLayout";
 import RiderDashboard from "./pages/rider/RiderDashboard";
@@ -79,6 +81,7 @@ function App() {
           <Route path="/kitchen/login" element={<KitchenLogin />} />
           <Route path="/kitchen" element={<KitchenLayout />}>
             <Route path="dashboard" element={<KitchenDashboard />} />
+            <Route path="preparation" element={<KitchenPreparation />} />
           </Route>
           
           {/* Rider Portal Routes */}

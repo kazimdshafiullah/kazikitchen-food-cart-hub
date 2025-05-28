@@ -20,73 +20,169 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Check, Eye, Search, Filter, FileText, Send, Clock, AlertTriangle, MessageCircle, ChefHat, CheckCircle, Plus } from "lucide-react";
+import { Check, Eye, Search, Filter, FileText, Send, Clock, AlertTriangle, MessageCircle, ChefHat, CheckCircle, Plus, User, Truck } from "lucide-react";
 import KitchenPreparation from "@/components/KitchenPreparation";
 import ManualOrderCreation from "@/components/ManualOrderCreation";
 
-// Mock data for demonstration with BDT currency and Meta integration - matching Invoice.tsx
+// Enhanced mock data with kitchen and rider status tracking
 const mockOrders = [
-  { id: "ORD-1001", customer: "John Doe", date: "2025-05-20", total: 1149.75, status: "delivered", source: "website", isFake: false },
-  { id: "ORD-1002", customer: "Sarah Lee", date: "2025-05-20", total: 1962.50, status: "processing", source: "website", isFake: false },
-  { id: "ORD-1003", customer: "Mike Chen", date: "2025-05-19", total: 593.75, status: "delivered", source: "meta", isFake: false },
-  { id: "ORD-1004", customer: "Emily Wong", date: "2025-05-19", total: 3100.00, status: "shipped", source: "website", isFake: false },
-  { id: "ORD-1005", customer: "Alex Johnson", date: "2025-05-18", total: 1681.25, status: "processing", source: "meta", isFake: false },
-  { id: "ORD-1006", customer: "Lisa Garcia", date: "2025-05-18", total: 2462.50, status: "cancelled", source: "website", isFake: true },
-  { id: "ORD-1007", customer: "David Kim", date: "2025-05-17", total: 874.75, status: "delivered", source: "website", isFake: false },
-  { id: "ORD-1008", customer: "Rachel Green", date: "2025-05-16", total: 1381.25, status: "shipped", source: "meta", isFake: false },
-  { id: "ORD-1009", customer: "Taylor Swift", date: "2025-05-21", total: 1068.75, status: "pending", source: "website", isFake: false },
-  { id: "ORD-1010", customer: "James Wilson", date: "2025-05-21", total: 1695.00, status: "pending", source: "meta", isFake: true },
+  { 
+    id: "ORD-1001", 
+    customer: "John Doe", 
+    date: "2025-05-20", 
+    total: 1149.75, 
+    status: "pending", 
+    source: "website", 
+    isFake: false,
+    kitchenStatus: "not_started",
+    riderStatus: "not_assigned",
+    assignedRider: null,
+    approvedAt: null,
+    items: [
+      { name: "Chicken Biryani", quantity: 2, price: 400 },
+      { name: "Vegetable Curry", quantity: 1, price: 250 }
+    ]
+  },
+  { 
+    id: "ORD-1002", 
+    customer: "Sarah Lee", 
+    date: "2025-05-20", 
+    total: 1962.50, 
+    status: "approved", 
+    source: "website", 
+    isFake: false,
+    kitchenStatus: "cooking",
+    riderStatus: "not_assigned",
+    assignedRider: null,
+    approvedAt: "2025-05-20 10:45 AM",
+    items: [
+      { name: "Fish Curry", quantity: 1, price: 350 },
+      { name: "Rice", quantity: 2, price: 150 }
+    ]
+  },
+  { 
+    id: "ORD-1003", 
+    customer: "Mike Chen", 
+    date: "2025-05-19", 
+    total: 593.75, 
+    status: "approved", 
+    source: "meta", 
+    isFake: false,
+    kitchenStatus: "ready",
+    riderStatus: "assigned",
+    assignedRider: "Rider-001 (John Smith)",
+    approvedAt: "2025-05-19 11:30 AM",
+    items: [
+      { name: "Paneer Tikka", quantity: 1, price: 300 }
+    ]
+  },
+  { 
+    id: "ORD-1004", 
+    customer: "Emily Wong", 
+    date: "2025-05-19", 
+    total: 3100.00, 
+    status: "approved", 
+    source: "website", 
+    isFake: false,
+    kitchenStatus: "completed",
+    riderStatus: "picked_up",
+    assignedRider: "Rider-002 (Mike Johnson)",
+    approvedAt: "2025-05-19 09:15 AM",
+    items: [
+      { name: "Mixed Platter", quantity: 1, price: 800 }
+    ]
+  },
+  { 
+    id: "ORD-1005", 
+    customer: "Alex Johnson", 
+    date: "2025-05-18", 
+    total: 1681.25, 
+    status: "delivered", 
+    source: "meta", 
+    isFake: false,
+    kitchenStatus: "completed",
+    riderStatus: "delivered",
+    assignedRider: "Rider-001 (John Smith)",
+    approvedAt: "2025-05-18 02:20 PM",
+    items: [
+      { name: "Chicken Biryani", quantity: 3, price: 600 }
+    ]
+  }
+];
+
+// Mock riders data
+const mockRiders = [
+  { id: "Rider-001", name: "John Smith", status: "available" },
+  { id: "Rider-002", name: "Mike Johnson", status: "busy" },
+  { id: "Rider-003", name: "Sarah Wilson", status: "available" },
 ];
 
 // Order details dialog component
-const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onClose: () => void }) => {
+const OrderDetails = ({ order, open, onClose, onUpdateOrder }: { 
+  order: any; 
+  open: boolean; 
+  onClose: () => void;
+  onUpdateOrder: (orderId: string, updates: any) => void;
+}) => {
   if (!order) return null;
   
-  const handleStatusChange = (newStatus: string) => {
-    order.status = newStatus;
-    
-    const notificationMessages = {
-      pending: "Order is pending confirmation. No notification sent.",
-      processing: "Order status updated to 'Processing'. Customer notification sent.",
-      confirmed: "Order confirmed! Customer notification sent.",
-      shipped: "Order status updated to 'Shipped'. Customer notification sent.",
-      delivered: "Order marked as delivered! Customer notification sent.",
-      cancelled: "Order cancelled. Customer notification sent."
-    };
-    
-    const message = notificationMessages[newStatus as keyof typeof notificationMessages] || "Order status updated";
+  const handleApproveOrder = () => {
+    onUpdateOrder(order.id, { 
+      status: "approved", 
+      approvedAt: new Date().toLocaleString(),
+      kitchenStatus: "pending"
+    });
     toast({
-      title: "Success",
-      description: message
+      title: "Order Approved",
+      description: `Order ${order.id} has been approved and sent to kitchen!`
     });
   };
   
-  const handleConfirmOrder = () => {
-    order.status = "confirmed";
+  const handleAssignRider = (riderId: string) => {
+    const rider = mockRiders.find(r => r.id === riderId);
+    onUpdateOrder(order.id, { 
+      assignedRider: `${riderId} (${rider?.name})`,
+      riderStatus: "assigned"
+    });
     toast({
-      title: "Success",
-      description: `Order ${order.id} confirmed! Customer has been notified.`
+      title: "Rider Assigned",
+      description: `${rider?.name} has been assigned to order ${order.id}`
     });
   };
   
   const handleMarkAsFake = () => {
-    order.isFake = true;
+    onUpdateOrder(order.id, { isFake: true });
     toast({
-      title: "Success", 
-      description: `Order ${order.id} marked as fake and moved to fake orders list.`
+      title: "Order Marked as Fake",
+      description: `Order ${order.id} has been marked as fake`
     });
   };
   
-  const handleSendNotification = () => {
-    toast({
-      title: "Success",
-      description: `Notification sent to customer: ${order.customer}`
-    });
+  const getKitchenStatusColor = (status: string) => {
+    switch (status) {
+      case "not_started": return "bg-gray-100 text-gray-800";
+      case "pending": return "bg-yellow-100 text-yellow-800";
+      case "cooking": return "bg-blue-100 text-blue-800";
+      case "ready": return "bg-green-100 text-green-800";
+      case "completed": return "bg-green-200 text-green-900";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+  
+  const getRiderStatusColor = (status: string) => {
+    switch (status) {
+      case "not_assigned": return "bg-gray-100 text-gray-800";
+      case "assigned": return "bg-blue-100 text-blue-800";
+      case "picked_up": return "bg-yellow-100 text-yellow-800";
+      case "delivering": return "bg-orange-100 text-orange-800";
+      case "delivered": return "bg-green-100 text-green-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
   };
   
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             Order {order.id}
@@ -101,10 +197,11 @@ const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onC
               </span>
             )}
           </DialogTitle>
-          <DialogDescription>Order details and management</DialogDescription>
+          <DialogDescription>Complete order management and tracking</DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-4">
+        <div className="space-y-6">
+          {/* Order Basic Info */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm font-medium">Customer</p>
@@ -120,33 +217,54 @@ const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onC
             </div>
             <div>
               <p className="text-sm font-medium">Status</p>
-              <div className={`capitalize inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+              <Badge className={`capitalize ${
                 order.status === "delivered" ? "bg-green-100 text-green-800" :
-                order.status === "shipped" ? "bg-blue-100 text-blue-800" :
-                order.status === "processing" || order.status === "confirmed" ? "bg-yellow-100 text-yellow-800" :
-                order.status === "pending" ? "bg-purple-100 text-purple-800" : 
+                order.status === "approved" ? "bg-blue-100 text-blue-800" :
+                order.status === "pending" ? "bg-yellow-100 text-yellow-800" : 
                 "bg-red-100 text-red-800"
               }`}>
                 {order.status}
+              </Badge>
+            </div>
+          </div>
+
+          {/* Kitchen & Rider Status */}
+          <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <ChefHat className="h-4 w-4" />
+                <p className="text-sm font-medium">Kitchen Status</p>
               </div>
+              <Badge className={getKitchenStatusColor(order.kitchenStatus)}>
+                {order.kitchenStatus.replace('_', ' ').toUpperCase()}
+              </Badge>
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Truck className="h-4 w-4" />
+                <p className="text-sm font-medium">Delivery Status</p>
+              </div>
+              <Badge className={getRiderStatusColor(order.riderStatus)}>
+                {order.riderStatus.replace('_', ' ').toUpperCase()}
+              </Badge>
+              {order.assignedRider && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Assigned to: {order.assignedRider}
+                </p>
+              )}
             </div>
           </div>
           
+          {/* Order Items */}
           <div>
             <p className="text-sm font-medium mb-2">Order Items</p>
             <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Sample Item x 2</span>
-                <span>৳600.00</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Sample Item x 1</span>
-                <span>৳300.00</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Delivery Fee</span>
-                <span>৳125.00</span>
-              </div>
+              {order.items.map((item: any, index: number) => (
+                <div key={index} className="flex justify-between text-sm p-2 bg-gray-50 rounded">
+                  <span>{item.quantity}x {item.name}</span>
+                  <span>৳{(item.price * item.quantity).toFixed(2)}</span>
+                </div>
+              ))}
               <div className="border-t pt-2 font-medium flex justify-between">
                 <span>Total</span>
                 <span>৳{order.total.toFixed(2)}</span>
@@ -154,17 +272,16 @@ const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onC
             </div>
           </div>
           
-          {order.status === "pending" ? (
-            <div className="flex flex-col gap-4">
-              <p className="text-sm font-medium">This order is awaiting confirmation</p>
+          {/* Action Buttons */}
+          <div className="space-y-4">
+            {order.status === "pending" && (
               <div className="flex gap-2">
                 <Button 
-                  variant="default" 
-                  onClick={handleConfirmOrder}
-                  className="flex-1"
+                  onClick={handleApproveOrder}
+                  className="flex-1 bg-green-600 hover:bg-green-700"
                 >
                   <Check className="mr-2 h-4 w-4" />
-                  Confirm Order
+                  Approve Order
                 </Button>
                 <Button 
                   variant="destructive" 
@@ -175,36 +292,29 @@ const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onC
                   Mark as Fake
                 </Button>
               </div>
-            </div>
-          ) : (
-            <div>
-              <p className="text-sm font-medium mb-2">Update Status</p>
-              <Select defaultValue={order.status} onValueChange={handleStatusChange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="confirmed">Confirmed</SelectItem>
-                  <SelectItem value="processing">Processing</SelectItem>
-                  <SelectItem value="shipped">Shipped</SelectItem>
-                  <SelectItem value="delivered">Delivered</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          
-          <div className="flex justify-between pt-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleSendNotification}
-            >
-              <Send className="mr-1 h-4 w-4" />
-              Send Notification
-            </Button>
+            )}
             
+            {order.status === "approved" && order.kitchenStatus === "ready" && order.riderStatus === "not_assigned" && (
+              <div>
+                <p className="text-sm font-medium mb-2">Assign Delivery Rider</p>
+                <Select onValueChange={handleAssignRider}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a rider" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mockRiders.filter(rider => rider.status === "available").map(rider => (
+                      <SelectItem key={rider.id} value={rider.id}>
+                        {rider.name} ({rider.status})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+          
+          {/* Quick Actions */}
+          <div className="flex justify-between pt-2 border-t">
             <Button 
               variant="outline" 
               size="sm"
@@ -215,16 +325,13 @@ const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onC
                 View Invoice
               </Link>
             </Button>
-          </div>
-          
-          <div className="flex justify-end space-x-2 pt-2">
-            <Button 
-              variant="outline" 
-              onClick={onClose}
-            >
-              Close
-            </Button>
-            <Button>Save Changes</Button>
+            
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={onClose}>
+                Close
+              </Button>
+              <Button>Save Changes</Button>
+            </div>
           </div>
         </div>
       </DialogContent>
@@ -233,6 +340,7 @@ const OrderDetails = ({ order, open, onClose }: { order: any; open: boolean; onC
 };
 
 const Orders = () => {
+  const [orders, setOrders] = useState(mockOrders);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
@@ -241,7 +349,13 @@ const Orders = () => {
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
   const [isManualOrderOpen, setIsManualOrderOpen] = useState(false);
   
-  const filteredOrders = mockOrders.filter(order => {
+  const handleUpdateOrder = (orderId: string, updates: any) => {
+    setOrders(orders.map(order => 
+      order.id === orderId ? { ...order, ...updates } : order
+    ));
+  };
+  
+  const filteredOrders = orders.filter(order => {
     const matchesSearch = 
       order.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
       order.customer.toLowerCase().includes(searchTerm.toLowerCase());
@@ -254,8 +368,12 @@ const Orders = () => {
     return matchesSearch && matchesStatus && matchesSource && matchesFake;
   });
   
-  const pendingOrderCount = mockOrders.filter(order => order.status === "pending").length;
-  const fakeOrderCount = mockOrders.filter(order => order.isFake).length;
+  const pendingOrderCount = orders.filter(order => order.status === "pending").length;
+  const fakeOrderCount = orders.filter(order => order.isFake).length;
+  const approvedOrderCount = orders.filter(order => order.status === "approved").length;
+  const readyForDeliveryCount = orders.filter(order => 
+    order.kitchenStatus === "ready" && order.riderStatus === "not_assigned"
+  ).length;
   
   const handleViewOrder = (order: any) => {
     setSelectedOrder(order);
@@ -263,18 +381,17 @@ const Orders = () => {
   };
   
   const handleCreateManualOrder = (newOrder: any) => {
-    // In a real app, this would be sent to the backend
     console.log("New manual order created:", newOrder);
-    // You could add this to the mockOrders array for demonstration
   };
   
   return (
     <div className="space-y-6 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-6">
+      {/* Header */}
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-3xl font-bold tracking-tight text-gray-900">Orders Management</h2>
-            <p className="text-gray-600 mt-2">Manage customer orders and track delivery status efficiently</p>
+            <p className="text-gray-600 mt-2">Complete order lifecycle management from approval to delivery</p>
           </div>
           <Button 
             onClick={() => setIsManualOrderOpen(true)}
@@ -285,9 +402,54 @@ const Orders = () => {
           </Button>
         </div>
       </div>
+
+      {/* Status Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pending Approval</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">{pendingOrderCount}</div>
+            <p className="text-xs text-muted-foreground">Awaiting manual approval</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">In Kitchen</CardTitle>
+            <ChefHat className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">{approvedOrderCount}</div>
+            <p className="text-xs text-muted-foreground">Being prepared</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Ready for Delivery</CardTitle>
+            <Truck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{readyForDeliveryCount}</div>
+            <p className="text-xs text-muted-foreground">Needs rider assignment</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Fake Orders</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">{fakeOrderCount}</div>
+            <p className="text-xs text-muted-foreground">Flagged orders</p>
+          </CardContent>
+        </Card>
+      </div>
       
       <KitchenPreparation />
       
+      {/* Filters */}
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-4 rounded-lg shadow-sm">
           <div className="relative w-full sm:max-w-xs">
@@ -404,7 +566,8 @@ const Orders = () => {
               <TableHead className="font-semibold">Date</TableHead>
               <TableHead className="font-semibold">Total (BDT)</TableHead>
               <TableHead className="font-semibold">Status</TableHead>
-              <TableHead className="font-semibold">Source</TableHead>
+              <TableHead className="font-semibold">Kitchen</TableHead>
+              <TableHead className="font-semibold">Delivery</TableHead>
               <TableHead className="text-right font-semibold">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -421,22 +584,36 @@ const Orders = () => {
                 <TableCell>{order.date}</TableCell>
                 <TableCell className="font-medium">৳{order.total.toLocaleString('en-BD')}</TableCell>
                 <TableCell>
-                  <div className={`capitalize inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+                  <Badge className={`capitalize ${
                     order.status === "delivered" ? "bg-green-100 text-green-800" :
-                    order.status === "shipped" ? "bg-blue-100 text-blue-800" :
-                    order.status === "processing" || order.status === "confirmed" ? "bg-yellow-100 text-yellow-800" :
-                    order.status === "pending" ? "bg-purple-100 text-purple-800" : 
+                    order.status === "approved" ? "bg-blue-100 text-blue-800" :
+                    order.status === "pending" ? "bg-yellow-100 text-yellow-800" : 
                     "bg-red-100 text-red-800"
                   }`}>
                     {order.status}
-                  </div>
+                  </Badge>
                 </TableCell>
                 <TableCell>
-                  <div className={`capitalize inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-                    order.source === "meta" ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"
+                  <Badge className={`text-xs ${
+                    order.kitchenStatus === "completed" ? "bg-green-100 text-green-800" :
+                    order.kitchenStatus === "ready" ? "bg-green-100 text-green-700" :
+                    order.kitchenStatus === "cooking" ? "bg-blue-100 text-blue-800" :
+                    order.kitchenStatus === "pending" ? "bg-yellow-100 text-yellow-800" :
+                    "bg-gray-100 text-gray-800"
                   }`}>
-                    {order.source}
-                  </div>
+                    {order.kitchenStatus?.replace('_', ' ')}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge className={`text-xs ${
+                    order.riderStatus === "delivered" ? "bg-green-100 text-green-800" :
+                    order.riderStatus === "delivering" ? "bg-orange-100 text-orange-800" :
+                    order.riderStatus === "picked_up" ? "bg-yellow-100 text-yellow-800" :
+                    order.riderStatus === "assigned" ? "bg-blue-100 text-blue-800" :
+                    "bg-gray-100 text-gray-800"
+                  }`}>
+                    {order.riderStatus?.replace('_', ' ')}
+                  </Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <Button
@@ -459,6 +636,7 @@ const Orders = () => {
         order={selectedOrder}
         open={orderDetailsOpen}
         onClose={() => setOrderDetailsOpen(false)}
+        onUpdateOrder={handleUpdateOrder}
       />
       
       <ManualOrderCreation 
