@@ -1,11 +1,12 @@
 
-import { Outlet, Link, useNavigate } from "react-router-dom";
+import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Truck, Package, MapPin, LogOut, User } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const RiderLayout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
@@ -21,6 +22,10 @@ const RiderLayout = () => {
   const handleLogout = () => {
     localStorage.removeItem('rider_user');
     navigate('/rider/login');
+  };
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
   };
 
   if (!user) {
@@ -60,14 +65,22 @@ const RiderLayout = () => {
           <div className="flex space-x-6">
             <Link 
               to="/rider/dashboard" 
-              className="flex items-center space-x-2 px-3 py-2 rounded hover:bg-blue-700 transition-colors"
+              className={`flex items-center space-x-2 px-3 py-2 rounded transition-colors ${
+                isActive('/rider/dashboard') 
+                  ? 'bg-blue-700' 
+                  : 'hover:bg-blue-700'
+              }`}
             >
               <Package className="h-4 w-4" />
               <span>My Deliveries</span>
             </Link>
             <Link 
               to="/rider/map" 
-              className="flex items-center space-x-2 px-3 py-2 rounded hover:bg-blue-700 transition-colors"
+              className={`flex items-center space-x-2 px-3 py-2 rounded transition-colors ${
+                isActive('/rider/map') 
+                  ? 'bg-blue-700' 
+                  : 'hover:bg-blue-700'
+              }`}
             >
               <MapPin className="h-4 w-4" />
               <span>Delivery Map</span>

@@ -13,6 +13,7 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import Dashboard from "./pages/admin/Dashboard";
 import Orders from "./pages/admin/Orders";
 import Products from "./pages/admin/Products";
+import SubCategories from "./pages/admin/SubCategories";
 import Inventory from "./pages/admin/Inventory";
 import Marketing from "./pages/admin/Marketing";
 import SocialMedia from "./pages/admin/SocialMedia";
@@ -36,6 +37,7 @@ import KitchenPreparation from "./components/KitchenPreparation";
 import RiderLogin from "./pages/rider/RiderLogin";
 import RiderLayout from "./components/RiderLayout";
 import RiderDashboard from "./pages/rider/RiderDashboard";
+import RiderMap from "./pages/rider/RiderMap";
 import { Toaster } from "@/components/ui/toaster";
 
 const queryClient = new QueryClient();
@@ -59,6 +61,7 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="orders" element={<Orders />} />
             <Route path="products" element={<Products />} />
+            <Route path="sub-categories" element={<SubCategories />} />
             <Route path="inventory" element={<Inventory />} />
             <Route path="marketing" element={<Marketing />} />
             <Route path="social-media" element={<SocialMedia />} />
@@ -88,6 +91,7 @@ function App() {
           <Route path="/rider/login" element={<RiderLogin />} />
           <Route path="/rider" element={<RiderLayout />}>
             <Route path="dashboard" element={<RiderDashboard />} />
+            <Route path="map" element={<RiderMap />} />
           </Route>
           
           <Route path="*" element={<NotFound />} />

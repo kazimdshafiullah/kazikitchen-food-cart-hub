@@ -103,9 +103,9 @@ const TopBanner = () => {
           <Button 
             variant="ghost" 
             className="text-white hover:bg-white/20"
-            onClick={() => document.getElementById('weekly-food-service')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => document.getElementById('weekend-order-menu')?.scrollIntoView({ behavior: 'smooth' })}
           >
-            Weekly Food Service
+            Weekend Order Menu
           </Button>
         </div>
       </div>

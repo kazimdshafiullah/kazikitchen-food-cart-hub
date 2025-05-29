@@ -75,7 +75,7 @@ const WeeklyMenuSection = () => {
 
   if (mainCategoriesLoading) {
     return (
-      <section id="weekly-food-service" className="py-12 bg-gradient-to-br from-orange-50 to-yellow-50">
+      <section id="weekend-order-menu" className="py-12 bg-gradient-to-br from-orange-50 to-yellow-50">
         <div className="container mx-auto px-4">
           <div className="text-center">
             <div className="animate-pulse">
@@ -89,11 +89,11 @@ const WeeklyMenuSection = () => {
   }
 
   return (
-    <section id="weekly-food-service" className="py-12 bg-gradient-to-br from-orange-50 to-yellow-50">
+    <section id="weekend-order-menu" className="py-12 bg-gradient-to-br from-orange-50 to-yellow-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Weekly Food Service
+            Weekend Order Menu
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Order your weekly meals in advance. Fresh, homemade food delivered daily for 5 days (Sunday to Thursday).
