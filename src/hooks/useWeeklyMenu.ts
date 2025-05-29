@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -232,6 +231,15 @@ export const getCurrentWeekStart = () => {
   const dayOfWeek = today.getDay();
   const startDate = new Date(today);
   startDate.setDate(today.getDate() - dayOfWeek);
+  return startDate.toISOString().split('T')[0];
+};
+
+// Utility function to get next week start date
+export const getNextWeekStart = () => {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const startDate = new Date(today);
+  startDate.setDate(today.getDate() - dayOfWeek + 7); // Add 7 days for next week
   return startDate.toISOString().split('T')[0];
 };
 

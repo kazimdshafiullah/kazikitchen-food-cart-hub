@@ -8,6 +8,7 @@ import Hero from "@/components/Hero";
 import ProductCard from "@/components/ProductCard";
 import CategoryCard from "@/components/CategoryCard";
 import WeeklyMenuSection from "@/components/WeeklyMenuSection";
+import TopBanner from "@/components/TopBanner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -21,8 +22,6 @@ const Index = () => {
   
   const { data: allProducts, isLoading: allProductsLoading } = useProducts();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
-  const { data: featuredProducts, isLoading: featuredLoading } = useFeaturedProducts();
-  const { data: popularProducts, isLoading: popularLoading } = usePopularProducts();
   const { data: categoryProducts, isLoading: categoryProductsLoading } = useProductsByCategory(categoryParam || "");
   
   // Filter products based on search and category
@@ -61,87 +60,14 @@ const Index = () => {
   
   return (
     <div>
+      {/* Top Banner with Categories and Popular Items */}
+      <TopBanner />
+      
       {/* Hero Section */}
       <Hero />
       
-      {/* Weekly Tiffin Service Section */}
+      {/* Weekly Food Service Section */}
       <WeeklyMenuSection />
-      
-      {/* Categories Section */}
-      <section id="categories" className="py-8 md:py-12 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8">Food Categories</h2>
-          {categoriesLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="space-y-3">
-                  <Skeleton className="aspect-square w-full rounded-lg" />
-                  <Skeleton className="h-4 w-3/4 mx-auto" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-              {categories?.map((category) => (
-                <CategoryCard 
-                  key={category.id}
-                  id={category.id}
-                  name={category.name}
-                  image={category.image_url || "/placeholder.svg"}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-      
-      {/* Featured Products */}
-      <section className="py-8 md:py-12">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8">Featured Items</h2>
-          {featuredLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="space-y-3">
-                  <Skeleton className="aspect-square w-full rounded-lg" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-              {featuredProducts?.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-      
-      {/* Popular Products */}
-      <section id="popular" className="py-8 md:py-12 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8">Popular Items</h2>
-          {popularLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="space-y-3">
-                  <Skeleton className="aspect-square w-full rounded-lg" />
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-              {popularProducts?.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
       
       {/* All Products / Category Products / Search Results */}
       <section className="py-8 md:py-12">

@@ -11,6 +11,7 @@ import {
   useMealTypes,
   useWeeklyMenu,
   getCurrentWeekStart,
+  getNextWeekStart,
   isOrderingAllowed,
   getDayName,
   MainCategory,
@@ -24,6 +25,7 @@ const WeeklyMenuSection = () => {
   const [selectedMainCategory, setSelectedMainCategory] = useState<MainCategory | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory | null>(null);
   const [selectedMealType, setSelectedMealType] = useState<MealType | null>(null);
+  const [selectedWeek, setSelectedWeek] = useState<string>(getCurrentWeekStart());
   const [showOrderForm, setShowOrderForm] = useState(false);
 
   const { data: mainCategories, isLoading: mainCategoriesLoading } = useMainCategories();
@@ -33,15 +35,21 @@ const WeeklyMenuSection = () => {
     selectedMainCategory?.id,
     selectedSubCategory?.id,
     selectedMealType?.id,
-    getCurrentWeekStart()
+    selectedWeek
   );
-
-  const canOrder = selectedMainCategory ? isOrderingAllowed(selectedMainCategory) : false;
 
   const handleCategorySelect = (category: MainCategory) => {
     setSelectedMainCategory(category);
     setSelectedSubCategory(null);
     setSelectedMealType(null);
+    
+    // Set appropriate week based on ordering rules
+    const canOrderCurrent = isOrderingAllowed(category);
+    if (canOrderCurrent) {
+      setSelectedWeek(getCurrentWeekStart());
+    } else {
+      setSelectedWeek(getNextWeekStart());
+    }
   };
 
   const handleOrderClick = () => {
@@ -50,9 +58,24 @@ const WeeklyMenuSection = () => {
     }
   };
 
+  const getAvailableWeeks = () => {
+    if (!selectedMainCategory) return [];
+    
+    const weeks = [];
+    const currentWeek = getCurrentWeekStart();
+    const nextWeek = getNextWeekStart();
+    
+    if (isOrderingAllowed(selectedMainCategory)) {
+      weeks.push({ value: currentWeek, label: `This Week (${currentWeek})` });
+    }
+    weeks.push({ value: nextWeek, label: `Next Week (${nextWeek})` });
+    
+    return weeks;
+  };
+
   if (mainCategoriesLoading) {
     return (
-      <section className="py-12 bg-gradient-to-br from-orange-50 to-yellow-50">
+      <section id="weekly-food-service" className="py-12 bg-gradient-to-br from-orange-50 to-yellow-50">
         <div className="container mx-auto px-4">
           <div className="text-center">
             <div className="animate-pulse">
@@ -66,11 +89,11 @@ const WeeklyMenuSection = () => {
   }
 
   return (
-    <section className="py-12 bg-gradient-to-br from-orange-50 to-yellow-50">
+    <section id="weekly-food-service" className="py-12 bg-gradient-to-br from-orange-50 to-yellow-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Weekly Tiffin Service
+            Weekly Food Service
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Order your weekly meals in advance. Fresh, homemade food delivered daily for 5 days (Sunday to Thursday).
@@ -80,7 +103,7 @@ const WeeklyMenuSection = () => {
         {/* Main Category Selection */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           {mainCategories?.map((category) => {
-            const orderingAllowed = isOrderingAllowed(category);
+            const hasAvailableWeeks = getAvailableWeeks().length > 0 || selectedMainCategory?.id === category.id;
             return (
               <Card 
                 key={category.id}
@@ -88,18 +111,15 @@ const WeeklyMenuSection = () => {
                   selectedMainCategory?.id === category.id 
                     ? 'ring-2 ring-kazi-orange shadow-lg' 
                     : ''
-                } ${!orderingAllowed ? 'opacity-60' : ''}`}
-                onClick={() => orderingAllowed && handleCategorySelect(category)}
+                }`}
+                onClick={() => handleCategorySelect(category)}
               >
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-xl">{category.name}</CardTitle>
-                    {!orderingAllowed && (
-                      <Badge variant="destructive" className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        Order Closed
-                      </Badge>
-                    )}
+                    <Badge variant={hasAvailableWeeks ? "default" : "secondary"}>
+                      Available
+                    </Badge>
                   </div>
                   <CardDescription>{category.description}</CardDescription>
                 </CardHeader>
@@ -114,32 +134,38 @@ const WeeklyMenuSection = () => {
                       {category.advance_days === 1 ? 'Next day delivery' : 'Same day delivery'}
                     </div>
                   </div>
-                  {!orderingAllowed && (
-                    <div className="mt-3 p-2 bg-red-50 rounded-lg">
-                      <div className="flex items-center gap-2 text-red-700 text-sm">
-                        <AlertCircle className="h-4 w-4" />
-                        <span>
-                          Ordering time has passed. Order by {category.order_cutoff_time.slice(0, 5)} 
-                          {category.advance_days === 1 ? ' (day before)' : ' (same day)'}
-                        </span>
-                      </div>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             );
           })}
         </div>
 
-        {selectedMainCategory && canOrder && (
+        {selectedMainCategory && (
           <Card className="mb-8">
             <CardHeader>
               <CardTitle>Select Your Plan - {selectedMainCategory.name}</CardTitle>
               <CardDescription>
-                Choose your meal type and subscription plan
+                Choose your meal type, subscription plan, and week
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Week Selection */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">Select Week</label>
+                <div className="flex flex-wrap gap-2">
+                  {getAvailableWeeks().map((week) => (
+                    <Button
+                      key={week.value}
+                      variant={selectedWeek === week.value ? "default" : "outline"}
+                      onClick={() => setSelectedWeek(week.value)}
+                      className="text-sm"
+                    >
+                      {week.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
               <Tabs defaultValue="meal-type" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="meal-type">Meal Type</TabsTrigger>
@@ -197,10 +223,10 @@ const WeeklyMenuSection = () => {
           <Card className="mb-8">
             <CardHeader>
               <CardTitle>
-                This Week's Menu - {selectedMealType.name} ({selectedSubCategory.name})
+                Menu - {selectedMealType.name} ({selectedSubCategory.name})
               </CardTitle>
               <CardDescription>
-                Week starting {getCurrentWeekStart()}
+                Week starting {selectedWeek}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -264,7 +290,7 @@ const WeeklyMenuSection = () => {
             subCategory={selectedSubCategory}
             mealType={selectedMealType}
             weeklyMenu={weeklyMenu}
-            weekStartDate={getCurrentWeekStart()}
+            weekStartDate={selectedWeek}
           />
         )}
       </div>
