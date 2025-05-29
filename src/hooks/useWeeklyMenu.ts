@@ -198,11 +198,20 @@ export const useCreateWeeklyOrder = () => {
 
       // Update stock for each menu item by decreasing current_stock
       for (const item of order_items) {
+        // First, get the current stock
+        const { data: menuItem, error: fetchError } = await supabase
+          .from("weekly_menu")
+          .select("current_stock")
+          .eq("id", item.weekly_menu_id)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        // Then update with the new stock value
+        const newStock = menuItem.current_stock - item.quantity;
         const { error: stockError } = await supabase
           .from("weekly_menu")
-          .update({ 
-            current_stock: supabase.sql`current_stock - ${item.quantity}` 
-          })
+          .update({ current_stock: newStock })
           .eq("id", item.weekly_menu_id);
 
         if (stockError) throw stockError;
