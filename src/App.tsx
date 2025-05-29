@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Layout from "./components/Layout";
@@ -13,7 +12,6 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import Dashboard from "./pages/admin/Dashboard";
 import Orders from "./pages/admin/Orders";
 import Products from "./pages/admin/Products";
-import SubCategories from "./pages/admin/SubCategories";
 import Inventory from "./pages/admin/Inventory";
 import Marketing from "./pages/admin/Marketing";
 import SocialMedia from "./pages/admin/SocialMedia";
@@ -61,7 +59,6 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="orders" element={<Orders />} />
             <Route path="products" element={<Products />} />
-            <Route path="sub-categories" element={<SubCategories />} />
             <Route path="inventory" element={<Inventory />} />
             <Route path="marketing" element={<Marketing />} />
             <Route path="social-media" element={<SocialMedia />} />
