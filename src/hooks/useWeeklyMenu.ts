@@ -196,12 +196,16 @@ export const useCreateWeeklyOrder = () => {
 
       if (itemsError) throw itemsError;
 
-      // Update stock for each menu item
+      // Update stock for each menu item by decreasing current_stock
       for (const item of order_items) {
-        await supabase.rpc('update_stock', {
-          menu_id: item.weekly_menu_id,
-          quantity_ordered: item.quantity
-        });
+        const { error: stockError } = await supabase
+          .from("weekly_menu")
+          .update({ 
+            current_stock: supabase.sql`current_stock - ${item.quantity}` 
+          })
+          .eq("id", item.weekly_menu_id);
+
+        if (stockError) throw stockError;
       }
 
       return order;

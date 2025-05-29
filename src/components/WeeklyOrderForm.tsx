@@ -105,7 +105,10 @@ const WeeklyOrderForm = ({
     }
 
     const orderData = {
-      ...data,
+      customer_name: data.customer_name,
+      customer_email: data.customer_email,
+      customer_phone: data.customer_phone,
+      delivery_address: data.delivery_address,
       main_category_id: mainCategory.id,
       sub_category_id: subCategory.id,
       meal_type_id: mealType.id,
