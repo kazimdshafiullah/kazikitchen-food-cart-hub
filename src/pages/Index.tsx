@@ -7,6 +7,7 @@ import { useCategories } from "@/hooks/useCategories";
 import Hero from "@/components/Hero";
 import ProductCard from "@/components/ProductCard";
 import CategoryCard from "@/components/CategoryCard";
+import WeeklyMenuSection from "@/components/WeeklyMenuSection";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -62,6 +63,9 @@ const Index = () => {
     <div>
       {/* Hero Section */}
       <Hero />
+      
+      {/* Weekly Tiffin Service Section */}
+      <WeeklyMenuSection />
       
       {/* Categories Section */}
       <section id="categories" className="py-8 md:py-12 bg-gray-50">

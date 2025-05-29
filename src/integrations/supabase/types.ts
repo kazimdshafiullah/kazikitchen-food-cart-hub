@@ -33,6 +33,57 @@ export type Database = {
         }
         Relationships: []
       }
+      main_categories: {
+        Row: {
+          advance_days: number
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          order_cutoff_time: string
+          updated_at: string
+        }
+        Insert: {
+          advance_days?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          order_cutoff_time: string
+          updated_at?: string
+        }
+        Update: {
+          advance_days?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          order_cutoff_time?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      meal_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
@@ -157,6 +208,226 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sub_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          main_category_id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          main_category_id: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          main_category_id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sub_categories_main_category_id_fkey"
+            columns: ["main_category_id"]
+            isOneToOne: false
+            referencedRelation: "main_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_menu: {
+        Row: {
+          created_at: string
+          current_stock: number
+          day_of_week: number
+          description: string | null
+          id: string
+          is_active: boolean
+          item_name: string
+          main_category_id: string
+          meal_type_id: string
+          price: number
+          stock_limit: number
+          sub_category_id: string
+          updated_at: string
+          week_start_date: string
+        }
+        Insert: {
+          created_at?: string
+          current_stock?: number
+          day_of_week: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          item_name: string
+          main_category_id: string
+          meal_type_id: string
+          price: number
+          stock_limit?: number
+          sub_category_id: string
+          updated_at?: string
+          week_start_date: string
+        }
+        Update: {
+          created_at?: string
+          current_stock?: number
+          day_of_week?: number
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          item_name?: string
+          main_category_id?: string
+          meal_type_id?: string
+          price?: number
+          stock_limit?: number
+          sub_category_id?: string
+          updated_at?: string
+          week_start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_menu_main_category_id_fkey"
+            columns: ["main_category_id"]
+            isOneToOne: false
+            referencedRelation: "main_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_menu_meal_type_id_fkey"
+            columns: ["meal_type_id"]
+            isOneToOne: false
+            referencedRelation: "meal_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_menu_sub_category_id_fkey"
+            columns: ["sub_category_id"]
+            isOneToOne: false
+            referencedRelation: "sub_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_order_items: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          id: string
+          price: number
+          quantity: number
+          weekly_menu_id: string
+          weekly_order_id: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          id?: string
+          price: number
+          quantity?: number
+          weekly_menu_id: string
+          weekly_order_id: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          id?: string
+          price?: number
+          quantity?: number
+          weekly_menu_id?: string
+          weekly_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_order_items_weekly_menu_id_fkey"
+            columns: ["weekly_menu_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_menu"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_order_items_weekly_order_id_fkey"
+            columns: ["weekly_order_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_orders: {
+        Row: {
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          delivery_address: string
+          id: string
+          main_category_id: string
+          meal_type_id: string
+          status: string
+          sub_category_id: string
+          total_amount: number
+          updated_at: string
+          week_start_date: string
+        }
+        Insert: {
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          delivery_address: string
+          id?: string
+          main_category_id: string
+          meal_type_id: string
+          status?: string
+          sub_category_id: string
+          total_amount: number
+          updated_at?: string
+          week_start_date: string
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string
+          delivery_address?: string
+          id?: string
+          main_category_id?: string
+          meal_type_id?: string
+          status?: string
+          sub_category_id?: string
+          total_amount?: number
+          updated_at?: string
+          week_start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_orders_main_category_id_fkey"
+            columns: ["main_category_id"]
+            isOneToOne: false
+            referencedRelation: "main_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_orders_meal_type_id_fkey"
+            columns: ["meal_type_id"]
+            isOneToOne: false
+            referencedRelation: "meal_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "weekly_orders_sub_category_id_fkey"
+            columns: ["sub_category_id"]
+            isOneToOne: false
+            referencedRelation: "sub_categories"
             referencedColumns: ["id"]
           },
         ]
