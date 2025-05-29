@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { products, Product } from "@/data/products";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -68,7 +69,7 @@ const Products = () => {
   const queryClient = useQueryClient();
 
   // Fetch categories from Supabase
-  const { data: categories } = useQuery({
+  const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -76,7 +77,10 @@ const Products = () => {
         .select("*")
         .order("name");
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching categories:", error);
+        return [];
+      }
       return data as Category[];
     },
   });
@@ -153,7 +157,7 @@ const Products = () => {
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.id.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesCategory = categoryFilter === "all" ? true : product.category === categoryFilter;
+    const matchesCategory = categoryFilter === "all" || product.category === categoryFilter;
     
     return matchesSearch && matchesCategory;
   });
@@ -302,7 +306,7 @@ const Products = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  {categories?.map((category) => (
+                  {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
                     </SelectItem>
@@ -331,7 +335,7 @@ const Products = () => {
                       <TableCell className="font-medium">{product.id}</TableCell>
                       <TableCell>{product.name}</TableCell>
                       <TableCell>
-                        {categories?.find(cat => cat.id === product.category)?.name || product.category}
+                        {categories.find(cat => cat.id === product.category)?.name || product.category}
                       </TableCell>
                       <TableCell>৳{(product.price * 25).toFixed(2)}</TableCell>
                       <TableCell className="text-right">
@@ -390,7 +394,7 @@ const Products = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {categories?.map((category) => (
+                    {categories.map((category) => (
                       <TableRow key={category.id}>
                         <TableCell className="font-medium">{category.name}</TableCell>
                         <TableCell className="max-w-xs truncate">{category.description || "No description"}</TableCell>
@@ -417,7 +421,7 @@ const Products = () => {
                         </TableCell>
                       </TableRow>
                     ))}
-                    {(!categories || categories.length === 0) && (
+                    {categories.length === 0 && (
                       <TableRow>
                         <TableCell colSpan={3} className="text-center py-6">
                           No categories found
