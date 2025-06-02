@@ -146,27 +146,27 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
 }) => {
   if (!order) return null;
   
-  const handleApproveOrder = (orderId: string) => {
-    onUpdateOrder(orderId, { 
+  const handleApproveOrder = () => {
+    onUpdateOrder(order.id, { 
       status: "approved", 
       approvedAt: new Date().toLocaleString(),
       kitchenStatus: "pending"
     });
     toast({
       title: "Order Approved",
-      description: `Order ${orderId} approved and sent to kitchen!`
+      description: `Order ${order.id} approved and sent to kitchen!`
     });
   };
   
-  const handleAssignRider = (orderId: string, riderId: string) => {
+  const handleAssignRider = (riderId: string) => {
     const rider = mockRiders.find(r => r.id === riderId);
-    onUpdateOrder(orderId, { 
+    onUpdateOrder(order.id, { 
       assignedRider: `${riderId} (${rider?.name})`,
       riderStatus: "assigned"
     });
     toast({
       title: "Rider Assigned",
-      description: `${rider?.name} assigned to order ${orderId}.`
+      description: `${rider?.name} assigned to order ${order.id}.`
     });
   };
   
