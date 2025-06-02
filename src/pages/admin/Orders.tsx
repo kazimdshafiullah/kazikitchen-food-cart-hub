@@ -509,7 +509,7 @@ const Orders = () => {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{pendingOrderCount}</div>
+            <div className="text-2xl font-bold text-yellow-600">{orders.filter(order => order.status === "pending" && !order.isFake).length}</div>
             <p className="text-xs text-muted-foreground">Awaiting approval</p>
           </CardContent>
         </Card>
@@ -519,7 +519,7 @@ const Orders = () => {
             <ChefHat className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{approvedOrderCount}</div>
+            <div className="text-2xl font-bold text-blue-600">{orders.filter(order => order.status === "approved").length}</div>
             <p className="text-xs text-muted-foreground">Being prepared</p>
           </CardContent>
         </Card>
@@ -588,54 +588,6 @@ const Orders = () => {
           </Select>
         </div>
       </div>
-      
-      {/* Alert Banners */}
-      {pendingOrderCount > 0 && statusFilter !== "pending" && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-amber-500" />
-            <span className="font-medium text-amber-800">
-              🔔 {pendingOrderCount} new order{pendingOrderCount !== 1 ? 's' : ''} awaiting your approval
-            </span>
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setStatusFilter("pending")}
-            className="border-amber-300 text-amber-700 hover:bg-amber-100"
-          >
-            Review Now
-          </Button>
-        </div>
-      )}
-
-      {awaitingRiderCount > 0 && (
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-2">
-            <Truck className="h-5 w-5 text-orange-500" />
-            <span className="font-medium text-orange-800">
-              🚚 {awaitingRiderCount} order{awaitingRiderCount !== 1 ? 's' : ''} ready for delivery - assign rider{awaitingRiderCount !== 1 ? 's' : ''}
-            </span>
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => {
-              const readyOrder = orders.find(order => 
-                (order.kitchenStatus === "ready" || order.kitchenStatus === "completed") && 
-                order.riderStatus === "not_assigned" && 
-                order.status === "approved"
-              );
-              if (readyOrder) {
-                handleViewOrder(readyOrder);
-              }
-            }}
-            className="border-orange-300 text-orange-700 hover:bg-orange-100"
-          >
-            Assign Riders
-          </Button>
-        </div>
-      )}
       
       <div className="rounded-lg border bg-white shadow-sm">
         <Table>
