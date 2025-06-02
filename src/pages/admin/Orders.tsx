@@ -21,7 +21,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { Check, Eye, Search, Filter, FileText, Clock, AlertTriangle, ChefHat, CheckCircle, Plus, Truck } from "lucide-react";
-import KitchenPreparation from "@/components/KitchenPreparation";
 import ManualOrderCreation from "@/components/ManualOrderCreation";
 
 // Enhanced mock data with kitchen and rider status tracking
@@ -147,27 +146,27 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
 }) => {
   if (!order) return null;
   
-  const handleApproveOrder = () => {
-    onUpdateOrder(order.id, { 
+  const handleApproveOrder = (orderId: string) => {
+    onUpdateOrder(orderId, { 
       status: "approved", 
       approvedAt: new Date().toLocaleString(),
       kitchenStatus: "pending"
     });
     toast({
-      title: "Order Approved & Kitchen Notified",
-      description: `Order ${order.id} approved and sent to kitchen! Customer and kitchen staff notified via email & SMS.`
+      title: "Order Approved",
+      description: `Order ${orderId} approved and sent to kitchen!`
     });
   };
   
-  const handleAssignRider = (riderId: string) => {
+  const handleAssignRider = (orderId: string, riderId: string) => {
     const rider = mockRiders.find(r => r.id === riderId);
-    onUpdateOrder(order.id, { 
+    onUpdateOrder(orderId, { 
       assignedRider: `${riderId} (${rider?.name})`,
       riderStatus: "assigned"
     });
     toast({
-      title: "Rider Assigned & Notified",
-      description: `${rider?.name} assigned to order ${order.id}. Rider notified via email & SMS.`
+      title: "Rider Assigned",
+      description: `${rider?.name} assigned to order ${orderId}.`
     });
   };
   
@@ -448,6 +447,30 @@ const Orders = () => {
   const handleCreateManualOrder = (newOrder: any) => {
     console.log("New manual order created:", newOrder);
   };
+
+  const handleApproveOrder = (orderId: string) => {
+    handleUpdateOrder(orderId, { 
+      status: "approved", 
+      approvedAt: new Date().toLocaleString(),
+      kitchenStatus: "pending"
+    });
+    toast({
+      title: "Order Approved",
+      description: `Order ${orderId} approved and sent to kitchen!`
+    });
+  };
+
+  const handleAssignRider = (orderId: string, riderId: string) => {
+    const rider = mockRiders.find(r => r.id === riderId);
+    handleUpdateOrder(orderId, { 
+      assignedRider: `${riderId} (${rider?.name})`,
+      riderStatus: "assigned"
+    });
+    toast({
+      title: "Rider Assigned",
+      description: `${rider?.name} assigned to order ${orderId}.`
+    });
+  };
   
   return (
     <div className="space-y-6 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-6">
@@ -468,21 +491,31 @@ const Orders = () => {
         </div>
       </div>
 
-      {/* Status Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      {/* Order Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Approval</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{pendingOrderCount}</div>
-            <p className="text-xs text-muted-foreground">Awaiting manual approval</p>
+            <div className="text-2xl font-bold">{orders.length}</div>
+            <p className="text-xs text-muted-foreground">All time orders</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Kitchen</CardTitle>
+            <CardTitle className="text-sm font-medium">Pending Orders</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">{pendingOrderCount}</div>
+            <p className="text-xs text-muted-foreground">Awaiting approval</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
             <ChefHat className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -492,37 +525,15 @@ const Orders = () => {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Awaiting Rider</CardTitle>
-            <Truck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{awaitingRiderCount}</div>
-            <p className="text-xs text-muted-foreground">Ready, needs rider</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Out for Delivery</CardTitle>
+            <CardTitle className="text-sm font-medium">Completed</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{readyForDeliveryCount}</div>
-            <p className="text-xs text-muted-foreground">With riders</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Fake Orders</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{fakeOrderCount}</div>
-            <p className="text-xs text-muted-foreground">Flagged orders</p>
+            <div className="text-2xl font-bold text-green-600">{orders.filter(o => o.status === "delivered").length}</div>
+            <p className="text-xs text-muted-foreground">Successfully delivered</p>
           </CardContent>
         </Card>
       </div>
-      
-      <KitchenPreparation />
       
       {/* Filters */}
       <div className="flex flex-col gap-4">
@@ -547,19 +558,8 @@ const Orders = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="pending">
-                <div className="flex items-center">
-                  <span>Pending</span>
-                  {pendingOrderCount > 0 && (
-                    <span className="ml-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {pendingOrderCount}
-                    </span>
-                  )}
-                </div>
-              </SelectItem>
-              <SelectItem value="confirmed">Confirmed</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
-              <SelectItem value="shipped">Shipped</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
               <SelectItem value="delivered">Delivered</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
@@ -583,16 +583,7 @@ const Orders = () => {
             <SelectContent>
               <SelectItem value="all">All Orders</SelectItem>
               <SelectItem value="real">Real Orders</SelectItem>
-              <SelectItem value="fake">
-                <div className="flex items-center">
-                  <span>Fake Orders</span>
-                  {fakeOrderCount > 0 && (
-                    <span className="ml-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {fakeOrderCount}
-                    </span>
-                  )}
-                </div>
-              </SelectItem>
+              <SelectItem value="fake">Fake Orders</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -653,11 +644,11 @@ const Orders = () => {
               <TableHead className="font-semibold">Order ID</TableHead>
               <TableHead className="font-semibold">Customer</TableHead>
               <TableHead className="font-semibold">Date</TableHead>
-              <TableHead className="font-semibold">Total (BDT)</TableHead>
               <TableHead className="font-semibold">Status</TableHead>
               <TableHead className="font-semibold">Kitchen</TableHead>
               <TableHead className="font-semibold">Delivery</TableHead>
-              <TableHead className="text-right font-semibold">Actions</TableHead>
+              <TableHead className="text-center font-semibold">Pending Approval</TableHead>
+              <TableHead className="text-center font-semibold">Assign Rider</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -671,7 +662,6 @@ const Orders = () => {
                 </TableCell>
                 <TableCell className="font-medium">{order.customer}</TableCell>
                 <TableCell>{order.date}</TableCell>
-                <TableCell className="font-medium">৳{order.total.toLocaleString('en-BD')}</TableCell>
                 <TableCell>
                   <Badge className={`capitalize ${
                     order.status === "delivered" ? "bg-green-100 text-green-800" :
@@ -704,16 +694,39 @@ const Orders = () => {
                     {order.riderStatus?.replace('_', ' ')}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleViewOrder(order)}
-                    className="hover:bg-blue-100"
-                  >
-                    <Eye className="h-4 w-4" />
-                    <span className="sr-only">View order</span>
-                  </Button>
+                <TableCell className="text-center">
+                  {order.status === "pending" && !order.isFake ? (
+                    <Button
+                      size="sm"
+                      onClick={() => handleApproveOrder(order.id)}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <Check className="h-4 w-4 mr-1" />
+                      Approve
+                    </Button>
+                  ) : (
+                    <span className="text-gray-400">-</span>
+                  )}
+                </TableCell>
+                <TableCell className="text-center">
+                  {order.status === "approved" && 
+                   (order.kitchenStatus === "ready" || order.kitchenStatus === "completed") && 
+                   order.riderStatus === "not_assigned" ? (
+                    <Select onValueChange={(riderId) => handleAssignRider(order.id, riderId)}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue placeholder="Assign" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {mockRiders.filter(rider => rider.status === "available" || rider.currentOrders < rider.maxOrders).map(rider => (
+                          <SelectItem key={rider.id} value={rider.id}>
+                            {rider.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <span className="text-gray-400">-</span>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

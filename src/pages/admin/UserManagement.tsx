@@ -23,15 +23,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/components/ui/sonner";
 import { Search, Plus, UserPlus, Shield } from "lucide-react";
 
-// Mock users for demonstration
+// Mock users for demonstration with expanded roles
 const mockUsers = [
   { id: 1, name: "Admin User", email: "admin@kazikitchen.com", role: "admin", status: "active", lastLogin: "2025-05-20 09:15" },
   { id: 2, name: "Manager", email: "manager@kazikitchen.com", role: "manager", status: "active", lastLogin: "2025-05-19 14:30" },
-  { id: 3, name: "Inventory Clerk", email: "inventory@kazikitchen.com", role: "staff", status: "active", lastLogin: "2025-05-18 10:45" },
-  { id: 4, name: "Marketing Staff", email: "marketing@kazikitchen.com", role: "staff", status: "inactive", lastLogin: "2025-05-10 16:20" }
+  { id: 3, name: "Kitchen Staff", email: "kitchen@kazikitchen.com", role: "kitchen", status: "active", lastLogin: "2025-05-18 10:45" },
+  { id: 4, name: "Delivery Rider", email: "rider@kazikitchen.com", role: "rider", status: "active", lastLogin: "2025-05-18 08:20" },
+  { id: 5, name: "Chat Agent", email: "chat@kazikitchen.com", role: "live_chat", status: "active", lastLogin: "2025-05-17 16:30" },
+  { id: 6, name: "Marketing Staff", email: "marketing@kazikitchen.com", role: "staff", status: "inactive", lastLogin: "2025-05-10 16:20" }
 ];
 
-// Define permissions for each feature area
+// Define permissions for each feature area with expanded options
 const permissionAreas = {
   orders: "Manage orders and invoices",
   products: "Manage products and categories",
@@ -43,13 +45,21 @@ const permissionAreas = {
   design: "Edit website design",
   expenses: "Track expenses",
   reports: "View reports",
-  users: "Manage users"
+  users: "Manage users",
+  kitchen_access: "Access kitchen portal",
+  rider_access: "Access rider portal",
+  live_chat_access: "Access live chat management",
+  kitchen_notifications: "Receive kitchen status notifications",
+  rider_notifications: "Receive rider status notifications"
 };
 
-// Default permissions by role
+// Default permissions by role with expanded roles
 const defaultPermissions = {
   admin: Object.keys(permissionAreas),
-  manager: ["orders", "products", "inventory", "marketing", "offers", "customers", "expenses", "reports"],
+  manager: ["orders", "products", "inventory", "marketing", "offers", "customers", "expenses", "reports", "kitchen_notifications", "rider_notifications"],
+  kitchen: ["kitchen_access", "orders"],
+  rider: ["rider_access", "orders"],
+  live_chat: ["live_chat_access", "customers"],
   staff: ["orders", "inventory"]
 };
 
@@ -60,11 +70,11 @@ const UserManagement = () => {
   const [permissionsOpen, setPermissionsOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   
-  // New user form state
+  // New user form state with expanded role options
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
-    role: "staff", // Set a default value to avoid empty string
+    role: "staff",
     password: "",
     confirmPassword: ""
   });
@@ -95,7 +105,6 @@ const UserManagement = () => {
       return;
     }
     
-    // Add new user with default permissions for their role
     const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
     const today = new Date().toLocaleString();
     
@@ -114,7 +123,7 @@ const UserManagement = () => {
     setNewUser({
       name: "",
       email: "",
-      role: "",
+      role: "staff",
       password: "",
       confirmPassword: ""
     });
@@ -125,13 +134,11 @@ const UserManagement = () => {
   
   const openPermissionsDialog = (user: any) => {
     setSelectedUser(user);
-    // Set initial permissions based on user role
     setSelectedPermissions(defaultPermissions[user.role as keyof typeof defaultPermissions] || []);
     setPermissionsOpen(true);
   };
   
   const handleSavePermissions = () => {
-    // In a real app, you would update the user's permissions in the database
     toast.success(`Permissions updated for ${selectedUser?.name}`);
     setPermissionsOpen(false);
   };
@@ -142,6 +149,18 @@ const UserManagement = () => {
         ? current.filter(p => p !== permission)
         : [...current, permission]
     );
+  };
+
+  const getRoleDisplayName = (role: string) => {
+    const roleNames = {
+      admin: "Admin",
+      manager: "Manager", 
+      kitchen: "Kitchen Staff",
+      rider: "Delivery Rider",
+      live_chat: "Live Chat Agent",
+      staff: "Staff"
+    };
+    return roleNames[role as keyof typeof roleNames] || role;
   };
   
   return (
@@ -185,7 +204,7 @@ const UserManagement = () => {
               <TableRow key={user.id}>
                 <TableCell className="font-medium">{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
-                <TableCell className="capitalize">{user.role}</TableCell>
+                <TableCell>{getRoleDisplayName(user.role)}</TableCell>
                 <TableCell>
                   <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                     user.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
@@ -252,6 +271,9 @@ const UserManagement = () => {
                 <SelectContent>
                   <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="manager">Manager</SelectItem>
+                  <SelectItem value="kitchen">Kitchen Staff</SelectItem>
+                  <SelectItem value="rider">Delivery Rider</SelectItem>
+                  <SelectItem value="live_chat">Live Chat Agent</SelectItem>
                   <SelectItem value="staff">Staff</SelectItem>
                 </SelectContent>
               </Select>
@@ -289,28 +311,75 @@ const UserManagement = () => {
       
       {/* Permissions Dialog */}
       <Dialog open={permissionsOpen} onOpenChange={setPermissionsOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>User Permissions</DialogTitle>
             <DialogDescription>
-              {selectedUser && `Set permissions for ${selectedUser.name} (${selectedUser.email})`}
+              {selectedUser && `Set permissions for ${selectedUser.name} (${getRoleDisplayName(selectedUser.role)})`}
             </DialogDescription>
           </DialogHeader>
           
-          <div className="py-2">
+          <div className="py-2 max-h-80 overflow-y-auto">
             <div className="space-y-4">
-              {Object.entries(permissionAreas).map(([key, description]) => (
-                <div key={key} className="flex items-center space-x-2">
-                  <Checkbox 
-                    id={`permission-${key}`} 
-                    checked={selectedPermissions.includes(key)}
-                    onCheckedChange={() => togglePermission(key)}
-                  />
-                  <label htmlFor={`permission-${key}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    {description}
-                  </label>
+              <div>
+                <h4 className="font-medium mb-3">Admin Panel Access</h4>
+                <div className="space-y-3 pl-2">
+                  {Object.entries(permissionAreas).filter(([key]) => 
+                    !key.includes('_access') && !key.includes('_notifications')
+                  ).map(([key, description]) => (
+                    <div key={key} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={`permission-${key}`} 
+                        checked={selectedPermissions.includes(key)}
+                        onCheckedChange={() => togglePermission(key)}
+                      />
+                      <label htmlFor={`permission-${key}`} className="text-sm leading-none">
+                        {description}
+                      </label>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+
+              <div>
+                <h4 className="font-medium mb-3">Portal Access</h4>
+                <div className="space-y-3 pl-2">
+                  {Object.entries(permissionAreas).filter(([key]) => 
+                    key.includes('_access')
+                  ).map(([key, description]) => (
+                    <div key={key} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={`permission-${key}`} 
+                        checked={selectedPermissions.includes(key)}
+                        onCheckedChange={() => togglePermission(key)}
+                      />
+                      <label htmlFor={`permission-${key}`} className="text-sm leading-none">
+                        {description}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-medium mb-3">Notifications</h4>
+                <div className="space-y-3 pl-2">
+                  {Object.entries(permissionAreas).filter(([key]) => 
+                    key.includes('_notifications')
+                  ).map(([key, description]) => (
+                    <div key={key} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={`permission-${key}`} 
+                        checked={selectedPermissions.includes(key)}
+                        onCheckedChange={() => togglePermission(key)}
+                      />
+                      <label htmlFor={`permission-${key}`} className="text-sm leading-none">
+                        {description}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
           
