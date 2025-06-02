@@ -139,16 +139,6 @@ const CategoryManagement = () => {
   };
 
   const handleDeleteCategory = (categoryId: string) => {
-    const category = categories.find(cat => cat.id === categoryId);
-    if (category && category.itemCount > 0) {
-      toast({
-        title: "Cannot Delete",
-        description: "Cannot delete category with existing items",
-        variant: "destructive"
-      });
-      return;
-    }
-
     setCategories(categories.filter(cat => cat.id !== categoryId));
     toast({
       title: "Success",
@@ -235,7 +225,6 @@ const CategoryManagement = () => {
                       size="sm"
                       variant="destructive"
                       onClick={() => handleDeleteCategory(category.id)}
-                      disabled={category.itemCount > 0}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

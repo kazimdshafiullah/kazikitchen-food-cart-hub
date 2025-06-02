@@ -3,22 +3,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle,
-  CardFooter
-} from "@/components/ui/card";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Dialog, 
   DialogContent, 
@@ -35,544 +22,659 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "@/hooks/use-toast";
 import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Calendar, 
-  Percent, 
-  Tag,
-  Users,
-  Gift,
-  Target,
-  Clock
-} from "lucide-react";
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from "@/components/ui/tabs";
+import { toast } from "@/hooks/use-toast";
+import { Plus, Edit, Trash2, Users, PercentIcon, Clock, Target, Gift } from "lucide-react";
 
-// Mock data for product categories
-const productCategories = [
-  { id: "1", name: "Frozen Food" },
-  { id: "2", name: "Tiffin Services" },
-  { id: "3", name: "Office Food" },
-  { id: "4", name: "Fresh Vegetables" },
-  { id: "5", name: "Beverages" },
-  { id: "6", name: "Desserts" },
-  { id: "7", name: "Snacks" }
-];
-
-// Mock offers data
+// Mock data for offers
 const mockOffers = [
   {
     id: "1",
-    title: "Weekend Special",
-    description: "20% off on all tiffin services during weekends",
-    discountType: "percentage",
-    discountValue: 20,
-    category: "Tiffin Services",
+    name: "Weekend Special",
+    description: "50% off on all weekend orders",
+    type: "percentage",
+    value: 50,
     minOrderAmount: 500,
     maxDiscount: 200,
-    startDate: "2025-05-18",
-    endDate: "2025-05-25",
+    validFrom: "2025-05-18",
+    validTo: "2025-05-25",
     usageLimit: 100,
-    usedCount: 23,
-    status: "active",
-    code: "WEEKEND20"
+    usedCount: 25,
+    isActive: true,
+    code: "WEEKEND50",
+    targetCategory: "all",
+    targetCustomer: "all"
   },
   {
     id: "2",
-    title: "New Customer Welcome",
-    description: "Get ৳100 off on your first order",
-    discountType: "fixed",
-    discountValue: 100,
-    category: "All Categories",
+    name: "First Order Discount",
+    description: "₹100 off on first order",
+    type: "fixed",
+    value: 100,
     minOrderAmount: 300,
     maxDiscount: 100,
-    startDate: "2025-05-01",
-    endDate: "2025-05-31",
+    validFrom: "2025-05-01",
+    validTo: "2025-06-30",
     usageLimit: 500,
-    usedCount: 127,
-    status: "active",
-    code: "WELCOME100"
-  },
-  {
-    id: "3",
-    title: "Frozen Food Flash Sale",
-    description: "30% off on all frozen food items",
-    discountType: "percentage",
-    discountValue: 30,
-    category: "Frozen Food",
-    minOrderAmount: 800,
-    maxDiscount: 500,
-    startDate: "2025-05-15",
-    endDate: "2025-05-20",
-    usageLimit: 50,
-    usedCount: 45,
-    status: "expired",
-    code: "FROZEN30"
+    usedCount: 89,
+    isActive: true,
+    code: "FIRST100",
+    targetCategory: "all",
+    targetCustomer: "new"
   }
 ];
 
-const CreateOfferDialog = ({ open, onClose, onCreateOffer }: {
-  open: boolean;
-  onClose: () => void;
-  onCreateOffer: (offer: any) => void;
-}) => {
+const OfferManagement = () => {
+  const [offers, setOffers] = useState(mockOffers);
+  const [isCreateOfferOpen, setIsCreateOfferOpen] = useState(false);
+  const [editingOffer, setEditingOffer] = useState<any>(null);
   const [newOffer, setNewOffer] = useState({
-    title: "",
+    name: "",
     description: "",
-    discountType: "percentage",
-    discountValue: "",
-    category: "",
-    minOrderAmount: "",
-    maxDiscount: "",
-    startDate: "",
-    endDate: "",
-    usageLimit: "",
+    type: "percentage",
+    value: 0,
+    minOrderAmount: 0,
+    maxDiscount: 0,
+    validFrom: "",
+    validTo: "",
+    usageLimit: 0,
     code: "",
-    targetAudience: "all",
-    specificProducts: [],
-    validDays: [],
-    validHours: { start: "", end: "" }
+    targetCategory: "all",
+    targetCustomer: "all"
   });
 
-  const handleCreate = () => {
-    if (!newOffer.title || !newOffer.discountValue || !newOffer.category) {
+  const handleCreateOffer = () => {
+    if (!newOffer.name.trim() || !newOffer.code.trim()) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields",
+        description: "Offer name and code are required",
         variant: "destructive"
       });
       return;
     }
 
     const offer = {
-      ...newOffer,
       id: Date.now().toString(),
+      ...newOffer,
       usedCount: 0,
-      status: "active"
+      isActive: true
     };
 
-    onCreateOffer(offer);
+    setOffers([...offers, offer]);
+    setNewOffer({
+      name: "",
+      description: "",
+      type: "percentage",
+      value: 0,
+      minOrderAmount: 0,
+      maxDiscount: 0,
+      validFrom: "",
+      validTo: "",
+      usageLimit: 0,
+      code: "",
+      targetCategory: "all",
+      targetCustomer: "all"
+    });
+    setIsCreateOfferOpen(false);
+    
     toast({
       title: "Success",
       description: "Offer created successfully"
     });
-    onClose();
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Create New Offer</DialogTitle>
-          <DialogDescription>Set up a new promotional offer with advanced targeting options</DialogDescription>
-        </DialogHeader>
-        
-        <div className="space-y-6">
-          {/* Basic Information */}
-          <div className="space-y-4">
-            <h4 className="font-medium">Basic Information</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Offer Title *</label>
-                <Input
-                  value={newOffer.title}
-                  onChange={(e) => setNewOffer({...newOffer, title: e.target.value})}
-                  placeholder="Enter offer title"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Promo Code</label>
-                <Input
-                  value={newOffer.code}
-                  onChange={(e) => setNewOffer({...newOffer, code: e.target.value.toUpperCase()})}
-                  placeholder="PROMO20"
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Description</label>
-              <Textarea
-                value={newOffer.description}
-                onChange={(e) => setNewOffer({...newOffer, description: e.target.value})}
-                placeholder="Describe your offer"
-                rows={3}
-              />
-            </div>
-          </div>
+  const handleUpdateOffer = () => {
+    if (!editingOffer?.name.trim() || !editingOffer?.code.trim()) {
+      toast({
+        title: "Error",
+        description: "Offer name and code are required",
+        variant: "destructive"
+      });
+      return;
+    }
 
-          {/* Discount Settings */}
-          <div className="space-y-4">
-            <h4 className="font-medium">Discount Settings</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Discount Type *</label>
-                <Select value={newOffer.discountType} onValueChange={(value) => setNewOffer({...newOffer, discountType: value})}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="percentage">Percentage (%)</SelectItem>
-                    <SelectItem value="fixed">Fixed Amount (৳)</SelectItem>
-                    <SelectItem value="bogo">Buy One Get One</SelectItem>
-                    <SelectItem value="free_delivery">Free Delivery</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  {newOffer.discountType === "percentage" ? "Discount %" : "Discount Amount *"}
-                </label>
-                <Input
-                  type="number"
-                  value={newOffer.discountValue}
-                  onChange={(e) => setNewOffer({...newOffer, discountValue: e.target.value})}
-                  placeholder={newOffer.discountType === "percentage" ? "20" : "100"}
-                  disabled={newOffer.discountType === "bogo" || newOffer.discountType === "free_delivery"}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Max Discount (৳)</label>
-                <Input
-                  type="number"
-                  value={newOffer.maxDiscount}
-                  onChange={(e) => setNewOffer({...newOffer, maxDiscount: e.target.value})}
-                  placeholder="500"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Minimum Order Amount (৳)</label>
-                <Input
-                  type="number"
-                  value={newOffer.minOrderAmount}
-                  onChange={(e) => setNewOffer({...newOffer, minOrderAmount: e.target.value})}
-                  placeholder="300"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Usage Limit</label>
-                <Input
-                  type="number"
-                  value={newOffer.usageLimit}
-                  onChange={(e) => setNewOffer({...newOffer, usageLimit: e.target.value})}
-                  placeholder="100"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Category & Product Targeting */}
-          <div className="space-y-4">
-            <h4 className="font-medium">Product Targeting</h4>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Product Category *</label>
-              <Select value={newOffer.category} onValueChange={(value) => setNewOffer({...newOffer, category: value})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All Categories">All Categories</SelectItem>
-                  {productCategories.map((category) => (
-                    <SelectItem key={category.id} value={category.name}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Customer Targeting */}
-          <div className="space-y-4">
-            <h4 className="font-medium">Customer Targeting</h4>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Target Audience</label>
-              <Select value={newOffer.targetAudience} onValueChange={(value) => setNewOffer({...newOffer, targetAudience: value})}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Customers</SelectItem>
-                  <SelectItem value="new">New Customers Only</SelectItem>
-                  <SelectItem value="returning">Returning Customers</SelectItem>
-                  <SelectItem value="vip">VIP Customers</SelectItem>
-                  <SelectItem value="inactive">Inactive Customers</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Time Settings */}
-          <div className="space-y-4">
-            <h4 className="font-medium">Time Settings</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Start Date</label>
-                <Input
-                  type="date"
-                  value={newOffer.startDate}
-                  onChange={(e) => setNewOffer({...newOffer, startDate: e.target.value})}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">End Date</label>
-                <Input
-                  type="date"
-                  value={newOffer.endDate}
-                  onChange={(e) => setNewOffer({...newOffer, endDate: e.target.value})}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Valid From (Time)</label>
-                <Input
-                  type="time"
-                  value={newOffer.validHours.start}
-                  onChange={(e) => setNewOffer({
-                    ...newOffer, 
-                    validHours: {...newOffer.validHours, start: e.target.value}
-                  })}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Valid Until (Time)</label>
-                <Input
-                  type="time"
-                  value={newOffer.validHours.end}
-                  onChange={(e) => setNewOffer({
-                    ...newOffer, 
-                    validHours: {...newOffer.validHours, end: e.target.value}
-                  })}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleCreate}>Create Offer</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-const Offers = () => {
-  const [offers, setOffers] = useState(mockOffers);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [editingOffer, setEditingOffer] = useState<any>(null);
-
-  const handleCreateOffer = (newOffer: any) => {
-    setOffers([...offers, newOffer]);
-    setIsCreateDialogOpen(false);
-  };
-
-  const handleToggleStatus = (offerId: string) => {
     setOffers(offers.map(offer => 
-      offer.id === offerId 
-        ? { ...offer, status: offer.status === "active" ? "inactive" : "active" }
-        : offer
+      offer.id === editingOffer.id ? editingOffer : offer
     ));
+    setEditingOffer(null);
     
-    const offer = offers.find(o => o.id === offerId);
     toast({
-      title: "Offer Updated",
-      description: `Offer "${offer?.title}" has been ${offer?.status === "active" ? "deactivated" : "activated"}.`
+      title: "Success",
+      description: "Offer updated successfully"
     });
   };
 
   const handleDeleteOffer = (offerId: string) => {
     setOffers(offers.filter(offer => offer.id !== offerId));
     toast({
-      title: "Offer Deleted",
-      description: "Offer has been deleted successfully."
+      title: "Success",
+      description: "Offer deleted successfully"
     });
   };
 
-  const activeOffers = offers.filter(offer => offer.status === "active").length;
-  const totalUsage = offers.reduce((acc, offer) => acc + offer.usedCount, 0);
-  const totalSavings = offers.reduce((acc, offer) => {
-    if (offer.discountType === "percentage") {
-      return acc + (offer.usedCount * offer.maxDiscount);
-    } else {
-      return acc + (offer.usedCount * offer.discountValue);
-    }
-  }, 0);
+  const handleToggleOffer = (offerId: string) => {
+    setOffers(offers.map(offer => 
+      offer.id === offerId ? { ...offer, isActive: !offer.isActive } : offer
+    ));
+    
+    const offer = offers.find(o => o.id === offerId);
+    toast({
+      title: "Success",
+      description: `Offer ${offer?.isActive ? 'deactivated' : 'activated'} successfully`
+    });
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Offers & Promotions</h2>
-          <p className="text-muted-foreground">Create and manage promotional offers with advanced targeting</p>
+          <h3 className="text-lg font-semibold">Offer Management</h3>
+          <p className="text-sm text-muted-foreground">Create and manage promotional offers</p>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Offer
-        </Button>
+        <Dialog open={isCreateOfferOpen} onOpenChange={setIsCreateOfferOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Offer
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Create New Offer</DialogTitle>
+              <DialogDescription>Set up a new promotional offer for your customers</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Offer Name</label>
+                  <Input
+                    value={newOffer.name}
+                    onChange={(e) => setNewOffer({...newOffer, name: e.target.value})}
+                    placeholder="Enter offer name"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Offer Code</label>
+                  <Input
+                    value={newOffer.code}
+                    onChange={(e) => setNewOffer({...newOffer, code: e.target.value.toUpperCase()})}
+                    placeholder="Enter offer code"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium">Description</label>
+                <Textarea
+                  value={newOffer.description}
+                  onChange={(e) => setNewOffer({...newOffer, description: e.target.value})}
+                  placeholder="Enter offer description"
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Discount Type</label>
+                  <Select value={newOffer.type} onValueChange={(value) => setNewOffer({...newOffer, type: value})}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="percentage">Percentage</SelectItem>
+                      <SelectItem value="fixed">Fixed Amount</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Discount Value</label>
+                  <Input
+                    type="number"
+                    value={newOffer.value}
+                    onChange={(e) => setNewOffer({...newOffer, value: Number(e.target.value)})}
+                    placeholder={newOffer.type === "percentage" ? "Enter percentage" : "Enter amount"}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Min Order Amount</label>
+                  <Input
+                    type="number"
+                    value={newOffer.minOrderAmount}
+                    onChange={(e) => setNewOffer({...newOffer, minOrderAmount: Number(e.target.value)})}
+                    placeholder="Minimum order amount"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Max Discount (₹)</label>
+                  <Input
+                    type="number"
+                    value={newOffer.maxDiscount}
+                    onChange={(e) => setNewOffer({...newOffer, maxDiscount: Number(e.target.value)})}
+                    placeholder="Maximum discount amount"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Valid From</label>
+                  <Input
+                    type="date"
+                    value={newOffer.validFrom}
+                    onChange={(e) => setNewOffer({...newOffer, validFrom: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Valid To</label>
+                  <Input
+                    type="date"
+                    value={newOffer.validTo}
+                    onChange={(e) => setNewOffer({...newOffer, validTo: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Target Category</label>
+                  <Select value={newOffer.targetCategory} onValueChange={(value) => setNewOffer({...newOffer, targetCategory: value})}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      <SelectItem value="frozen">Frozen Food</SelectItem>
+                      <SelectItem value="tiffin">Tiffin Services</SelectItem>
+                      <SelectItem value="office">Office Food</SelectItem>
+                      <SelectItem value="vegetables">Fresh Vegetables</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Target Customer</label>
+                  <Select value={newOffer.targetCustomer} onValueChange={(value) => setNewOffer({...newOffer, targetCustomer: value})}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Customers</SelectItem>
+                      <SelectItem value="new">New Customers</SelectItem>
+                      <SelectItem value="existing">Existing Customers</SelectItem>
+                      <SelectItem value="premium">Premium Customers</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Usage Limit</label>
+                <Input
+                  type="number"
+                  value={newOffer.usageLimit}
+                  onChange={(e) => setNewOffer({...newOffer, usageLimit: Number(e.target.value)})}
+                  placeholder="Maximum number of uses"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsCreateOfferOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCreateOffer}>Create Offer</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      {/* Stats Cards */}
+      <div className="rounded-lg border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Offer Name</TableHead>
+              <TableHead>Code</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Value</TableHead>
+              <TableHead>Usage</TableHead>
+              <TableHead>Valid Until</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {offers.map((offer) => (
+              <TableRow key={offer.id}>
+                <TableCell className="font-medium">{offer.name}</TableCell>
+                <TableCell>
+                  <Badge variant="outline">{offer.code}</Badge>
+                </TableCell>
+                <TableCell className="capitalize">{offer.type}</TableCell>
+                <TableCell>
+                  {offer.type === "percentage" ? `${offer.value}%` : `₹${offer.value}`}
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-col">
+                    <span className="text-sm">{offer.usedCount}/{offer.usageLimit}</span>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-blue-600 h-2 rounded-full" 
+                        style={{ width: `${(offer.usedCount / offer.usageLimit) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>{offer.validTo}</TableCell>
+                <TableCell>
+                  <Badge variant={offer.isActive ? "default" : "secondary"}>
+                    {offer.isActive ? "Active" : "Inactive"}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setEditingOffer(offer)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={offer.isActive ? "secondary" : "default"}
+                      onClick={() => handleToggleOffer(offer.id)}
+                    >
+                      {offer.isActive ? "Deactivate" : "Activate"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDeleteOffer(offer.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Edit Offer Dialog */}
+      <Dialog open={!!editingOffer} onOpenChange={() => setEditingOffer(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Offer</DialogTitle>
+            <DialogDescription>Update offer information</DialogDescription>
+          </DialogHeader>
+          {editingOffer && (
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Offer Name</label>
+                  <Input
+                    value={editingOffer.name}
+                    onChange={(e) => setEditingOffer({...editingOffer, name: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Offer Code</label>
+                  <Input
+                    value={editingOffer.code}
+                    onChange={(e) => setEditingOffer({...editingOffer, code: e.target.value.toUpperCase()})}
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium">Description</label>
+                <Textarea
+                  value={editingOffer.description}
+                  onChange={(e) => setEditingOffer({...editingOffer, description: e.target.value})}
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Discount Type</label>
+                  <Select value={editingOffer.type} onValueChange={(value) => setEditingOffer({...editingOffer, type: value})}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="percentage">Percentage</SelectItem>
+                      <SelectItem value="fixed">Fixed Amount</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Discount Value</label>
+                  <Input
+                    type="number"
+                    value={editingOffer.value}
+                    onChange={(e) => setEditingOffer({...editingOffer, value: Number(e.target.value)})}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Min Order Amount</label>
+                  <Input
+                    type="number"
+                    value={editingOffer.minOrderAmount}
+                    onChange={(e) => setEditingOffer({...editingOffer, minOrderAmount: Number(e.target.value)})}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Max Discount (₹)</label>
+                  <Input
+                    type="number"
+                    value={editingOffer.maxDiscount}
+                    onChange={(e) => setEditingOffer({...editingOffer, maxDiscount: Number(e.target.value)})}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Valid From</label>
+                  <Input
+                    type="date"
+                    value={editingOffer.validFrom}
+                    onChange={(e) => setEditingOffer({...editingOffer, validFrom: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Valid To</label>
+                  <Input
+                    type="date"
+                    value={editingOffer.validTo}
+                    onChange={(e) => setEditingOffer({...editingOffer, validTo: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Target Category</label>
+                  <Select value={editingOffer.targetCategory} onValueChange={(value) => setEditingOffer({...editingOffer, targetCategory: value})}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      <SelectItem value="frozen">Frozen Food</SelectItem>
+                      <SelectItem value="tiffin">Tiffin Services</SelectItem>
+                      <SelectItem value="office">Office Food</SelectItem>
+                      <SelectItem value="vegetables">Fresh Vegetables</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Target Customer</label>
+                  <Select value={editingOffer.targetCustomer} onValueChange={(value) => setEditingOffer({...editingOffer, targetCustomer: value})}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Customers</SelectItem>
+                      <SelectItem value="new">New Customers</SelectItem>
+                      <SelectItem value="existing">Existing Customers</SelectItem>
+                      <SelectItem value="premium">Premium Customers</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Usage Limit</label>
+                <Input
+                  type="number"
+                  value={editingOffer.usageLimit}
+                  onChange={(e) => setEditingOffer({...editingOffer, usageLimit: Number(e.target.value)})}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingOffer(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateOffer}>Update Offer</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+const OfferAnalytics = () => {
+  const activeOffers = mockOffers.filter(offer => offer.isActive).length;
+  const totalRedemptions = mockOffers.reduce((acc, offer) => acc + offer.usedCount, 0);
+  const totalSavings = mockOffers.reduce((acc, offer) => {
+    if (offer.type === "percentage") {
+      return acc + (offer.usedCount * offer.maxDiscount);
+    }
+    return acc + (offer.usedCount * offer.value);
+  }, 0);
+
+  return (
+    <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Offers</CardTitle>
+            <CardTitle className="text-sm font-medium">Active Offers</CardTitle>
             <Gift className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{offers.length}</div>
+            <div className="text-2xl font-bold">{activeOffers}</div>
+            <p className="text-xs text-muted-foreground">Currently running</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Offers</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{activeOffers}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Usage</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Redemptions</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalUsage}</div>
+            <div className="text-2xl font-bold">{totalRedemptions}</div>
+            <p className="text-xs text-muted-foreground">Times offers used</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Customer Savings</CardTitle>
-            <Percent className="h-4 w-4 text-muted-foreground" />
+            <PercentIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">৳{totalSavings.toFixed(2)}</div>
+            <div className="text-2xl font-bold">₹{totalSavings}</div>
+            <p className="text-xs text-muted-foreground">Total discounts given</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Avg. Usage Rate</CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {mockOffers.length > 0 ? Math.round((totalRedemptions / mockOffers.reduce((acc, offer) => acc + offer.usageLimit, 0)) * 100) : 0}%
+            </div>
+            <p className="text-xs text-muted-foreground">Of total capacity</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Offers Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Offers</CardTitle>
-          <CardDescription>Manage your promotional offers and track their performance</CardDescription>
+          <CardTitle>Offer Performance</CardTitle>
+          <CardDescription>Detailed breakdown of offer usage and effectiveness</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Offer Details</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Discount</TableHead>
-                <TableHead>Usage</TableHead>
-                <TableHead>Validity</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {offers.map((offer) => (
-                <TableRow key={offer.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{offer.title}</p>
-                      <p className="text-sm text-muted-foreground">{offer.description}</p>
-                      {offer.code && (
-                        <Badge variant="outline" className="mt-1 text-xs">
-                          {offer.code}
-                        </Badge>
-                      )}
+          <div className="space-y-4">
+            {mockOffers.map((offer) => (
+              <div key={offer.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex-1">
+                  <h4 className="font-medium">{offer.name}</h4>
+                  <p className="text-sm text-muted-foreground">{offer.code}</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-center">
+                    <p className="text-sm font-medium">{offer.usedCount}/{offer.usageLimit}</p>
+                    <p className="text-xs text-muted-foreground">Uses</p>
+                  </div>
+                  <div className="w-32">
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-green-600 h-2 rounded-full" 
+                        style={{ width: `${(offer.usedCount / offer.usageLimit) * 100}%` }}
+                      ></div>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{offer.category}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    {offer.discountType === "percentage" ? (
-                      <span>{offer.discountValue}% off</span>
-                    ) : offer.discountType === "fixed" ? (
-                      <span>৳{offer.discountValue} off</span>
-                    ) : offer.discountType === "bogo" ? (
-                      <span>Buy 1 Get 1</span>
-                    ) : (
-                      <span>Free Delivery</span>
-                    )}
-                    {offer.minOrderAmount > 0 && (
-                      <p className="text-xs text-muted-foreground">
-                        Min: ৳{offer.minOrderAmount}
-                      </p>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <p>{offer.usedCount} / {offer.usageLimit}</p>
-                      <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                        <div 
-                          className="bg-blue-600 h-2 rounded-full" 
-                          style={{width: `${(offer.usedCount / offer.usageLimit) * 100}%`}}
-                        />
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <p>{offer.startDate}</p>
-                      <p className="text-muted-foreground">to {offer.endDate}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={
-                      offer.status === "active" ? "default" :
-                      offer.status === "expired" ? "destructive" : "secondary"
-                    }>
-                      {offer.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button size="sm" variant="outline">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant={offer.status === "active" ? "secondary" : "default"}
-                        onClick={() => handleToggleStatus(offer.id)}
-                      >
-                        {offer.status === "active" ? "Deactivate" : "Activate"}
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="destructive"
-                        onClick={() => handleDeleteOffer(offer.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                  </div>
+                  <Badge variant={offer.isActive ? "default" : "secondary"}>
+                    {offer.isActive ? "Active" : "Inactive"}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
+    </div>
+  );
+};
 
-      <CreateOfferDialog
-        open={isCreateDialogOpen}
-        onClose={() => setIsCreateDialogOpen(false)}
-        onCreateOffer={handleCreateOffer}
-      />
+const Offers = () => {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight">Offers & Promotions</h2>
+        <p className="text-muted-foreground">Create and manage promotional offers to boost sales</p>
+      </div>
+
+      <Tabs defaultValue="offers" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="offers">Manage Offers</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="offers">
+          <OfferManagement />
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <OfferAnalytics />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

@@ -19,10 +19,17 @@ import {
 } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { Check, Eye, Search, Filter, FileText, Clock, AlertTriangle, ChefHat, CheckCircle, Plus, Truck, X } from "lucide-react";
+import { Check, Eye, Search, Filter, FileText, Clock, AlertTriangle, ChefHat, CheckCircle, Plus, Truck, X, Package } from "lucide-react";
 import ManualOrderCreation from "@/components/ManualOrderCreation";
 import NotificationBell from "@/components/NotificationBell";
+import OrderSummary from "@/components/OrderSummary";
 
 // Enhanced mock data with kitchen and rider status tracking
 const mockOrders = [
@@ -602,179 +609,199 @@ const Orders = () => {
           </CardContent>
         </Card>
       </div>
-      
-      {/* Filters */}
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-4 rounded-lg shadow-sm">
-          <div className="relative w-full sm:max-w-xs">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search orders..."
-              className="pl-8 w-full"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
-        
-        <div className="flex flex-wrap gap-2 items-center bg-white p-4 rounded-lg shadow-sm">
-          <Filter className="h-4 w-4 text-gray-400" />
-          
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <Select value={sourceFilter} onValueChange={setSourceFilter}>
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Source" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Sources</SelectItem>
-              <SelectItem value="website">Website</SelectItem>
-              <SelectItem value="meta">Meta</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <Select value={fakeFilter} onValueChange={setFakeFilter}>
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Order Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Orders</SelectItem>
-              <SelectItem value="real">Real Orders</SelectItem>
-              <SelectItem value="fake">Fake Orders</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      
-      <div className="rounded-lg border bg-white shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-50">
-              <TableHead className="font-semibold">Order ID</TableHead>
-              <TableHead className="font-semibold">Customer</TableHead>
-              <TableHead className="font-semibold">Date</TableHead>
-              <TableHead className="font-semibold">Status</TableHead>
-              <TableHead className="font-semibold">Kitchen</TableHead>
-              <TableHead className="font-semibold">Delivery</TableHead>
-              <TableHead className="font-semibold">Assigned Rider</TableHead>
-              <TableHead className="text-center font-semibold">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredOrders.map(order => (
-              <TableRow key={order.id} className={`hover:bg-gray-50 ${order.isFake ? "bg-red-50" : ""}`}>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    {order.id}
-                    {order.isFake && <AlertTriangle className="h-4 w-4 text-red-500" />}
-                  </div>
-                </TableCell>
-                <TableCell className="font-medium">{order.customer}</TableCell>
-                <TableCell>{order.date}</TableCell>
-                <TableCell>
-                  <Badge className={`capitalize ${
-                    order.status === "delivered" ? "bg-green-100 text-green-800" :
-                    order.status === "approved" ? "bg-blue-100 text-blue-800" :
-                    order.status === "pending" ? "bg-yellow-100 text-yellow-800" : 
-                    "bg-red-100 text-red-800"
-                  }`}>
-                    {order.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge className={`text-xs ${
-                    order.kitchenStatus === "completed" ? "bg-green-100 text-green-800" :
-                    order.kitchenStatus === "ready" ? "bg-green-100 text-green-700" :
-                    order.kitchenStatus === "cooking" ? "bg-blue-100 text-blue-800" :
-                    order.kitchenStatus === "pending" ? "bg-yellow-100 text-yellow-800" :
-                    "bg-gray-100 text-gray-800"
-                  }`}>
-                    {order.kitchenStatus?.replace('_', ' ')}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge className={`text-xs ${
-                    order.riderStatus === "delivered" ? "bg-green-100 text-green-800" :
-                    order.riderStatus === "delivering" ? "bg-orange-100 text-orange-800" :
-                    order.riderStatus === "picked_up" ? "bg-yellow-100 text-yellow-800" :
-                    order.riderStatus === "assigned" ? "bg-blue-100 text-blue-800" :
-                    "bg-gray-100 text-gray-800"
-                  }`}>
-                    {order.riderStatus?.replace('_', ' ')}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  {order.assignedRider ? (
-                    <span className="text-sm font-medium text-blue-600">{order.assignedRider}</span>
-                  ) : (
-                    <span className="text-gray-400 text-sm">Not assigned</span>
-                  )}
-                </TableCell>
-                <TableCell className="text-center">
-                  <div className="flex gap-2 justify-center">
-                    {order.status === "pending" && !order.isFake && (
-                      <>
-                        <Button
-                          size="sm"
-                          onClick={() => handleApproveOrder(order.id)}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <Check className="h-4 w-4 mr-1" />
-                          Approve
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleRejectOrder(order.id)}
-                        >
-                          <X className="h-4 w-4 mr-1" />
-                          Reject
-                        </Button>
-                      </>
-                    )}
-                    
-                    {order.status === "approved" && 
-                     (order.kitchenStatus === "ready" || order.kitchenStatus === "completed") && 
-                     order.riderStatus === "not_assigned" && (
-                      <Select onValueChange={(riderId) => handleAssignRider(order.id, riderId)}>
-                        <SelectTrigger className="w-32">
-                          <SelectValue placeholder="Assign Rider" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {mockRiders.filter(rider => rider.status === "available" || rider.currentOrders < rider.maxOrders).map(rider => (
-                            <SelectItem key={rider.id} value={rider.id}>
-                              {rider.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
 
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleViewOrder(order)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      {/* Tabs for Orders View and Items Summary */}
+      <Tabs defaultValue="orders" className="space-y-4">
+        <TabsList className="bg-white">
+          <TabsTrigger value="orders" className="flex items-center gap-2">
+            <Package className="h-4 w-4" />
+            Orders View
+          </TabsTrigger>
+          <TabsTrigger value="summary" className="flex items-center gap-2 bg-orange-100 text-orange-800 border border-orange-200">
+            <ChefHat className="h-4 w-4" />
+            Items Summary
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="orders" className="space-y-4">
+          {/* Filters */}
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-4 rounded-lg shadow-sm">
+              <div className="relative w-full sm:max-w-xs">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search orders..."
+                  className="pl-8 w-full"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-2 items-center bg-white p-4 rounded-lg shadow-sm">
+              <Filter className="h-4 w-4 text-gray-400" />
+              
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="delivered">Delivered</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Source" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sources</SelectItem>
+                  <SelectItem value="website">Website</SelectItem>
+                  <SelectItem value="meta">Meta</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select value={fakeFilter} onValueChange={setFakeFilter}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Order Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Orders</SelectItem>
+                  <SelectItem value="real">Real Orders</SelectItem>
+                  <SelectItem value="fake">Fake Orders</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="rounded-lg border bg-white shadow-sm">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50">
+                  <TableHead className="font-semibold">Order ID</TableHead>
+                  <TableHead className="font-semibold">Customer</TableHead>
+                  <TableHead className="font-semibold">Date</TableHead>
+                  <TableHead className="font-semibold">Status</TableHead>
+                  <TableHead className="font-semibold">Kitchen</TableHead>
+                  <TableHead className="font-semibold">Delivery</TableHead>
+                  <TableHead className="font-semibold">Assigned Rider</TableHead>
+                  <TableHead className="text-center font-semibold">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredOrders.map(order => (
+                  <TableRow key={order.id} className={`hover:bg-gray-50 ${order.isFake ? "bg-red-50" : ""}`}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        {order.id}
+                        {order.isFake && <AlertTriangle className="h-4 w-4 text-red-500" />}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">{order.customer}</TableCell>
+                    <TableCell>{order.date}</TableCell>
+                    <TableCell>
+                      <Badge className={`capitalize ${
+                        order.status === "delivered" ? "bg-green-100 text-green-800" :
+                        order.status === "approved" ? "bg-blue-100 text-blue-800" :
+                        order.status === "pending" ? "bg-yellow-100 text-yellow-800" : 
+                        "bg-red-100 text-red-800"
+                      }`}>
+                        {order.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={`text-xs ${
+                        order.kitchenStatus === "completed" ? "bg-green-100 text-green-800" :
+                        order.kitchenStatus === "ready" ? "bg-green-100 text-green-700" :
+                        order.kitchenStatus === "cooking" ? "bg-blue-100 text-blue-800" :
+                        order.kitchenStatus === "pending" ? "bg-yellow-100 text-yellow-800" :
+                        "bg-gray-100 text-gray-800"
+                      }`}>
+                        {order.kitchenStatus?.replace('_', ' ')}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={`text-xs ${
+                        order.riderStatus === "delivered" ? "bg-green-100 text-green-800" :
+                        order.riderStatus === "delivering" ? "bg-orange-100 text-orange-800" :
+                        order.riderStatus === "picked_up" ? "bg-yellow-100 text-yellow-800" :
+                        order.riderStatus === "assigned" ? "bg-blue-100 text-blue-800" :
+                        "bg-gray-100 text-gray-800"
+                      }`}>
+                        {order.riderStatus?.replace('_', ' ')}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {order.assignedRider ? (
+                        <span className="text-sm font-medium text-blue-600">{order.assignedRider}</span>
+                      ) : (
+                        <span className="text-gray-400 text-sm">Not assigned</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex gap-2 justify-center">
+                        {order.status === "pending" && !order.isFake && (
+                          <>
+                            <Button
+                              size="sm"
+                              onClick={() => handleApproveOrder(order.id)}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              <Check className="h-4 w-4 mr-1" />
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleRejectOrder(order.id)}
+                            >
+                              <X className="h-4 w-4 mr-1" />
+                              Reject
+                            </Button>
+                          </>
+                        )}
+                        
+                        {order.status === "approved" && 
+                         (order.kitchenStatus === "ready" || order.kitchenStatus === "completed") && 
+                         order.riderStatus === "not_assigned" && (
+                          <Select onValueChange={(riderId) => handleAssignRider(order.id, riderId)}>
+                            <SelectTrigger className="w-32">
+                              <SelectValue placeholder="Assign Rider" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {mockRiders.filter(rider => rider.status === "available" || rider.currentOrders < rider.maxOrders).map(rider => (
+                                <SelectItem key={rider.id} value={rider.id}>
+                                  {rider.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleViewOrder(order)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="summary">
+          <OrderSummary />
+        </TabsContent>
+      </Tabs>
       
       <OrderDetails 
         order={selectedOrder}
