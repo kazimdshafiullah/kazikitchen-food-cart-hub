@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -21,8 +20,9 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Check, Eye, Search, Filter, FileText, Clock, AlertTriangle, ChefHat, CheckCircle, Plus, Truck, X, Bell } from "lucide-react";
+import { Check, Eye, Search, Filter, FileText, Clock, AlertTriangle, ChefHat, CheckCircle, Plus, Truck, X } from "lucide-react";
 import ManualOrderCreation from "@/components/ManualOrderCreation";
+import NotificationBell from "@/components/NotificationBell";
 
 // Enhanced mock data with kitchen and rider status tracking
 const mockOrders = [
@@ -537,18 +537,7 @@ const Orders = () => {
             <p className="text-gray-600 mt-2">Complete order lifecycle: Approval → Kitchen → Rider Assignment → Delivery</p>
           </div>
           <div className="flex items-center gap-4">
-            <Button 
-              variant="outline"
-              size="icon"
-              className="relative"
-            >
-              <Bell className="h-4 w-4" />
-              {pendingOrderCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {pendingOrderCount}
-                </span>
-              )}
-            </Button>
+            <NotificationBell />
             <Button 
               onClick={() => setIsManualOrderOpen(true)}
               className="bg-green-600 hover:bg-green-700"
@@ -560,8 +549,8 @@ const Orders = () => {
         </div>
       </div>
 
-      {/* Order Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Order Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
@@ -578,7 +567,7 @@ const Orders = () => {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{orders.filter(order => order.status === "pending" && !order.isFake).length}</div>
+            <div className="text-2xl font-bold text-yellow-600">{pendingOrderCount}</div>
             <p className="text-xs text-muted-foreground">Awaiting approval</p>
           </CardContent>
         </Card>
@@ -588,8 +577,18 @@ const Orders = () => {
             <ChefHat className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{orders.filter(order => order.status === "approved").length}</div>
+            <div className="text-2xl font-bold text-blue-600">{approvedOrderCount}</div>
             <p className="text-xs text-muted-foreground">Being prepared</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Ready for Delivery</CardTitle>
+            <Truck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">{awaitingRiderCount}</div>
+            <p className="text-xs text-muted-foreground">Need rider assignment</p>
           </CardContent>
         </Card>
         <Card>
@@ -717,7 +716,7 @@ const Orders = () => {
                 </TableCell>
                 <TableCell>
                   {order.assignedRider ? (
-                    <span className="text-sm font-medium">{order.assignedRider}</span>
+                    <span className="text-sm font-medium text-blue-600">{order.assignedRider}</span>
                   ) : (
                     <span className="text-gray-400 text-sm">Not assigned</span>
                   )}
@@ -750,7 +749,7 @@ const Orders = () => {
                      order.riderStatus === "not_assigned" && (
                       <Select onValueChange={(riderId) => handleAssignRider(order.id, riderId)}>
                         <SelectTrigger className="w-32">
-                          <SelectValue placeholder="Assign" />
+                          <SelectValue placeholder="Assign Rider" />
                         </SelectTrigger>
                         <SelectContent>
                           {mockRiders.filter(rider => rider.status === "available" || rider.currentOrders < rider.maxOrders).map(rider => (
