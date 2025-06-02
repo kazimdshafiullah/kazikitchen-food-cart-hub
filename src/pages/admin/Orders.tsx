@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -20,7 +21,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Check, Eye, Search, Filter, FileText, Clock, AlertTriangle, ChefHat, CheckCircle, Plus, Truck } from "lucide-react";
+import { Check, Eye, Search, Filter, FileText, Clock, AlertTriangle, ChefHat, CheckCircle, Plus, Truck, X, Bell } from "lucide-react";
 import ManualOrderCreation from "@/components/ManualOrderCreation";
 
 // Enhanced mock data with kitchen and rider status tracking
@@ -85,7 +86,7 @@ const mockOrders = [
     isFake: false,
     kitchenStatus: "completed",
     riderStatus: "assigned",
-    assignedRider: "Rider-002 (Mike Johnson)",
+    assignedRider: "Mike Johnson",
     approvedAt: "2025-05-19 09:15 AM",
     items: [
       { name: "Mixed Platter", quantity: 1, price: 800 }
@@ -101,7 +102,7 @@ const mockOrders = [
     isFake: false,
     kitchenStatus: "completed",
     riderStatus: "delivered",
-    assignedRider: "Rider-001 (John Smith)",
+    assignedRider: "John Smith",
     approvedAt: "2025-05-18 02:20 PM",
     items: [
       { name: "Chicken Biryani", quantity: 3, price: 600 }
@@ -157,11 +158,23 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
       description: `Order ${order.id} approved and sent to kitchen!`
     });
   };
+
+  const handleRejectOrder = () => {
+    onUpdateOrder(order.id, { 
+      status: "cancelled",
+      cancelledAt: new Date().toLocaleString()
+    });
+    toast({
+      title: "Order Rejected",
+      description: `Order ${order.id} has been rejected.`,
+      variant: "destructive"
+    });
+  };
   
   const handleAssignRider = (riderId: string) => {
     const rider = mockRiders.find(r => r.id === riderId);
     onUpdateOrder(order.id, { 
-      assignedRider: `${riderId} (${rider?.name})`,
+      assignedRider: rider?.name,
       riderStatus: "assigned"
     });
     toast({
@@ -225,20 +238,38 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
         </DialogHeader>
         
         <div className="space-y-6">
+          {/* Order Summary Card */}
+          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <FileText className="h-5 w-5 text-blue-600" />
+                Order Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium text-gray-600">Customer:</span>
+                  <p className="font-semibold">{order.customer}</p>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-600">Order Date:</span>
+                  <p className="font-semibold">{order.date}</p>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-600">Total Amount:</span>
+                  <p className="font-semibold text-green-600">৳{order.total.toFixed(2)}</p>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-600">Source:</span>
+                  <p className="font-semibold capitalize">{order.source}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Order Basic Info */}
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm font-medium">Customer</p>
-              <p className="text-sm text-muted-foreground">{order.customer}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium">Order Date</p>
-              <p className="text-sm text-muted-foreground">{order.date}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium">Total</p>
-              <p className="text-sm text-muted-foreground">৳{order.total.toFixed(2)}</p>
-            </div>
             <div>
               <p className="text-sm font-medium">Status</p>
               <Badge className={`capitalize ${
@@ -250,6 +281,12 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
                 {order.status}
               </Badge>
             </div>
+            {order.assignedRider && (
+              <div>
+                <p className="text-sm font-medium">Assigned Rider</p>
+                <p className="text-sm text-muted-foreground font-semibold">{order.assignedRider}</p>
+              </div>
+            )}
           </div>
 
           {/* Kitchen & Rider Status */}
@@ -276,11 +313,6 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
               <Badge className={getRiderStatusColor(order.riderStatus)}>
                 {order.riderStatus.replace('_', ' ').toUpperCase()}
               </Badge>
-              {order.assignedRider && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Assigned to: {order.assignedRider}
-                </p>
-              )}
             </div>
           </div>
           
@@ -311,17 +343,28 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
                   className="flex-1 bg-green-600 hover:bg-green-700"
                 >
                   <Check className="mr-2 h-4 w-4" />
-                  Approve Order & Notify Kitchen
+                  Approve Order
                 </Button>
                 <Button 
                   variant="destructive" 
-                  onClick={handleMarkAsFake}
+                  onClick={handleRejectOrder}
                   className="flex-1"
                 >
-                  <AlertTriangle className="mr-2 h-4 w-4" />
-                  Mark as Fake
+                  <X className="mr-2 h-4 w-4" />
+                  Reject Order
                 </Button>
               </div>
+            )}
+
+            {order.status === "pending" && !order.isFake && (
+              <Button 
+                variant="outline" 
+                onClick={handleMarkAsFake}
+                className="w-full"
+              >
+                <AlertTriangle className="mr-2 h-4 w-4" />
+                Mark as Fake Order
+              </Button>
             )}
             
             {/* Rider Assignment */}
@@ -460,10 +503,22 @@ const Orders = () => {
     });
   };
 
+  const handleRejectOrder = (orderId: string) => {
+    handleUpdateOrder(orderId, { 
+      status: "cancelled",
+      cancelledAt: new Date().toLocaleString()
+    });
+    toast({
+      title: "Order Rejected",
+      description: `Order ${orderId} has been rejected.`,
+      variant: "destructive"
+    });
+  };
+
   const handleAssignRider = (orderId: string, riderId: string) => {
     const rider = mockRiders.find(r => r.id === riderId);
     handleUpdateOrder(orderId, { 
-      assignedRider: `${riderId} (${rider?.name})`,
+      assignedRider: rider?.name,
       riderStatus: "assigned"
     });
     toast({
@@ -481,13 +536,27 @@ const Orders = () => {
             <h2 className="text-3xl font-bold tracking-tight text-gray-900">Orders Management</h2>
             <p className="text-gray-600 mt-2">Complete order lifecycle: Approval → Kitchen → Rider Assignment → Delivery</p>
           </div>
-          <Button 
-            onClick={() => setIsManualOrderOpen(true)}
-            className="bg-green-600 hover:bg-green-700"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Create Manual Order
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="outline"
+              size="icon"
+              className="relative"
+            >
+              <Bell className="h-4 w-4" />
+              {pendingOrderCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {pendingOrderCount}
+                </span>
+              )}
+            </Button>
+            <Button 
+              onClick={() => setIsManualOrderOpen(true)}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Create Manual Order
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -599,8 +668,8 @@ const Orders = () => {
               <TableHead className="font-semibold">Status</TableHead>
               <TableHead className="font-semibold">Kitchen</TableHead>
               <TableHead className="font-semibold">Delivery</TableHead>
-              <TableHead className="text-center font-semibold">Pending Approval</TableHead>
-              <TableHead className="text-center font-semibold">Assign Rider</TableHead>
+              <TableHead className="font-semibold">Assigned Rider</TableHead>
+              <TableHead className="text-center font-semibold">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -646,39 +715,61 @@ const Orders = () => {
                     {order.riderStatus?.replace('_', ' ')}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-center">
-                  {order.status === "pending" && !order.isFake ? (
-                    <Button
-                      size="sm"
-                      onClick={() => handleApproveOrder(order.id)}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      <Check className="h-4 w-4 mr-1" />
-                      Approve
-                    </Button>
+                <TableCell>
+                  {order.assignedRider ? (
+                    <span className="text-sm font-medium">{order.assignedRider}</span>
                   ) : (
-                    <span className="text-gray-400">-</span>
+                    <span className="text-gray-400 text-sm">Not assigned</span>
                   )}
                 </TableCell>
                 <TableCell className="text-center">
-                  {order.status === "approved" && 
-                   (order.kitchenStatus === "ready" || order.kitchenStatus === "completed") && 
-                   order.riderStatus === "not_assigned" ? (
-                    <Select onValueChange={(riderId) => handleAssignRider(order.id, riderId)}>
-                      <SelectTrigger className="w-32">
-                        <SelectValue placeholder="Assign" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {mockRiders.filter(rider => rider.status === "available" || rider.currentOrders < rider.maxOrders).map(rider => (
-                          <SelectItem key={rider.id} value={rider.id}>
-                            {rider.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <span className="text-gray-400">-</span>
-                  )}
+                  <div className="flex gap-2 justify-center">
+                    {order.status === "pending" && !order.isFake && (
+                      <>
+                        <Button
+                          size="sm"
+                          onClick={() => handleApproveOrder(order.id)}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <Check className="h-4 w-4 mr-1" />
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleRejectOrder(order.id)}
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Reject
+                        </Button>
+                      </>
+                    )}
+                    
+                    {order.status === "approved" && 
+                     (order.kitchenStatus === "ready" || order.kitchenStatus === "completed") && 
+                     order.riderStatus === "not_assigned" && (
+                      <Select onValueChange={(riderId) => handleAssignRider(order.id, riderId)}>
+                        <SelectTrigger className="w-32">
+                          <SelectValue placeholder="Assign" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {mockRiders.filter(rider => rider.status === "available" || rider.currentOrders < rider.maxOrders).map(rider => (
+                            <SelectItem key={rider.id} value={rider.id}>
+                              {rider.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleViewOrder(order)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

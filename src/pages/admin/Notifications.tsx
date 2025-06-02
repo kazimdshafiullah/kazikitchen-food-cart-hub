@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { MessageSquare, Mail, Phone, Bell } from "lucide-react";
+import { MessageSquare, Mail, Phone, Bell, Settings } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Notifications = () => {
@@ -28,6 +28,17 @@ const Notifications = () => {
     orderConfirmedTemplate: "Your Kazi Kitchen order #{{order_id}} is confirmed and being prepared. Est. delivery: {{delivery_time}}",
     orderDeliveredTemplate: "Your Kazi Kitchen order #{{order_id}} has been delivered! Enjoy your meal from Kazi Kitchen. Rate us: {{rating_url}}",
     enableAutoSMS: true
+  });
+
+  // Kitchen and Rider notification settings
+  const [notificationSettings, setNotificationSettings] = useState({
+    enableKitchenStatusNotifications: true,
+    enableRiderStatusNotifications: true,
+    enableEmailNotifications: true,
+    enableSMSNotifications: false,
+    kitchenNotificationEmail: "kitchen@kazikitchen.com",
+    riderNotificationEmail: "riders@kazikitchen.com",
+    adminNotificationPhone: "+8801712345678"
   });
 
   // Live chat notification settings
@@ -70,6 +81,13 @@ const Notifications = () => {
     toast({
       title: "Success", 
       description: "SMS notification settings saved"
+    });
+  };
+
+  const handleSaveNotificationSettings = () => {
+    toast({
+      title: "Success",
+      description: "Kitchen and rider notification settings saved"
     });
   };
 
@@ -121,6 +139,10 @@ const Notifications = () => {
           <TabsTrigger value="sms">
             <MessageSquare className="mr-2 h-4 w-4" />
             SMS Notifications
+          </TabsTrigger>
+          <TabsTrigger value="kitchen-rider">
+            <Settings className="mr-2 h-4 w-4" />
+            Kitchen & Rider Notifications
           </TabsTrigger>
           <TabsTrigger value="sms-integration">
             <Phone className="mr-2 h-4 w-4" />
@@ -313,6 +335,96 @@ const Notifications = () => {
             </CardContent>
             <CardFooter>
               <Button onClick={handleSaveSmsSettings}>Save SMS Settings</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        {/* Kitchen & Rider Notification Settings Tab */}
+        <TabsContent value="kitchen-rider" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Kitchen & Rider Notification Settings</CardTitle>
+              <CardDescription>Configure notifications for kitchen status and rider updates</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    checked={notificationSettings.enableKitchenStatusNotifications}
+                    onCheckedChange={(checked) => setNotificationSettings({ ...notificationSettings, enableKitchenStatusNotifications: checked })}
+                    id="kitchen-notifications"
+                  />
+                  <Label htmlFor="kitchen-notifications">Receive kitchen status notifications</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    checked={notificationSettings.enableRiderStatusNotifications}
+                    onCheckedChange={(checked) => setNotificationSettings({ ...notificationSettings, enableRiderStatusNotifications: checked })}
+                    id="rider-notifications"
+                  />
+                  <Label htmlFor="rider-notifications">Receive rider status notifications</Label>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="kitchenEmail">Kitchen Notification Email</Label>
+                    <Input
+                      id="kitchenEmail"
+                      type="email"
+                      value={notificationSettings.kitchenNotificationEmail}
+                      onChange={(e) => setNotificationSettings({ ...notificationSettings, kitchenNotificationEmail: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="riderEmail">Rider Notification Email</Label>
+                    <Input
+                      id="riderEmail"
+                      type="email"
+                      value={notificationSettings.riderNotificationEmail}
+                      onChange={(e) => setNotificationSettings({ ...notificationSettings, riderNotificationEmail: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4 p-4 border rounded-lg">
+                  <h4 className="font-medium">Notification Methods</h4>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      checked={notificationSettings.enableEmailNotifications}
+                      onCheckedChange={(checked) => setNotificationSettings({ ...notificationSettings, enableEmailNotifications: checked })}
+                      id="email-method"
+                    />
+                    <Label htmlFor="email-method">Enable email notifications</Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      checked={notificationSettings.enableSMSNotifications}
+                      onCheckedChange={(checked) => setNotificationSettings({ ...notificationSettings, enableSMSNotifications: checked })}
+                      id="sms-method"
+                    />
+                    <Label htmlFor="sms-method">Enable SMS notifications</Label>
+                  </div>
+
+                  {notificationSettings.enableSMSNotifications && (
+                    <div className="space-y-2">
+                      <Label htmlFor="adminPhone">Admin Phone Number for Notifications</Label>
+                      <Input
+                        id="adminPhone"
+                        type="tel"
+                        value={notificationSettings.adminNotificationPhone}
+                        onChange={(e) => setNotificationSettings({ ...notificationSettings, adminNotificationPhone: e.target.value })}
+                        placeholder="+8801712345678"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button onClick={handleSaveNotificationSettings}>Save Notification Settings</Button>
             </CardFooter>
           </Card>
         </TabsContent>
