@@ -57,139 +57,270 @@ const schoolTiffinMenu = [
 ];
 
 const officeFoodMenu = {
-  regular: [
-    {
-      day: "Sunday",
-      item: "Chicken Curry Rice",
-      price: 140,
-      image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-      description: "Traditional chicken curry with basmati rice",
-      available: true
-    },
-    {
-      day: "Monday",
-      item: "Fish Curry Rice", 
-      price: 145,
-      image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-      description: "Fresh fish curry with steamed rice",
-      available: true
-    },
-    {
-      day: "Tuesday",
-      item: "Chicken Khichuri",
-      price: 120,
-      image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-      description: "Comfort food with chicken and lentils",
-      available: true
-    },
-    {
-      day: "Wednesday",
-      item: "Beef Curry Rice",
-      price: 160,
-      image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-      description: "Tender beef curry with fragrant rice",
-      available: true
-    },
-    {
-      day: "Thursday",
-      item: "Vegetable Biriyani",
-      price: 110,
-      image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-      description: "Aromatic vegetable biriyani with spices",
-      available: true
-    }
-  ],
-  diet: [
-    {
-      day: "Sunday",
-      item: "Grilled Chicken Salad",
-      price: 160,
-      image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-      description: "Healthy grilled chicken with mixed greens",
-      available: true
-    },
-    {
-      day: "Monday",
-      item: "Fish with Steamed Vegetables",
-      price: 165,
-      image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-      description: "Low-fat fish with nutritious vegetables",
-      available: true
-    },
-    {
-      day: "Tuesday",
-      item: "Chicken Soup with Brown Rice",
-      price: 140,
-      image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-      description: "Protein-rich soup with healthy brown rice",
-      available: true
-    },
-    {
-      day: "Wednesday",
-      item: "Lentil Curry with Quinoa",
-      price: 135,
-      image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-      description: "High-protein lentils with superfood quinoa",
-      available: true
-    },
-    {
-      day: "Thursday",
-      item: "Vegetable Stir Fry",
-      price: 120,
-      image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-      description: "Fresh vegetables with minimal oil",
-      available: true
-    }
-  ],
-  premium: [
-    {
-      day: "Sunday",
-      item: "Mutton Biriyani",
-      price: 220,
-      image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-      description: "Premium mutton biriyani with exotic spices",
-      available: true
-    },
-    {
-      day: "Monday",
-      item: "Prawn Curry Rice",
-      price: 200,
-      image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-      description: "Fresh prawn curry with premium rice",
-      available: true
-    },
-    {
-      day: "Tuesday",
-      item: "Chicken Roast with Pulao",
-      price: 190,
-      image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-      description: "Slow-cooked chicken roast with aromatic pulao",
-      available: true
-    },
-    {
-      day: "Wednesday",
-      item: "Fish Fry Special",
-      price: 185,
-      image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-      description: "Premium fish fry with special seasonings",
-      available: true
-    },
-    {
-      day: "Thursday",
-      item: "Kacchi Biriyani",
-      price: 250,
-      image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-      description: "Traditional kacchi biriyani with tender meat",
-      available: true
-    }
-  ]
+  breakfast: {
+    regular: [
+      {
+        day: "Sunday",
+        item: "Paratha with Egg Curry",
+        price: 65,
+        image: "https://images.unsplash.com/photo-1586511925558-a4c6376fe65f?w=400",
+        description: "Fresh paratha with spiced egg curry",
+        available: true
+      },
+      {
+        day: "Monday",
+        item: "Puri with Aloo Dum", 
+        price: 60,
+        image: "https://images.unsplash.com/photo-1586511925558-a4c6376fe65f?w=400",
+        description: "Crispy puri with traditional potato curry",
+        available: true
+      },
+      {
+        day: "Tuesday",
+        item: "Khichuri with Omelette",
+        price: 70,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Comfort khichuri with fluffy omelette",
+        available: true
+      },
+      {
+        day: "Wednesday",
+        item: "Bread with Dal",
+        price: 55,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Fresh bread with protein-rich lentil curry",
+        available: true
+      },
+      {
+        day: "Thursday",
+        item: "Rice with Fish Curry",
+        price: 80,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Steamed rice with traditional fish curry",
+        available: true
+      }
+    ],
+    diet: [
+      {
+        day: "Sunday",
+        item: "Oats with Fruits",
+        price: 75,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Healthy oats with fresh seasonal fruits",
+        available: true
+      },
+      {
+        day: "Monday",
+        item: "Wheat Bread with Boiled Egg",
+        price: 70,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Whole wheat bread with protein-rich boiled egg",
+        available: true
+      },
+      {
+        day: "Tuesday",
+        item: "Vegetable Upma",
+        price: 65,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Nutritious upma with mixed vegetables",
+        available: true
+      },
+      {
+        day: "Wednesday",
+        item: "Daliya with Vegetables",
+        price: 68,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Healthy broken wheat with fresh vegetables",
+        available: true
+      },
+      {
+        day: "Thursday",
+        item: "Brown Rice with Grilled Fish",
+        price: 90,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Nutritious brown rice with grilled fish",
+        available: true
+      }
+    ],
+    premium: [
+      {
+        day: "Sunday",
+        item: "Continental Breakfast",
+        price: 120,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Premium continental breakfast with variety",
+        available: true
+      },
+      {
+        day: "Monday",
+        item: "Pancakes with Chicken",
+        price: 115,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Fluffy pancakes with grilled chicken strips",
+        available: true
+      },
+      {
+        day: "Tuesday",
+        item: "French Toast with Beef",
+        price: 130,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Golden french toast with tender beef",
+        available: true
+      },
+      {
+        day: "Wednesday",
+        item: "Sandwich Platter",
+        price: 125,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Assorted premium sandwiches",
+        available: true
+      },
+      {
+        day: "Thursday",
+        item: "English Breakfast",
+        price: 140,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Full English breakfast with all essentials",
+        available: true
+      }
+    ]
+  },
+  lunch: {
+    regular: [
+      {
+        day: "Sunday",
+        item: "Chicken Curry Rice",
+        price: 140,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Traditional chicken curry with basmati rice",
+        available: true
+      },
+      {
+        day: "Monday",
+        item: "Fish Curry Rice", 
+        price: 145,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Fresh fish curry with steamed rice",
+        available: true
+      },
+      {
+        day: "Tuesday",
+        item: "Chicken Khichuri",
+        price: 120,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Comfort food with chicken and lentils",
+        available: true
+      },
+      {
+        day: "Wednesday",
+        item: "Beef Curry Rice",
+        price: 160,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Tender beef curry with fragrant rice",
+        available: true
+      },
+      {
+        day: "Thursday",
+        item: "Vegetable Biriyani",
+        price: 110,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Aromatic vegetable biriyani with spices",
+        available: true
+      }
+    ],
+    diet: [
+      {
+        day: "Sunday",
+        item: "Grilled Chicken Salad",
+        price: 160,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Healthy grilled chicken with mixed greens",
+        available: true
+      },
+      {
+        day: "Monday",
+        item: "Fish with Steamed Vegetables",
+        price: 165,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Low-fat fish with nutritious vegetables",
+        available: true
+      },
+      {
+        day: "Tuesday",
+        item: "Chicken Soup with Brown Rice",
+        price: 140,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Protein-rich soup with healthy brown rice",
+        available: true
+      },
+      {
+        day: "Wednesday",
+        item: "Lentil Curry with Quinoa",
+        price: 135,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "High-protein lentils with superfood quinoa",
+        available: true
+      },
+      {
+        day: "Thursday",
+        item: "Vegetable Stir Fry",
+        price: 120,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Fresh vegetables with minimal oil",
+        available: true
+      }
+    ],
+    premium: [
+      {
+        day: "Sunday",
+        item: "Mutton Biriyani",
+        price: 220,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Premium mutton biriyani with exotic spices",
+        available: true
+      },
+      {
+        day: "Monday",
+        item: "Prawn Curry Rice",
+        price: 200,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Fresh prawn curry with premium rice",
+        available: true
+      },
+      {
+        day: "Tuesday",
+        item: "Chicken Roast with Pulao",
+        price: 190,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Slow-cooked chicken roast with aromatic pulao",
+        available: true
+      },
+      {
+        day: "Wednesday",
+        item: "Fish Fry Special",
+        price: 185,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Premium fish fry with special seasonings",
+        available: true
+      },
+      {
+        day: "Thursday",
+        item: "Kacchi Biriyani",
+        price: 250,
+        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
+        description: "Traditional kacchi biriyani with tender meat",
+        available: true
+      }
+    ]
+  }
 };
 
 const WeekendMenu = () => {
   const [activeTab, setActiveTab] = useState("school-tiffin");
+  const [activeMealType, setActiveMealType] = useState("breakfast");
   const [activeOfficeCategory, setActiveOfficeCategory] = useState("regular");
 
-  const MenuCard = ({ item, type = "school" }: { item: any, type?: string }) => (
+  const MenuCard = ({ item, type = "school", mealType = "breakfast" }: { item: any, type?: string, mealType?: string }) => (
     <Card className="group hover:shadow-lg transition-all duration-300 border border-amber-200 hover:border-amber-400">
       <CardHeader className="p-0">
         <div className="relative overflow-hidden rounded-t-lg">
@@ -231,7 +362,7 @@ const WeekendMenu = () => {
             className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
             disabled={!item.available}
           >
-            <Link to={`/weekend-order/${type}/${item.day.toLowerCase()}/${activeOfficeCategory || 'school'}`}>
+            <Link to={`/weekend-order/${type}/${item.day.toLowerCase()}/${mealType}/${activeOfficeCategory || 'school'}`}>
               Order Now
             </Link>
           </Button>
@@ -280,42 +411,97 @@ const WeekendMenu = () => {
               <p className="text-amber-600">Professional catering for offices - Order by 9:30 AM</p>
             </div>
             
-            {/* Office Food Categories */}
-            <Tabs value={activeOfficeCategory} onValueChange={setActiveOfficeCategory} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 max-w-lg mx-auto mb-8">
-                <TabsTrigger value="regular" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
-                  Regular
+            {/* Meal Type Selection (Breakfast/Lunch) */}
+            <Tabs value={activeMealType} onValueChange={setActiveMealType} className="w-full mb-6">
+              <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-6">
+                <TabsTrigger value="breakfast" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
+                  Breakfast
                 </TabsTrigger>
-                <TabsTrigger value="diet" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
-                  Diet
-                </TabsTrigger>
-                <TabsTrigger value="premium" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
-                  Premium
+                <TabsTrigger value="lunch" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
+                  Lunch
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="regular">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                  {officeFoodMenu.regular.map((item) => (
-                    <MenuCard key={item.day} item={item} type="office" />
-                  ))}
-                </div>
+              <TabsContent value="breakfast">
+                {/* Office Food Categories for Breakfast */}
+                <Tabs value={activeOfficeCategory} onValueChange={setActiveOfficeCategory} className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 max-w-lg mx-auto mb-8">
+                    <TabsTrigger value="regular" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
+                      Regular
+                    </TabsTrigger>
+                    <TabsTrigger value="diet" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
+                      Diet
+                    </TabsTrigger>
+                    <TabsTrigger value="premium" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
+                      Premium
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="regular">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                      {officeFoodMenu.breakfast.regular.map((item) => (
+                        <MenuCard key={item.day} item={item} type="office" mealType="breakfast" />
+                      ))}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="diet">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                      {officeFoodMenu.breakfast.diet.map((item) => (
+                        <MenuCard key={item.day} item={item} type="office" mealType="breakfast" />
+                      ))}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="premium">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                      {officeFoodMenu.breakfast.premium.map((item) => (
+                        <MenuCard key={item.day} item={item} type="office" mealType="breakfast" />
+                      ))}
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </TabsContent>
 
-              <TabsContent value="diet">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                  {officeFoodMenu.diet.map((item) => (
-                    <MenuCard key={item.day} item={item} type="office" />
-                  ))}
-                </div>
-              </TabsContent>
+              <TabsContent value="lunch">
+                {/* Office Food Categories for Lunch */}
+                <Tabs value={activeOfficeCategory} onValueChange={setActiveOfficeCategory} className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 max-w-lg mx-auto mb-8">
+                    <TabsTrigger value="regular" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
+                      Regular
+                    </TabsTrigger>
+                    <TabsTrigger value="diet" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
+                      Diet
+                    </TabsTrigger>
+                    <TabsTrigger value="premium" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
+                      Premium
+                    </TabsTrigger>
+                  </TabsList>
 
-              <TabsContent value="premium">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                  {officeFoodMenu.premium.map((item) => (
-                    <MenuCard key={item.day} item={item} type="office" />
-                  ))}
-                </div>
+                  <TabsContent value="regular">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                      {officeFoodMenu.lunch.regular.map((item) => (
+                        <MenuCard key={item.day} item={item} type="office" mealType="lunch" />
+                      ))}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="diet">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                      {officeFoodMenu.lunch.diet.map((item) => (
+                        <MenuCard key={item.day} item={item} type="office" mealType="lunch" />
+                      ))}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="premium">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                      {officeFoodMenu.lunch.premium.map((item) => (
+                        <MenuCard key={item.day} item={item} type="office" mealType="lunch" />
+                      ))}
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </TabsContent>
             </Tabs>
           </TabsContent>

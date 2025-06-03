@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Minus, ShoppingCart, Users, Crown } from "lucide-react";
 
 const WeekendOrder = () => {
-  const { type, day, category } = useParams();
+  const { type, day, mealType, category } = useParams();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   // Mock data - this would come from your database
@@ -20,16 +20,27 @@ const WeekendOrder = () => {
         description: "Delicious egg roll with fresh vegetables and special sauce"
       };
     } else {
-      const prices = {
-        regular: 140,
-        diet: 160,
-        premium: 220
+      // Office food prices based on meal type and category
+      const prices: { [key: string]: { [key: string]: number } } = {
+        breakfast: {
+          regular: 65,
+          diet: 75,
+          premium: 120
+        },
+        lunch: {
+          regular: 140,
+          diet: 160,
+          premium: 220
+        }
       };
+      
+      const basePrice = prices[mealType as string]?.[category as string] || 140;
+      
       return {
-        name: `${category?.charAt(0).toUpperCase()}${category?.slice(1)} Chicken Curry Rice`,
-        price: prices[category as keyof typeof prices] || 140,
+        name: `${category?.charAt(0).toUpperCase()}${category?.slice(1)} ${mealType?.charAt(0).toUpperCase()}${mealType?.slice(1)}`,
+        price: basePrice,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: `${category?.charAt(0).toUpperCase()}${category?.slice(1)} chicken curry with premium basmati rice`
+        description: `${category?.charAt(0).toUpperCase()}${category?.slice(1)} ${mealType} meal with premium ingredients`
       };
     }
   };
@@ -110,7 +121,7 @@ const WeekendOrder = () => {
             <Link to="/weekend-menu" className="hover:text-amber-800">Weekend Menu</Link>
             <span className="mx-2">/</span>
             <span className="text-amber-800 font-medium">
-              {type === "school" ? "School Tiffin" : "Office Food"} - {day?.charAt(0).toUpperCase()}{day?.slice(1)}
+              {type === "school" ? "School Tiffin" : `Office Food - ${mealType?.charAt(0).toUpperCase()}${mealType?.slice(1)}`} - {day?.charAt(0).toUpperCase()}{day?.slice(1)}
             </span>
           </nav>
         </div>
@@ -132,6 +143,11 @@ const WeekendOrder = () => {
                 {category.charAt(0).toUpperCase()}{category.slice(1)}
               </Badge>
             )}
+            {mealType && mealType !== "school" && (
+              <Badge className="absolute bottom-4 left-4 bg-blue-500 text-white text-lg px-3 py-1">
+                {mealType.charAt(0).toUpperCase()}{mealType.slice(1)}
+              </Badge>
+            )}
           </div>
 
           <div className="flex flex-col justify-center">
@@ -146,7 +162,7 @@ const WeekendOrder = () => {
               <div className="flex items-center text-amber-600">
                 <span className="font-medium">Category:</span>
                 <span className="ml-2">
-                  {type === "school" ? "School Tiffin" : `Office Food - ${category?.charAt(0).toUpperCase()}${category?.slice(1)}`}
+                  {type === "school" ? "School Tiffin" : `Office Food - ${mealType?.charAt(0).toUpperCase()}${mealType?.slice(1)} (${category?.charAt(0).toUpperCase()}${category?.slice(1)})`}
                 </span>
               </div>
             </div>

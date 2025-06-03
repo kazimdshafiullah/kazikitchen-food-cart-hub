@@ -57,7 +57,7 @@ function App() {
             <Route path="frozen-food" element={<FrozenFood />} />
             <Route path="frozen-food/:id" element={<FrozenFoodOrder />} />
             <Route path="weekend-menu" element={<WeekendMenu />} />
-            <Route path="weekend-order/:type/:day/:category" element={<WeekendOrder />} />
+            <Route path="weekend-order/:type/:day/:mealType/:category" element={<WeekendOrder />} />
             <Route path="product/:id" element={<ProductDetail />} />
             <Route path="cart" element={<Cart />} />
             <Route path="checkout" element={<Checkout />} />
