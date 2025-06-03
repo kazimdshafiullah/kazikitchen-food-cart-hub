@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +10,7 @@ import { Calendar, Clock, Users, Star } from "lucide-react";
 const schoolTiffinMenu = [
   {
     day: "Sunday",
+    dayNumber: 0,
     item: "Egg Roll",
     price: 45,
     image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400",
@@ -20,6 +20,7 @@ const schoolTiffinMenu = [
   },
   {
     day: "Monday", 
+    dayNumber: 1,
     item: "Alu Paratha",
     price: 40,
     image: "https://images.unsplash.com/photo-1586511925558-a4c6376fe65f?w=400",
@@ -29,6 +30,7 @@ const schoolTiffinMenu = [
   },
   {
     day: "Tuesday",
+    dayNumber: 2,
     item: "Chicken Keema Paratha",
     price: 65,
     image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400",
@@ -38,6 +40,7 @@ const schoolTiffinMenu = [
   },
   {
     day: "Wednesday",
+    dayNumber: 3,
     item: "Vegetable Roll",
     price: 35,
     image: "https://images.unsplash.com/photo-1601314002957-4edc5a6b8c24?w=400",
@@ -47,6 +50,7 @@ const schoolTiffinMenu = [
   },
   {
     day: "Thursday",
+    dayNumber: 4,
     item: "Fish Fry with Rice",
     price: 85,
     image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -61,6 +65,7 @@ const officeFoodMenu = {
     regular: [
       {
         day: "Sunday",
+        dayNumber: 0,
         item: "Paratha with Egg Curry",
         price: 65,
         image: "https://images.unsplash.com/photo-1586511925558-a4c6376fe65f?w=400",
@@ -69,6 +74,7 @@ const officeFoodMenu = {
       },
       {
         day: "Monday",
+        dayNumber: 1,
         item: "Puri with Aloo Dum", 
         price: 60,
         image: "https://images.unsplash.com/photo-1586511925558-a4c6376fe65f?w=400",
@@ -77,6 +83,7 @@ const officeFoodMenu = {
       },
       {
         day: "Tuesday",
+        dayNumber: 2,
         item: "Khichuri with Omelette",
         price: 70,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -85,6 +92,7 @@ const officeFoodMenu = {
       },
       {
         day: "Wednesday",
+        dayNumber: 3,
         item: "Bread with Dal",
         price: 55,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -93,6 +101,7 @@ const officeFoodMenu = {
       },
       {
         day: "Thursday",
+        dayNumber: 4,
         item: "Rice with Fish Curry",
         price: 80,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -103,6 +112,7 @@ const officeFoodMenu = {
     diet: [
       {
         day: "Sunday",
+        dayNumber: 0,
         item: "Oats with Fruits",
         price: 75,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -111,6 +121,7 @@ const officeFoodMenu = {
       },
       {
         day: "Monday",
+        dayNumber: 1,
         item: "Wheat Bread with Boiled Egg",
         price: 70,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -119,6 +130,7 @@ const officeFoodMenu = {
       },
       {
         day: "Tuesday",
+        dayNumber: 2,
         item: "Vegetable Upma",
         price: 65,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -127,6 +139,7 @@ const officeFoodMenu = {
       },
       {
         day: "Wednesday",
+        dayNumber: 3,
         item: "Daliya with Vegetables",
         price: 68,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -135,6 +148,7 @@ const officeFoodMenu = {
       },
       {
         day: "Thursday",
+        dayNumber: 4,
         item: "Brown Rice with Grilled Fish",
         price: 90,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -145,6 +159,7 @@ const officeFoodMenu = {
     premium: [
       {
         day: "Sunday",
+        dayNumber: 0,
         item: "Continental Breakfast",
         price: 120,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -153,6 +168,7 @@ const officeFoodMenu = {
       },
       {
         day: "Monday",
+        dayNumber: 1,
         item: "Pancakes with Chicken",
         price: 115,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -161,6 +177,7 @@ const officeFoodMenu = {
       },
       {
         day: "Tuesday",
+        dayNumber: 2,
         item: "French Toast with Beef",
         price: 130,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -169,6 +186,7 @@ const officeFoodMenu = {
       },
       {
         day: "Wednesday",
+        dayNumber: 3,
         item: "Sandwich Platter",
         price: 125,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -177,6 +195,7 @@ const officeFoodMenu = {
       },
       {
         day: "Thursday",
+        dayNumber: 4,
         item: "English Breakfast",
         price: 140,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -189,6 +208,7 @@ const officeFoodMenu = {
     regular: [
       {
         day: "Sunday",
+        dayNumber: 0,
         item: "Chicken Curry Rice",
         price: 140,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -197,6 +217,7 @@ const officeFoodMenu = {
       },
       {
         day: "Monday",
+        dayNumber: 1,
         item: "Fish Curry Rice", 
         price: 145,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -205,6 +226,7 @@ const officeFoodMenu = {
       },
       {
         day: "Tuesday",
+        dayNumber: 2,
         item: "Chicken Khichuri",
         price: 120,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -213,6 +235,7 @@ const officeFoodMenu = {
       },
       {
         day: "Wednesday",
+        dayNumber: 3,
         item: "Beef Curry Rice",
         price: 160,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -221,6 +244,7 @@ const officeFoodMenu = {
       },
       {
         day: "Thursday",
+        dayNumber: 4,
         item: "Vegetable Biriyani",
         price: 110,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -231,6 +255,7 @@ const officeFoodMenu = {
     diet: [
       {
         day: "Sunday",
+        dayNumber: 0,
         item: "Grilled Chicken Salad",
         price: 160,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -239,6 +264,7 @@ const officeFoodMenu = {
       },
       {
         day: "Monday",
+        dayNumber: 1,
         item: "Fish with Steamed Vegetables",
         price: 165,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -247,6 +273,7 @@ const officeFoodMenu = {
       },
       {
         day: "Tuesday",
+        dayNumber: 2,
         item: "Chicken Soup with Brown Rice",
         price: 140,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -255,6 +282,7 @@ const officeFoodMenu = {
       },
       {
         day: "Wednesday",
+        dayNumber: 3,
         item: "Lentil Curry with Quinoa",
         price: 135,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -263,6 +291,7 @@ const officeFoodMenu = {
       },
       {
         day: "Thursday",
+        dayNumber: 4,
         item: "Vegetable Stir Fry",
         price: 120,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -273,6 +302,7 @@ const officeFoodMenu = {
     premium: [
       {
         day: "Sunday",
+        dayNumber: 0,
         item: "Mutton Biriyani",
         price: 220,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -281,6 +311,7 @@ const officeFoodMenu = {
       },
       {
         day: "Monday",
+        dayNumber: 1,
         item: "Prawn Curry Rice",
         price: 200,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -289,6 +320,7 @@ const officeFoodMenu = {
       },
       {
         day: "Tuesday",
+        dayNumber: 2,
         item: "Chicken Roast with Pulao",
         price: 190,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -297,6 +329,7 @@ const officeFoodMenu = {
       },
       {
         day: "Wednesday",
+        dayNumber: 3,
         item: "Fish Fry Special",
         price: 185,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -305,6 +338,7 @@ const officeFoodMenu = {
       },
       {
         day: "Thursday",
+        dayNumber: 4,
         item: "Kacchi Biriyani",
         price: 250,
         image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
@@ -320,56 +354,112 @@ const WeekendMenu = () => {
   const [activeMealType, setActiveMealType] = useState("breakfast");
   const [activeOfficeCategory, setActiveOfficeCategory] = useState("regular");
 
-  const MenuCard = ({ item, type = "school", mealType = "breakfast" }: { item: any, type?: string, mealType?: string }) => (
-    <Card className="group hover:shadow-lg transition-all duration-300 border border-amber-200 hover:border-amber-400">
-      <CardHeader className="p-0">
-        <div className="relative overflow-hidden rounded-t-lg">
-          <img
-            src={item.image}
-            alt={item.item}
-            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-          <Badge className="absolute top-2 left-2 bg-amber-500 text-white">
-            {item.day}
-          </Badge>
-          {item.available ? (
-            <Badge className="absolute top-2 right-2 bg-green-500 text-white">
-              Available
+  // Function to check if we can still order for a specific day
+  const canOrderForDay = (dayNumber: number, orderType: string) => {
+    const now = new Date();
+    const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentTime = currentHour * 60 + currentMinute; // Convert to minutes
+
+    if (orderType === "school") {
+      // School tiffin: Order by 10 PM the day before
+      const orderCutoff = 22 * 60; // 10 PM in minutes
+      
+      // If it's the same day and past 10 PM, can't order
+      if (currentDay === (dayNumber === 0 ? 6 : dayNumber - 1) && currentTime >= orderCutoff) {
+        return false;
+      }
+      
+      // If it's past the delivery day, can't order
+      if (currentDay > dayNumber) {
+        return false;
+      }
+      
+      return true;
+    } else {
+      // Office food: Order by 9:30 AM the same day
+      const orderCutoff = 9 * 60 + 30; // 9:30 AM in minutes
+      
+      // If it's the same day and past 9:30 AM, can't order
+      if (currentDay === dayNumber && currentTime >= orderCutoff) {
+        return false;
+      }
+      
+      // If it's past the delivery day, can't order
+      if (currentDay > dayNumber) {
+        return false;
+      }
+      
+      return true;
+    }
+  };
+
+  // Filter menu items based on availability
+  const getAvailableItems = (items: any[], orderType: string) => {
+    return items.filter(item => canOrderForDay(item.dayNumber, orderType));
+  };
+
+  const MenuCard = ({ item, type = "school", mealType = "breakfast" }: { item: any, type?: string, mealType?: string }) => {
+    const isAvailable = canOrderForDay(item.dayNumber, type);
+    
+    return (
+      <Card className={`group transition-all duration-300 border ${isAvailable ? 'border-amber-200 hover:border-amber-400 hover:shadow-lg' : 'border-gray-200 opacity-50'}`}>
+        <CardHeader className="p-0">
+          <div className="relative overflow-hidden rounded-t-lg">
+            <img
+              src={item.image}
+              alt={item.item}
+              className={`w-full h-48 object-cover ${isAvailable ? 'group-hover:scale-105' : ''} transition-transform duration-300`}
+            />
+            <Badge className="absolute top-2 left-2 bg-amber-500 text-white">
+              {item.day}
             </Badge>
-          ) : (
-            <Badge className="absolute top-2 right-2 bg-red-500 text-white">
-              Sold Out
-            </Badge>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="p-4">
-        <CardTitle className="text-lg text-amber-800 mb-2">{item.item}</CardTitle>
-        <p className="text-amber-600 text-sm mb-3">{item.description}</p>
-        
-        {type === "school" && item.deadline && (
-          <div className="flex items-center text-xs text-amber-600 mb-3">
-            <Clock className="w-3 h-3 mr-1" />
-            Order by: {item.deadline}
+            {isAvailable ? (
+              <Badge className="absolute top-2 right-2 bg-green-500 text-white">
+                Available
+              </Badge>
+            ) : (
+              <Badge className="absolute top-2 right-2 bg-red-500 text-white">
+                Order Closed
+              </Badge>
+            )}
           </div>
-        )}
-        
-        <div className="flex items-center justify-between">
-          <span className="text-xl font-bold text-amber-800">৳{item.price}</span>
-          <Button 
-            asChild
-            size="sm"
-            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
-            disabled={!item.available}
-          >
-            <Link to={`/weekend-order/${type}/${item.day.toLowerCase()}/${mealType}/${activeOfficeCategory || 'school'}`}>
-              Order Now
-            </Link>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
+        </CardHeader>
+        <CardContent className="p-4">
+          <CardTitle className="text-lg text-amber-800 mb-2">{item.item}</CardTitle>
+          <p className="text-amber-600 text-sm mb-3">{item.description}</p>
+          
+          {type === "school" && item.deadline && (
+            <div className="flex items-center text-xs text-amber-600 mb-3">
+              <Clock className="w-3 h-3 mr-1" />
+              Order by: {item.deadline}
+            </div>
+          )}
+          
+          <div className="flex items-center justify-between">
+            <span className="text-xl font-bold text-amber-800">৳{item.price}</span>
+            <Button 
+              asChild
+              size="sm"
+              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+              disabled={!isAvailable}
+            >
+              {isAvailable ? (
+                <Link to={`/weekend-order/${type}/${item.day.toLowerCase()}/${mealType}/${activeOfficeCategory || 'school'}`}>
+                  Order Now
+                </Link>
+              ) : (
+                <span>Order Closed</span>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const availableSchoolItems = useMemo(() => getAvailableItems(schoolTiffinMenu, "school"), []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50">
@@ -380,6 +470,12 @@ const WeekendMenu = () => {
           <p className="text-xl text-amber-700 max-w-2xl mx-auto">
             Plan your weekly meals with our School Tiffin and Office Food services
           </p>
+          <div className="mt-4 p-4 bg-amber-100 rounded-lg">
+            <p className="text-amber-800 font-medium">
+              <Clock className="inline w-4 h-4 mr-2" />
+              School Tiffin: Order by 10:00 PM the day before | Office Food: Order by 9:30 AM same day
+            </p>
+          </div>
         </div>
 
         {/* Navigation Tabs */}
@@ -398,20 +494,26 @@ const WeekendMenu = () => {
               <h2 className="text-2xl font-bold text-amber-800 mb-2">School Tiffin Menu</h2>
               <p className="text-amber-600">Fresh daily tiffin for students - Order by 10 PM the day before</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-              {schoolTiffinMenu.map((item) => (
-                <MenuCard key={item.day} item={item} type="school" />
-              ))}
-            </div>
+            {availableSchoolItems.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                {availableSchoolItems.map((item) => (
+                  <MenuCard key={item.day} item={item} type="school" />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-xl text-amber-600">No school tiffin orders available for remaining days this week.</p>
+                <p className="text-amber-500 mt-2">Please check back next week for new orders!</p>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="office-food">
             <div className="mb-6 text-center">
               <h2 className="text-2xl font-bold text-amber-800 mb-2">Office Food Menu</h2>
-              <p className="text-amber-600">Professional catering for offices - Order by 9:30 AM</p>
+              <p className="text-amber-600">Professional catering for offices - Order by 9:30 AM same day</p>
             </div>
             
-            {/* Meal Type Selection (Breakfast/Lunch) */}
             <Tabs value={activeMealType} onValueChange={setActiveMealType} className="w-full mb-6">
               <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-6">
                 <TabsTrigger value="breakfast" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
@@ -423,7 +525,6 @@ const WeekendMenu = () => {
               </TabsList>
 
               <TabsContent value="breakfast">
-                {/* Office Food Categories for Breakfast */}
                 <Tabs value={activeOfficeCategory} onValueChange={setActiveOfficeCategory} className="w-full">
                   <TabsList className="grid w-full grid-cols-3 max-w-lg mx-auto mb-8">
                     <TabsTrigger value="regular" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
@@ -438,33 +539,50 @@ const WeekendMenu = () => {
                   </TabsList>
 
                   <TabsContent value="regular">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                      {officeFoodMenu.breakfast.regular.map((item) => (
-                        <MenuCard key={item.day} item={item} type="office" mealType="breakfast" />
-                      ))}
-                    </div>
+                    {getAvailableItems(officeFoodMenu.breakfast.regular, "office").length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                        {getAvailableItems(officeFoodMenu.breakfast.regular, "office").map((item) => (
+                          <MenuCard key={item.day} item={item} type="office" mealType="breakfast" />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-amber-600">No breakfast orders available for remaining days this week.</p>
+                      </div>
+                    )}
                   </TabsContent>
 
                   <TabsContent value="diet">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                      {officeFoodMenu.breakfast.diet.map((item) => (
-                        <MenuCard key={item.day} item={item} type="office" mealType="breakfast" />
-                      ))}
-                    </div>
+                    {getAvailableItems(officeFoodMenu.breakfast.diet, "office").length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                        {getAvailableItems(officeFoodMenu.breakfast.diet, "office").map((item) => (
+                          <MenuCard key={item.day} item={item} type="office" mealType="breakfast" />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-amber-600">No diet breakfast orders available for remaining days this week.</p>
+                      </div>
+                    )}
                   </TabsContent>
 
                   <TabsContent value="premium">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                      {officeFoodMenu.breakfast.premium.map((item) => (
-                        <MenuCard key={item.day} item={item} type="office" mealType="breakfast" />
-                      ))}
-                    </div>
+                    {getAvailableItems(officeFoodMenu.breakfast.premium, "office").length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                        {getAvailableItems(officeFoodMenu.breakfast.premium, "office").map((item) => (
+                          <MenuCard key={item.day} item={item} type="office" mealType="breakfast" />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-amber-600">No premium breakfast orders available for remaining days this week.</p>
+                      </div>
+                    )}
                   </TabsContent>
                 </Tabs>
               </TabsContent>
 
               <TabsContent value="lunch">
-                {/* Office Food Categories for Lunch */}
                 <Tabs value={activeOfficeCategory} onValueChange={setActiveOfficeCategory} className="w-full">
                   <TabsList className="grid w-full grid-cols-3 max-w-lg mx-auto mb-8">
                     <TabsTrigger value="regular" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
@@ -479,27 +597,45 @@ const WeekendMenu = () => {
                   </TabsList>
 
                   <TabsContent value="regular">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                      {officeFoodMenu.lunch.regular.map((item) => (
-                        <MenuCard key={item.day} item={item} type="office" mealType="lunch" />
-                      ))}
-                    </div>
+                    {getAvailableItems(officeFoodMenu.lunch.regular, "office").length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                        {getAvailableItems(officeFoodMenu.lunch.regular, "office").map((item) => (
+                          <MenuCard key={item.day} item={item} type="office" mealType="lunch" />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-amber-600">No lunch orders available for remaining days this week.</p>
+                      </div>
+                    )}
                   </TabsContent>
 
                   <TabsContent value="diet">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                      {officeFoodMenu.lunch.diet.map((item) => (
-                        <MenuCard key={item.day} item={item} type="office" mealType="lunch" />
-                      ))}
-                    </div>
+                    {getAvailableItems(officeFoodMenu.lunch.diet, "office").length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                        {getAvailableItems(officeFoodMenu.lunch.diet, "office").map((item) => (
+                          <MenuCard key={item.day} item={item} type="office" mealType="lunch" />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-amber-600">No diet lunch orders available for remaining days this week.</p>
+                      </div>
+                    )}
                   </TabsContent>
 
                   <TabsContent value="premium">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                      {officeFoodMenu.lunch.premium.map((item) => (
-                        <MenuCard key={item.day} item={item} type="office" mealType="lunch" />
-                      ))}
-                    </div>
+                    {getAvailableItems(officeFoodMenu.lunch.premium, "office").length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                        {getAvailableItems(officeFoodMenu.lunch.premium, "office").map((item) => (
+                          <MenuCard key={item.day} item={item} type="office" mealType="lunch" />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-amber-600">No premium lunch orders available for remaining days this week.</p>
+                      </div>
+                    )}
                   </TabsContent>
                 </Tabs>
               </TabsContent>

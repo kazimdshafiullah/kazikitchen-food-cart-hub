@@ -20,8 +20,11 @@ const Index = () => {
             />
           </div>
           <h1 className="text-5xl font-bold text-amber-800 mb-4">
-            Your Food Solution
+            <span className="text-amber-800">Kazi Kitchen</span>
           </h1>
+          <h2 className="text-4xl font-bold text-amber-800 mb-4">
+            Your Food Solution
+          </h2>
           <p className="text-xl text-amber-700 mb-8 max-w-2xl mx-auto">
             "IN ONE PLACE" - From frozen delights to weekly meal plans, we've got everything you need for delicious, convenient dining.
           </p>
@@ -50,27 +53,8 @@ const Index = () => {
       <section className="py-16 px-4">
         <div className="container mx-auto">
           <h2 className="text-3xl font-bold text-center text-amber-800 mb-12">Choose Your Dining Experience</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             
-            {/* Home/Regular Menu */}
-            <Card className="group hover:shadow-2xl transition-all duration-300 border-2 border-amber-200 hover:border-amber-400">
-              <CardHeader className="text-center">
-                <div className="mx-auto w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <ChefHat className="w-8 h-8 text-white" />
-                </div>
-                <CardTitle className="text-2xl text-amber-800">Home</CardTitle>
-                <CardDescription className="text-amber-600">
-                  Explore our complete menu of fresh, delicious meals
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-center">
-                <p className="text-amber-700 mb-6">Browse all our available dishes, combos, and daily specials</p>
-                <Button asChild className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600">
-                  <Link to="/menu">View All Menu</Link>
-                </Button>
-              </CardContent>
-            </Card>
-
             {/* Frozen Food */}
             <Card className="group hover:shadow-2xl transition-all duration-300 border-2 border-amber-200 hover:border-amber-400">
               <CardHeader className="text-center">
@@ -157,7 +141,7 @@ const Index = () => {
           <h2 className="text-3xl font-bold text-white mb-4">Ready to Order?</h2>
           <p className="text-xl text-amber-100 mb-8">Start your culinary journey with Kazi Kitchen today!</p>
           <Button asChild size="lg" className="bg-white text-amber-600 hover:bg-amber-50">
-            <Link to="/menu">Explore Menu</Link>
+            <Link to="/weekend-menu">Explore Menu</Link>
           </Button>
         </div>
       </section>
