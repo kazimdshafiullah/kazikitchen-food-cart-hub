@@ -11,23 +11,36 @@ import { MessageSquare, Mail, Phone, Bell, Settings } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Notifications = () => {
-  // Email notification settings
+  // Email notification settings with individual enable/disable
   const [emailSettings, setEmailSettings] = useState({
     senderName: "Kazi Kitchen",
     senderEmail: "orders@kazikitchen.com",
     orderReceivedTemplate: "Dear {{customer_name}},\n\nThank you for your order #{{order_id}}! We've received your order and are preparing it with care.\n\nOrder Details:\n{{order_details}}\n\nEstimated delivery time: {{delivery_time}}\n\nTrack your order at: https://kazikitchen.com/track/{{order_id}}\n\nThank you for choosing Kazi Kitchen!\nThe Kazi Kitchen Team",
     orderConfirmedTemplate: "Dear {{customer_name}},\n\nGreat news! Your order #{{order_id}} has been confirmed and is now being prepared.\n\nOrder Details:\n{{order_details}}\n\nYour order will be delivered at approximately {{delivery_time}}.\n\nTrack your order at: https://kazikitchen.com/track/{{order_id}}\n\nThank you for choosing Kazi Kitchen!\nThe Kazi Kitchen Team",
     orderDeliveredTemplate: "Dear {{customer_name}},\n\nYour order #{{order_id}} has been delivered! We hope you enjoy your meal.\n\nIf you have a moment, we'd appreciate your feedback on your experience.\n\nRate your order here: https://kazikitchen.com/feedback/{{order_id}}\n\nThank you for choosing Kazi Kitchen!\nThe Kazi Kitchen Team",
-    enableAutoEmails: true
+    enableAutoEmails: true,
+    enableOrderReceived: true,
+    enableOrderConfirmed: true,
+    enableOrderDelivered: true
   });
 
-  // SMS notification settings
+  // SMS notification settings with individual enable/disable
   const [smsSettings, setSmsSettings] = useState({
     senderName: "KaziKitchen",
     orderReceivedTemplate: "Thank you for your order #{{order_id}}! We've received it and are preparing it with care. Est. delivery: {{delivery_time}}",
     orderConfirmedTemplate: "Your Kazi Kitchen order #{{order_id}} is confirmed and being prepared. Est. delivery: {{delivery_time}}",
     orderDeliveredTemplate: "Your Kazi Kitchen order #{{order_id}} has been delivered! Enjoy your meal from Kazi Kitchen. Rate us: {{rating_url}}",
-    enableAutoSMS: true
+    enableAutoSMS: true,
+    enableOrderReceived: true,
+    enableOrderConfirmed: true,
+    enableOrderDelivered: true
+  });
+
+  // Order limit settings
+  const [orderLimits, setOrderLimits] = useState({
+    schoolTiffinLimit: 50,
+    officeFoodLimit: 30,
+    enableLimits: true
   });
 
   // Kitchen and Rider notification settings
@@ -81,6 +94,13 @@ const Notifications = () => {
     toast({
       title: "Success", 
       description: "SMS notification settings saved"
+    });
+  };
+
+  const handleSaveOrderLimits = () => {
+    toast({
+      title: "Success",
+      description: "Order limit settings saved"
     });
   };
 
@@ -140,6 +160,10 @@ const Notifications = () => {
             <MessageSquare className="mr-2 h-4 w-4" />
             SMS Notifications
           </TabsTrigger>
+          <TabsTrigger value="order-limits">
+            <Settings className="mr-2 h-4 w-4" />
+            Order Limits
+          </TabsTrigger>
           <TabsTrigger value="kitchen-rider">
             <Settings className="mr-2 h-4 w-4" />
             Kitchen & Rider Notifications
@@ -194,40 +218,86 @@ const Notifications = () => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="orderReceivedTemplate">Order Received Email Template</Label>
-                <p className="text-sm text-muted-foreground">Sent immediately when a customer places an order</p>
-                <Textarea
-                  id="orderReceivedTemplate"
-                  rows={6}
-                  className="font-mono text-sm"
-                  value={emailSettings.orderReceivedTemplate}
-                  onChange={(e) => setEmailSettings({ ...emailSettings, orderReceivedTemplate: e.target.value })}
-                />
-              </div>
+              <div className="space-y-4 border rounded-lg p-4">
+                <h4 className="font-medium">Individual Email Templates</h4>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Switch 
+                        checked={emailSettings.enableOrderReceived}
+                        onCheckedChange={(checked) => setEmailSettings({ ...emailSettings, enableOrderReceived: checked })}
+                        id="enable-order-received-email"
+                      />
+                      <Label htmlFor="enable-order-received-email" className="font-medium">Order Received Email</Label>
+                    </div>
+                  </div>
+                  {emailSettings.enableOrderReceived && (
+                    <div className="space-y-2">
+                      <Label htmlFor="orderReceivedTemplate">Order Received Email Template</Label>
+                      <p className="text-sm text-muted-foreground">Sent immediately when a customer places an order</p>
+                      <Textarea
+                        id="orderReceivedTemplate"
+                        rows={6}
+                        className="font-mono text-sm"
+                        value={emailSettings.orderReceivedTemplate}
+                        onChange={(e) => setEmailSettings({ ...emailSettings, orderReceivedTemplate: e.target.value })}
+                      />
+                    </div>
+                  )}
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="orderConfirmedTemplate">Order Confirmed Email Template</Label>
-                <p className="text-sm text-muted-foreground">Sent when the order is confirmed by staff</p>
-                <Textarea
-                  id="orderConfirmedTemplate"
-                  rows={6}
-                  className="font-mono text-sm"
-                  value={emailSettings.orderConfirmedTemplate}
-                  onChange={(e) => setEmailSettings({ ...emailSettings, orderConfirmedTemplate: e.target.value })}
-                />
-              </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Switch 
+                        checked={emailSettings.enableOrderConfirmed}
+                        onCheckedChange={(checked) => setEmailSettings({ ...emailSettings, enableOrderConfirmed: checked })}
+                        id="enable-order-confirmed-email"
+                      />
+                      <Label htmlFor="enable-order-confirmed-email" className="font-medium">Order Confirmed Email</Label>
+                    </div>
+                  </div>
+                  {emailSettings.enableOrderConfirmed && (
+                    <div className="space-y-2">
+                      <Label htmlFor="orderConfirmedTemplate">Order Confirmed Email Template</Label>
+                      <p className="text-sm text-muted-foreground">Sent when the order is confirmed by staff</p>
+                      <Textarea
+                        id="orderConfirmedTemplate"
+                        rows={6}
+                        className="font-mono text-sm"
+                        value={emailSettings.orderConfirmedTemplate}
+                        onChange={(e) => setEmailSettings({ ...emailSettings, orderConfirmedTemplate: e.target.value })}
+                      />
+                    </div>
+                  )}
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="orderDeliveredTemplate">Order Delivered Email Template</Label>
-                <p className="text-sm text-muted-foreground">Sent when the order is marked as delivered</p>
-                <Textarea
-                  id="orderDeliveredTemplate"
-                  rows={6}
-                  className="font-mono text-sm"
-                  value={emailSettings.orderDeliveredTemplate}
-                  onChange={(e) => setEmailSettings({ ...emailSettings, orderDeliveredTemplate: e.target.value })}
-                />
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Switch 
+                        checked={emailSettings.enableOrderDelivered}
+                        onCheckedChange={(checked) => setEmailSettings({ ...emailSettings, enableOrderDelivered: checked })}
+                        id="enable-order-delivered-email"
+                      />
+                      <Label htmlFor="enable-order-delivered-email" className="font-medium">Order Delivered Email</Label>
+                    </div>
+                  </div>
+                  {emailSettings.enableOrderDelivered && (
+                    <div className="space-y-2">
+                      <Label htmlFor="orderDeliveredTemplate">Order Delivered Email Template</Label>
+                      <p className="text-sm text-muted-foreground">Sent when the order is marked as delivered</p>
+                      <Textarea
+                        id="orderDeliveredTemplate"
+                        rows={6}
+                        className="font-mono text-sm"
+                        value={emailSettings.orderDeliveredTemplate}
+                        onChange={(e) => setEmailSettings({ ...emailSettings, orderDeliveredTemplate: e.target.value })}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="pt-2">
@@ -277,49 +347,95 @@ const Notifications = () => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="smsOrderReceivedTemplate">Order Received SMS Template</Label>
-                <Textarea
-                  id="smsOrderReceivedTemplate"
-                  rows={3}
-                  className="font-mono text-sm"
-                  maxLength={160}
-                  value={smsSettings.orderReceivedTemplate}
-                  onChange={(e) => setSmsSettings({ ...smsSettings, orderReceivedTemplate: e.target.value })}
-                />
-                <p className="text-xs text-right text-muted-foreground">
-                  {smsSettings.orderReceivedTemplate.length}/160 characters
-                </p>
-              </div>
+              <div className="space-y-4 border rounded-lg p-4">
+                <h4 className="font-medium">Individual SMS Templates</h4>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Switch 
+                        checked={smsSettings.enableOrderReceived}
+                        onCheckedChange={(checked) => setSmsSettings({ ...smsSettings, enableOrderReceived: checked })}
+                        id="enable-order-received-sms"
+                      />
+                      <Label htmlFor="enable-order-received-sms" className="font-medium">Order Received SMS</Label>
+                    </div>
+                  </div>
+                  {smsSettings.enableOrderReceived && (
+                    <div className="space-y-2">
+                      <Label htmlFor="smsOrderReceivedTemplate">Order Received SMS Template</Label>
+                      <Textarea
+                        id="smsOrderReceivedTemplate"
+                        rows={3}
+                        className="font-mono text-sm"
+                        maxLength={160}
+                        value={smsSettings.orderReceivedTemplate}
+                        onChange={(e) => setSmsSettings({ ...smsSettings, orderReceivedTemplate: e.target.value })}
+                      />
+                      <p className="text-xs text-right text-muted-foreground">
+                        {smsSettings.orderReceivedTemplate.length}/160 characters
+                      </p>
+                    </div>
+                  )}
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="smsOrderConfirmedTemplate">Order Confirmed SMS Template</Label>
-                <Textarea
-                  id="smsOrderConfirmedTemplate"
-                  rows={3}
-                  className="font-mono text-sm"
-                  maxLength={160}
-                  value={smsSettings.orderConfirmedTemplate}
-                  onChange={(e) => setSmsSettings({ ...smsSettings, orderConfirmedTemplate: e.target.value })}
-                />
-                <p className="text-xs text-right text-muted-foreground">
-                  {smsSettings.orderConfirmedTemplate.length}/160 characters
-                </p>
-              </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Switch 
+                        checked={smsSettings.enableOrderConfirmed}
+                        onCheckedChange={(checked) => setSmsSettings({ ...smsSettings, enableOrderConfirmed: checked })}
+                        id="enable-order-confirmed-sms"
+                      />
+                      <Label htmlFor="enable-order-confirmed-sms" className="font-medium">Order Confirmed SMS</Label>
+                    </div>
+                  </div>
+                  {smsSettings.enableOrderConfirmed && (
+                    <div className="space-y-2">
+                      <Label htmlFor="smsOrderConfirmedTemplate">Order Confirmed SMS Template</Label>
+                      <Textarea
+                        id="smsOrderConfirmedTemplate"
+                        rows={3}
+                        className="font-mono text-sm"
+                        maxLength={160}
+                        value={smsSettings.orderConfirmedTemplate}
+                        onChange={(e) => setSmsSettings({ ...smsSettings, orderConfirmedTemplate: e.target.value })}
+                      />
+                      <p className="text-xs text-right text-muted-foreground">
+                        {smsSettings.orderConfirmedTemplate.length}/160 characters
+                      </p>
+                    </div>
+                  )}
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="smsOrderDeliveredTemplate">Order Delivered SMS Template</Label>
-                <Textarea
-                  id="smsOrderDeliveredTemplate"
-                  rows={3}
-                  className="font-mono text-sm"
-                  maxLength={160}
-                  value={smsSettings.orderDeliveredTemplate}
-                  onChange={(e) => setSmsSettings({ ...smsSettings, orderDeliveredTemplate: e.target.value })}
-                />
-                <p className="text-xs text-right text-muted-foreground">
-                  {smsSettings.orderDeliveredTemplate.length}/160 characters
-                </p>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Switch 
+                        checked={smsSettings.enableOrderDelivered}
+                        onCheckedChange={(checked) => setSmsSettings({ ...smsSettings, enableOrderDelivered: checked })}
+                        id="enable-order-delivered-sms"
+                      />
+                      <Label htmlFor="enable-order-delivered-sms" className="font-medium">Order Delivered SMS</Label>
+                    </div>
+                  </div>
+                  {smsSettings.enableOrderDelivered && (
+                    <div className="space-y-2">
+                      <Label htmlFor="smsOrderDeliveredTemplate">Order Delivered SMS Template</Label>
+                      <Textarea
+                        id="smsOrderDeliveredTemplate"
+                        rows={3}
+                        className="font-mono text-sm"
+                        maxLength={160}
+                        value={smsSettings.orderDeliveredTemplate}
+                        onChange={(e) => setSmsSettings({ ...smsSettings, orderDeliveredTemplate: e.target.value })}
+                      />
+                      <p className="text-xs text-right text-muted-foreground">
+                        {smsSettings.orderDeliveredTemplate.length}/160 characters
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="pt-2">
@@ -335,6 +451,68 @@ const Notifications = () => {
             </CardContent>
             <CardFooter>
               <Button onClick={handleSaveSmsSettings}>Save SMS Settings</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        {/* Order Limits Tab */}
+        <TabsContent value="order-limits" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Daily Order Limits</CardTitle>
+              <CardDescription>Set maximum orders per day for different services</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  checked={orderLimits.enableLimits}
+                  onCheckedChange={(checked) => setOrderLimits({ ...orderLimits, enableLimits: checked })}
+                  id="enable-limits"
+                />
+                <Label htmlFor="enable-limits">Enable daily order limits</Label>
+              </div>
+
+              {orderLimits.enableLimits && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="schoolTiffinLimit">School Tiffin - Daily Order Limit</Label>
+                      <Input
+                        id="schoolTiffinLimit"
+                        type="number"
+                        min="1"
+                        value={orderLimits.schoolTiffinLimit}
+                        onChange={(e) => setOrderLimits({ ...orderLimits, schoolTiffinLimit: parseInt(e.target.value) || 0 })}
+                      />
+                      <p className="text-xs text-muted-foreground">Maximum orders accepted for next day delivery</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="officeFoodLimit">Office Food - Daily Order Limit</Label>
+                      <Input
+                        id="officeFoodLimit"
+                        type="number"
+                        min="1"
+                        value={orderLimits.officeFoodLimit}
+                        onChange={(e) => setOrderLimits({ ...orderLimits, officeFoodLimit: parseInt(e.target.value) || 0 })}
+                      />
+                      <p className="text-xs text-muted-foreground">Maximum orders accepted for next day delivery</p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h4 className="font-medium text-blue-900 mb-2">How it works:</h4>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li>• When the daily limit is reached, new orders will show "We are out of orders for today"</li>
+                      <li>• Limits reset automatically at midnight each day</li>
+                      <li>• School Tiffin orders are for next day delivery (requires 1 day advance booking)</li>
+                      <li>• Office Food orders are for same day delivery</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+            <CardFooter>
+              <Button onClick={handleSaveOrderLimits}>Save Order Limit Settings</Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -429,7 +607,6 @@ const Notifications = () => {
           </Card>
         </TabsContent>
 
-        {/* SMS Integration Tab */}
         <TabsContent value="sms-integration" className="space-y-4">
           <Card>
             <CardHeader>
@@ -554,7 +731,6 @@ const Notifications = () => {
           </Card>
         </TabsContent>
 
-        {/* Live Chat Settings Tab */}
         <TabsContent value="live-chat" className="space-y-4">
           <Card>
             <CardHeader>
@@ -654,7 +830,6 @@ const Notifications = () => {
           </Card>
         </TabsContent>
 
-        {/* Test Notifications Tab */}
         <TabsContent value="test" className="space-y-4">
           <Card>
             <CardHeader>

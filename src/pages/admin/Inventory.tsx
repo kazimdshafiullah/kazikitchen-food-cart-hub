@@ -29,7 +29,8 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, Package, Tag, AlertTriangle } from "lucide-react";
+import { Plus, Edit, Trash2, Package, Tag, AlertTriangle, TrendingUp } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Mock data for categories
 const mockCategories = [
@@ -277,6 +278,20 @@ const CategoryManagement = () => {
 const InventoryItems = () => {
   const [items, setItems] = useState(mockInventoryItems);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isAddItemOpen, setIsAddItemOpen] = useState(false);
+  const [isEditItemOpen, setIsEditItemOpen] = useState(false);
+  const [isReleaseOpen, setIsReleaseOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [releaseItem, setReleaseItem] = useState<any>(null);
+  const [releaseQuantity, setReleaseQuantity] = useState(0);
+  const [newItem, setNewItem] = useState({
+    name: "",
+    category: "",
+    stock: 0,
+    minStock: 0,
+    price: 0,
+    supplier: ""
+  });
 
   const filteredItems = items.filter(item =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -284,6 +299,98 @@ const InventoryItems = () => {
   );
 
   const lowStockItems = items.filter(item => item.stock <= item.minStock);
+
+  const handleAddItem = () => {
+    if (!newItem.name.trim()) {
+      toast({
+        title: "Error",
+        description: "Item name is required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const item = {
+      id: Date.now().toString(),
+      ...newItem,
+      lastRestocked: new Date().toISOString().split('T')[0]
+    };
+
+    setItems([...items, item]);
+    setNewItem({
+      name: "",
+      category: "",
+      stock: 0,
+      minStock: 0,
+      price: 0,
+      supplier: ""
+    });
+    setIsAddItemOpen(false);
+
+    toast({
+      title: "Success",
+      description: "Item added successfully"
+    });
+  };
+
+  const handleEditItem = () => {
+    if (!editingItem?.name.trim()) {
+      toast({
+        title: "Error",
+        description: "Item name is required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setItems(items.map(item => 
+      item.id === editingItem.id ? editingItem : item
+    ));
+    setEditingItem(null);
+    setIsEditItemOpen(false);
+
+    toast({
+      title: "Success",
+      description: "Item updated successfully"
+    });
+  };
+
+  const handleReleaseStock = () => {
+    if (releaseQuantity <= 0 || releaseQuantity > releaseItem.stock) {
+      toast({
+        title: "Error",
+        description: "Invalid release quantity",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setItems(items.map(item => 
+      item.id === releaseItem.id 
+        ? { ...item, stock: item.stock - releaseQuantity }
+        : item
+    ));
+    
+    setReleaseItem(null);
+    setReleaseQuantity(0);
+    setIsReleaseOpen(false);
+
+    toast({
+      title: "Success",
+      description: "Stock released successfully"
+    });
+  };
+
+  const openReleaseDialog = (item: any) => {
+    setReleaseItem(item);
+    setReleaseQuantity(0);
+    setIsReleaseOpen(true);
+  };
+
+  const openEditDialog = (item: any) => {
+    setEditingItem({ ...item });
+    setIsEditItemOpen(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -324,7 +431,7 @@ const InventoryItems = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-sm"
         />
-        <Button>
+        <Button onClick={() => setIsAddItemOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Add Item
         </Button>
@@ -360,8 +467,11 @@ const InventoryItems = () => {
                 <TableCell>{item.lastRestocked}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="outline" onClick={() => openEditDialog(item)}>
                       <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => openReleaseDialog(item)}>
+                      <TrendingUp className="h-4 w-4" />
                     </Button>
                     <Button size="sm" variant="destructive">
                       <Trash2 className="h-4 w-4" />
@@ -373,6 +483,184 @@ const InventoryItems = () => {
           </TableBody>
         </Table>
       </div>
+
+      {/* Add Item Dialog */}
+      <Dialog open={isAddItemOpen} onOpenChange={setIsAddItemOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Item</DialogTitle>
+            <DialogDescription>Add a new inventory item</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Item Name</label>
+              <Input
+                value={newItem.name}
+                onChange={(e) => setNewItem({...newItem, name: e.target.value})}
+                placeholder="Enter item name"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Category</label>
+              <Select value={newItem.category} onValueChange={(value) => setNewItem({...newItem, category: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mockCategories.map((category) => (
+                    <SelectItem key={category.id} value={category.name}>{category.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Stock</label>
+                <Input
+                  type="number"
+                  value={newItem.stock}
+                  onChange={(e) => setNewItem({...newItem, stock: parseInt(e.target.value) || 0})}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Min Stock</label>
+                <Input
+                  type="number"
+                  value={newItem.minStock}
+                  onChange={(e) => setNewItem({...newItem, minStock: parseInt(e.target.value) || 0})}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Price (৳)</label>
+              <Input
+                type="number"
+                value={newItem.price}
+                onChange={(e) => setNewItem({...newItem, price: parseInt(e.target.value) || 0})}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Supplier</label>
+              <Input
+                value={newItem.supplier}
+                onChange={(e) => setNewItem({...newItem, supplier: e.target.value})}
+                placeholder="Enter supplier name"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddItemOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddItem}>Add Item</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Item Dialog */}
+      <Dialog open={isEditItemOpen} onOpenChange={setIsEditItemOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Item</DialogTitle>
+            <DialogDescription>Update item information</DialogDescription>
+          </DialogHeader>
+          {editingItem && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Item Name</label>
+                <Input
+                  value={editingItem.name}
+                  onChange={(e) => setEditingItem({...editingItem, name: e.target.value})}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Category</label>
+                <Select value={editingItem.category} onValueChange={(value) => setEditingItem({...editingItem, category: value})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {mockCategories.map((category) => (
+                      <SelectItem key={category.id} value={category.name}>{category.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">Stock</label>
+                  <Input
+                    type="number"
+                    value={editingItem.stock}
+                    onChange={(e) => setEditingItem({...editingItem, stock: parseInt(e.target.value) || 0})}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Min Stock</label>
+                  <Input
+                    type="number"
+                    value={editingItem.minStock}
+                    onChange={(e) => setEditingItem({...editingItem, minStock: parseInt(e.target.value) || 0})}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Price (৳)</label>
+                <Input
+                  type="number"
+                  value={editingItem.price}
+                  onChange={(e) => setEditingItem({...editingItem, price: parseInt(e.target.value) || 0})}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Supplier</label>
+                <Input
+                  value={editingItem.supplier}
+                  onChange={(e) => setEditingItem({...editingItem, supplier: e.target.value})}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditItemOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditItem}>Update Item</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Release Stock Dialog */}
+      <Dialog open={isReleaseOpen} onOpenChange={setIsReleaseOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Release Stock</DialogTitle>
+            <DialogDescription>Release stock for {releaseItem?.name}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Current Stock: {releaseItem?.stock}</label>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Release Quantity</label>
+              <Input
+                type="number"
+                min="1"
+                max={releaseItem?.stock || 0}
+                value={releaseQuantity}
+                onChange={(e) => setReleaseQuantity(parseInt(e.target.value) || 0)}
+                placeholder="Enter quantity to release"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsReleaseOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleReleaseStock}>Release Stock</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
