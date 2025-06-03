@@ -1,7 +1,13 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Layout from "./components/Layout";
 import Index from "./pages/Index";
+import Menu from "./pages/Menu";
+import FrozenFood from "./pages/FrozenFood";
+import FrozenFoodOrder from "./pages/FrozenFoodOrder";
+import WeekendMenu from "./pages/WeekendMenu";
+import WeekendOrder from "./pages/WeekendOrder";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
@@ -47,6 +53,11 @@ function App() {
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Index />} />
+            <Route path="menu" element={<Menu />} />
+            <Route path="frozen-food" element={<FrozenFood />} />
+            <Route path="frozen-food/:id" element={<FrozenFoodOrder />} />
+            <Route path="weekend-menu" element={<WeekendMenu />} />
+            <Route path="weekend-order/:type/:day/:category" element={<WeekendOrder />} />
             <Route path="product/:id" element={<ProductDetail />} />
             <Route path="cart" element={<Cart />} />
             <Route path="checkout" element={<Checkout />} />
