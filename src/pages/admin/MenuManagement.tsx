@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,9 +10,9 @@ import { Plus, Edit2, Trash2, Upload, ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const MenuManagement = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
-  const [selectedMealType, setSelectedMealType] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all-categories");
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("all-subcategories");
+  const [selectedMealType, setSelectedMealType] = useState<string>("all-mealtypes");
   const [newMenuItem, setNewMenuItem] = useState({
     name: "",
     description: "",
@@ -159,7 +158,7 @@ const MenuManagement = () => {
               </Select>
             </div>
 
-            {selectedCategory && subCategories[selectedCategory as keyof typeof subCategories] && (
+            {selectedCategory && selectedCategory !== "all-categories" && subCategories[selectedCategory as keyof typeof subCategories] && (
               <div>
                 <Label htmlFor="sub-category">Sub Category *</Label>
                 <Select
@@ -183,7 +182,7 @@ const MenuManagement = () => {
               </div>
             )}
 
-            {selectedSubCategory && mealTypes[selectedSubCategory as keyof typeof mealTypes] && (
+            {selectedSubCategory && selectedSubCategory !== "all-subcategories" && mealTypes[selectedSubCategory as keyof typeof mealTypes] && (
               <div>
                 <Label htmlFor="meal-type">Meal Type *</Label>
                 <Select
@@ -333,7 +332,7 @@ const MenuManagement = () => {
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All categories</SelectItem>
+                  <SelectItem value="all-categories">All categories</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
@@ -347,8 +346,8 @@ const MenuManagement = () => {
                   <SelectValue placeholder="Sub Category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All sub categories</SelectItem>
-                  {selectedCategory && subCategories[selectedCategory as keyof typeof subCategories]?.map((subCategory) => (
+                  <SelectItem value="all-subcategories">All sub categories</SelectItem>
+                  {selectedCategory && selectedCategory !== "all-categories" && subCategories[selectedCategory as keyof typeof subCategories]?.map((subCategory) => (
                     <SelectItem key={subCategory.id} value={subCategory.id}>
                       {subCategory.name}
                     </SelectItem>
@@ -361,8 +360,8 @@ const MenuManagement = () => {
                   <SelectValue placeholder="Meal Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All meal types</SelectItem>
-                  {selectedSubCategory && mealTypes[selectedSubCategory as keyof typeof mealTypes]?.map((mealType) => (
+                  <SelectItem value="all-mealtypes">All meal types</SelectItem>
+                  {selectedSubCategory && selectedSubCategory !== "all-subcategories" && mealTypes[selectedSubCategory as keyof typeof mealTypes]?.map((mealType) => (
                     <SelectItem key={mealType.id} value={mealType.id}>
                       {mealType.name}
                     </SelectItem>
