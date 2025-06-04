@@ -4,7 +4,7 @@ import { Sidebar, SidebarContent, SidebarHeader, SidebarProvider, SidebarMenu, S
 import { 
   LayoutDashboard, ShoppingCart, Tag, CreditCard, BarChart3, Settings, 
   Users, LogOut, Box, Package, Palette, FileText, MessageSquare, DollarSign, 
-  ChartBar, UserPlus, Send, Bell, TrendingUp
+  ChartBar, UserPlus, Send, Bell, TrendingUp, MenuIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -77,6 +77,14 @@ const AdminLayout = () => {
                     <Link to="/admin/products" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <Box className="mr-2" /> 
                       <span>Products</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild tooltip="Menu Management">
+                    <Link to="/admin/menu-management" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                      <MenuIcon className="mr-2" /> 
+                      <span>Menu Management</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
