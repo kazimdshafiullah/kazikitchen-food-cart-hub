@@ -4,56 +4,62 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="bg-kazi-dark text-white py-8">
+    <footer className="bg-amber-900 text-white py-8 mt-auto">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <Link to="/" className="flex items-center">
-              <span className="text-2xl font-bold text-kazi-orange">Kazi</span>
-              <span className="text-2xl font-bold text-kazi-light-green">Kitchen</span>
+            <Link to="/" className="flex items-center mb-4">
+              <img 
+                src="/lovable-uploads/2cfab3c4-b828-41e4-b378-a8bc7c2a9c57.png" 
+                alt="Kazi Kitchen Logo" 
+                className="h-12 w-12 mr-3"
+              />
+              <div>
+                <span className="text-2xl font-bold text-orange-400">Kazi</span>
+                <span className="text-2xl font-bold text-amber-200">Kitchen</span>
+              </div>
             </Link>
-            <p className="mt-2 text-sm text-gray-300">
+            <p className="mt-2 text-sm text-amber-200">
               Delicious food delivered to your doorstep. We make food with passion.
             </p>
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-3">Quick Links</h3>
+            <h3 className="text-lg font-semibold mb-3 text-orange-400">Quick Links</h3>
             <ul className="space-y-2">
-              <li><Link to="/" className="text-gray-300 hover:text-white transition-colors">Home</Link></li>
-              <li><Link to="/#categories" className="text-gray-300 hover:text-white transition-colors">Categories</Link></li>
-              <li><Link to="/cart" className="text-gray-300 hover:text-white transition-colors">Cart</Link></li>
-              <li><Link to="/checkout" className="text-gray-300 hover:text-white transition-colors">Checkout</Link></li>
+              <li><Link to="/" className="text-amber-200 hover:text-white transition-colors">Home</Link></li>
+              <li><Link to="/frozen-food" className="text-amber-200 hover:text-white transition-colors">Frozen Food</Link></li>
+              <li><Link to="/weekend-menu" className="text-amber-200 hover:text-white transition-colors">Weekend Menu</Link></li>
+              <li><Link to="/cart" className="text-amber-200 hover:text-white transition-colors">Cart</Link></li>
             </ul>
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-3">Categories</h3>
+            <h3 className="text-lg font-semibold mb-3 text-orange-400">Categories</h3>
             <ul className="space-y-2">
-              <li><Link to="/?category=frozen-food" className="text-gray-300 hover:text-white transition-colors">Frozen Food</Link></li>
-              <li><Link to="/?category=breakfast" className="text-gray-300 hover:text-white transition-colors">Breakfast</Link></li>
-              <li><Link to="/?category=children-tiffin" className="text-gray-300 hover:text-white transition-colors">Children's Tiffin</Link></li>
-              <li><Link to="/?category=desserts" className="text-gray-300 hover:text-white transition-colors">Desserts</Link></li>
+              <li><Link to="/frozen-food" className="text-amber-200 hover:text-white transition-colors">Frozen Food</Link></li>
+              <li><Link to="/weekend-menu" className="text-amber-200 hover:text-white transition-colors">School Tiffin</Link></li>
+              <li><Link to="/weekend-menu" className="text-amber-200 hover:text-white transition-colors">Office Food</Link></li>
+              <li><Link to="/weekend-menu" className="text-amber-200 hover:text-white transition-colors">Weekly Plans</Link></li>
             </ul>
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-3">Contact Us</h3>
-            <address className="not-italic text-gray-300">
-              <p>123 Food Street</p>
-              <p>Cuisine City, FK 12345</p>
+            <h3 className="text-lg font-semibold mb-3 text-orange-400">Contact Us</h3>
+            <address className="not-italic text-amber-200">
+              <p>Dhaka, Bangladesh</p>
               <p className="mt-2">Email: info@kazikitchen.com</p>
-              <p>Phone: (123) 456-7890</p>
+              <p>Phone: +880 1234-567890</p>
             </address>
           </div>
         </div>
         
-        <div className="border-t border-gray-700 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-gray-400">© {new Date().getFullYear()} KaziKitchen. All rights reserved.</p>
+        <div className="border-t border-amber-700 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
+          <p className="text-sm text-amber-300">© {new Date().getFullYear()} Kazi Kitchen. All rights reserved.</p>
           <div className="mt-4 md:mt-0">
             <ul className="flex space-x-4">
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Terms of Service</a></li>
+              <li><a href="#" className="text-amber-300 hover:text-white transition-colors">Privacy Policy</a></li>
+              <li><a href="#" className="text-amber-300 hover:text-white transition-colors">Terms of Service</a></li>
             </ul>
           </div>
         </div>

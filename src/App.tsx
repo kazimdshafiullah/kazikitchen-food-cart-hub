@@ -1,4 +1,5 @@
 
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Layout from "./components/Layout";
@@ -35,6 +36,7 @@ import Invoice from "./pages/admin/Invoice";
 import ServerAnalytics from "./pages/admin/ServerAnalytics";
 import CustomerAnalytics from "./pages/admin/CustomerAnalytics";
 import SubCategories from "./pages/admin/SubCategories";
+import MenuManagement from "./pages/admin/MenuManagement";
 import KitchenLogin from "./pages/kitchen/KitchenLogin";
 import KitchenLayout from "./components/KitchenLayout";
 import KitchenDashboard from "./pages/kitchen/KitchenDashboard";
@@ -71,6 +73,7 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="orders" element={<Orders />} />
             <Route path="products" element={<Products />} />
+            <Route path="menu-management" element={<MenuManagement />} />
             <Route path="inventory" element={<Inventory />} />
             <Route path="marketing" element={<Marketing />} />
             <Route path="social-media" element={<SocialMedia />} />

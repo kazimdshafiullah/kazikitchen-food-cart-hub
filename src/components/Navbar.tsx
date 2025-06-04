@@ -30,9 +30,9 @@ const Navbar = () => {
           <div className="flex items-center space-x-8">
             <Link to="/" className="flex items-center space-x-2">
               <img 
-                src="/lovable-uploads/9a12eda0-fd9e-4b5c-8771-a9c1d6b6851a.png" 
+                src="/lovable-uploads/2cfab3c4-b828-41e4-b378-a8bc7c2a9c57.png" 
                 alt="Kazi Kitchen Logo" 
-                className="h-10 w-10"
+                className="h-12 w-12"
               />
               <span className="text-xl font-bold text-orange-600">Kazi Kitchen</span>
             </Link>
