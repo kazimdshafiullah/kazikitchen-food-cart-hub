@@ -1,7 +1,7 @@
 
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AuthProvider } from "@/hooks/useAuth";
 import Layout from "./components/Layout";
 import Index from "./pages/Index";
 import Menu from "./pages/Menu";
@@ -52,65 +52,67 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Index />} />
-            <Route path="menu" element={<Menu />} />
-            <Route path="frozen-food" element={<FrozenFood />} />
-            <Route path="frozen-food/:id" element={<FrozenFoodOrder />} />
-            <Route path="weekend-menu" element={<WeekendMenu />} />
-            <Route path="weekend-order/:type/:day/:mealType/:category" element={<WeekendOrder />} />
-            <Route path="product/:id" element={<ProductDetail />} />
-            <Route path="cart" element={<Cart />} />
-            <Route path="checkout" element={<Checkout />} />
-            <Route path="track/:orderId" element={<OrderTracking />} />
-            <Route path="invoice/:orderId" element={<Invoice />} />
-          </Route>
-          
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="orders" element={<Orders />} />
-            <Route path="products" element={<Products />} />
-            <Route path="menu-management" element={<MenuManagement />} />
-            <Route path="inventory" element={<Inventory />} />
-            <Route path="marketing" element={<Marketing />} />
-            <Route path="social-media" element={<SocialMedia />} />
-            <Route path="notifications" element={<Notifications />} />
-            <Route path="chat-management" element={<ChatManagement />} />
-            <Route path="offers" element={<Offers />} />
-            <Route path="payments" element={<Payments />} />
-            <Route path="expenses" element={<ExpenseManagement />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="site-design" element={<SiteDesign />} />
-            <Route path="customers" element={<Customers />} />
-            <Route path="customer-analytics" element={<CustomerAnalytics />} />
-            <Route path="users" element={<UserManagement />} />
-            <Route path="subcategories" element={<SubCategories />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="server-analytics" element={<ServerAnalytics />} />
-            <Route path="invoice/:id" element={<Invoice />} />
-          </Route>
-          
-          {/* Kitchen Portal Routes */}
-          <Route path="/kitchen/login" element={<KitchenLogin />} />
-          <Route path="/kitchen" element={<KitchenLayout />}>
-            <Route path="dashboard" element={<KitchenDashboard />} />
-            <Route path="preparation" element={<KitchenPreparation />} />
-          </Route>
-          
-          {/* Rider Portal Routes */}
-          <Route path="/rider/login" element={<RiderLogin />} />
-          <Route path="/rider" element={<RiderLayout />}>
-            <Route path="dashboard" element={<RiderDashboard />} />
-            <Route path="map" element={<RiderMap />} />
-          </Route>
-          
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <Toaster />
-      </Router>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Index />} />
+              <Route path="menu" element={<Menu />} />
+              <Route path="frozen-food" element={<FrozenFood />} />
+              <Route path="frozen-food/:id" element={<FrozenFoodOrder />} />
+              <Route path="weekend-menu" element={<WeekendMenu />} />
+              <Route path="weekend-order/:type/:day/:mealType/:category" element={<WeekendOrder />} />
+              <Route path="product/:id" element={<ProductDetail />} />
+              <Route path="cart" element={<Cart />} />
+              <Route path="checkout" element={<Checkout />} />
+              <Route path="track/:orderId" element={<OrderTracking />} />
+              <Route path="invoice/:orderId" element={<Invoice />} />
+            </Route>
+            
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="products" element={<Products />} />
+              <Route path="menu-management" element={<MenuManagement />} />
+              <Route path="inventory" element={<Inventory />} />
+              <Route path="marketing" element={<Marketing />} />
+              <Route path="social-media" element={<SocialMedia />} />
+              <Route path="notifications" element={<Notifications />} />
+              <Route path="chat-management" element={<ChatManagement />} />
+              <Route path="offers" element={<Offers />} />
+              <Route path="payments" element={<Payments />} />
+              <Route path="expenses" element={<ExpenseManagement />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="site-design" element={<SiteDesign />} />
+              <Route path="customers" element={<Customers />} />
+              <Route path="customer-analytics" element={<CustomerAnalytics />} />
+              <Route path="users" element={<UserManagement />} />
+              <Route path="subcategories" element={<SubCategories />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="server-analytics" element={<ServerAnalytics />} />
+              <Route path="invoice/:id" element={<Invoice />} />
+            </Route>
+            
+            {/* Kitchen Portal Routes */}
+            <Route path="/kitchen/login" element={<KitchenLogin />} />
+            <Route path="/kitchen" element={<KitchenLayout />}>
+              <Route path="dashboard" element={<KitchenDashboard />} />
+              <Route path="preparation" element={<KitchenPreparation />} />
+            </Route>
+            
+            {/* Rider Portal Routes */}
+            <Route path="/rider/login" element={<RiderLogin />} />
+            <Route path="/rider" element={<RiderLayout />}>
+              <Route path="dashboard" element={<RiderDashboard />} />
+              <Route path="map" element={<RiderMap />} />
+            </Route>
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <Toaster />
+        </Router>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

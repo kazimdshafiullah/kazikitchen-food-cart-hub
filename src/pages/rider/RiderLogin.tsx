@@ -5,36 +5,28 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Truck } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const RiderLogin = () => {
   const [credentials, setCredentials] = useState({ username: "", password: "" });
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
-    // Mock rider credentials
-    if (credentials.username === "rider" && credentials.password === "rider123") {
-      const riderUser = {
-        id: "rider-1",
-        name: "Delivery Rider",
-        role: "rider"
-      };
-      
-      localStorage.setItem('rider_user', JSON.stringify(riderUser));
-      navigate('/rider/dashboard');
-      toast({
-        title: "Login Successful",
-        description: "Welcome to Rider Portal"
-      });
-    } else {
-      toast({
-        title: "Login Failed",
-        description: "Invalid username or password",
-        variant: "destructive"
-      });
+    const success = await login({
+      ...credentials,
+      role: 'rider'
+    });
+    
+    if (success) {
+      navigate("/rider/dashboard");
     }
+    
+    setIsLoading(false);
   };
 
   return (
@@ -48,7 +40,7 @@ const RiderLogin = () => {
           <CardDescription>Sign in to access delivery operations</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="text-sm font-medium">Username</label>
               <Input
@@ -69,13 +61,17 @@ const RiderLogin = () => {
                 required
               />
             </div>
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-              Sign In
+            <Button 
+              type="submit" 
+              className="w-full bg-blue-600 hover:bg-blue-700"
+              disabled={isLoading}
+            >
+              {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm text-gray-600">
-            <p>Demo Credentials:</p>
-            <p>Username: rider | Password: rider123</p>
+            <p>Default credentials:</p>
+            <p>Username: rider | Password: admin123</p>
           </div>
         </CardContent>
       </Card>

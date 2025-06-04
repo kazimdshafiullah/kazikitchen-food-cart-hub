@@ -1,4 +1,3 @@
-
 import { Outlet, Navigate, Link } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarProvider, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from "@/components/ui/sidebar";
 import { 
@@ -7,37 +6,20 @@ import {
   ChartBar, UserPlus, Send, Bell, TrendingUp, MenuIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-
-// Simple mock auth for demo purposes
-// In a real app, this would be replaced with proper authentication
-const useAdminAuth = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem("adminAuthenticated") === "true";
-  });
-
-  const login = (password: string) => {
-    // Demo only - in production, use proper authentication
-    if (password === "admin123") {
-      localStorage.setItem("adminAuthenticated", "true");
-      setIsAuthenticated(true);
-      return true;
-    }
-    return false;
-  };
-
-  const logout = () => {
-    localStorage.removeItem("adminAuthenticated");
-    setIsAuthenticated(false);
-  };
-
-  return { isAuthenticated, login, logout };
-};
+import { useAuth } from "@/hooks/useAuth";
 
 const AdminLayout = () => {
-  const { isAuthenticated, logout } = useAdminAuth();
+  const { user, logout, loading } = useAuth();
   
-  if (!isAuthenticated) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
+  
+  if (!user || user.role !== 'admin') {
     return <Navigate to="/admin/login" replace />;
   }
 
@@ -56,6 +38,7 @@ const AdminLayout = () => {
             </SidebarHeader>
             <SidebarContent className="bg-white">
               <SidebarMenu>
+                
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Dashboard">
                     <Link to="/admin/dashboard" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
@@ -203,6 +186,9 @@ const AdminLayout = () => {
               </SidebarMenu>
             </SidebarContent>
             <div className="mt-auto p-4 border-t border-sidebar-border bg-white">
+              <div className="text-sm text-gray-600 mb-2">
+                Logged in as: <strong>{user.username}</strong>
+              </div>
               <Button 
                 variant="outline" 
                 className="w-full flex items-center justify-center" 
@@ -227,4 +213,4 @@ const AdminLayout = () => {
   );
 };
 
-export { AdminLayout, useAdminAuth };
+export { AdminLayout };

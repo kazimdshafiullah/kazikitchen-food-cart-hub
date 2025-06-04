@@ -5,36 +5,28 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChefHat } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const KitchenLogin = () => {
   const [credentials, setCredentials] = useState({ username: "", password: "" });
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
-    // Mock kitchen staff credentials
-    if (credentials.username === "kitchen" && credentials.password === "kitchen123") {
-      const kitchenUser = {
-        id: "kitchen-1",
-        name: "Kitchen Staff",
-        role: "kitchen"
-      };
-      
-      localStorage.setItem('kitchen_user', JSON.stringify(kitchenUser));
-      navigate('/kitchen/dashboard');
-      toast({
-        title: "Login Successful",
-        description: "Welcome to Kitchen Portal"
-      });
-    } else {
-      toast({
-        title: "Login Failed",
-        description: "Invalid username or password",
-        variant: "destructive"
-      });
+    const success = await login({
+      ...credentials,
+      role: 'kitchen'
+    });
+    
+    if (success) {
+      navigate("/kitchen/dashboard");
     }
+    
+    setIsLoading(false);
   };
 
   return (
@@ -48,7 +40,7 @@ const KitchenLogin = () => {
           <CardDescription>Sign in to access kitchen operations</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="text-sm font-medium">Username</label>
               <Input
@@ -69,13 +61,17 @@ const KitchenLogin = () => {
                 required
               />
             </div>
-            <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700">
-              Sign In
+            <Button 
+              type="submit" 
+              className="w-full bg-orange-600 hover:bg-orange-700"
+              disabled={isLoading}
+            >
+              {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm text-gray-600">
-            <p>Demo Credentials:</p>
-            <p>Username: kitchen | Password: kitchen123</p>
+            <p>Default credentials:</p>
+            <p>Username: kitchen | Password: admin123</p>
           </div>
         </CardContent>
       </Card>

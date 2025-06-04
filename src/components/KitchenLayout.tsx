@@ -2,29 +2,22 @@
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChefHat, Package, Clock, LogOut, User } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { Navigate } from "react-router-dom";
 
 const KitchenLayout = () => {
-  const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
+  const { user, logout, loading } = useAuth();
 
-  useEffect(() => {
-    // Check if kitchen staff is logged in
-    const kitchenUser = localStorage.getItem('kitchen_user');
-    if (!kitchenUser) {
-      navigate('/kitchen/login');
-    } else {
-      setUser(JSON.parse(kitchenUser));
-    }
-  }, [navigate]);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
 
-  const handleLogout = () => {
-    localStorage.removeItem('kitchen_user');
-    navigate('/kitchen/login');
-  };
-
-  if (!user) {
-    return null;
+  if (!user || user.role !== 'kitchen') {
+    return <Navigate to="/kitchen/login" replace />;
   }
 
   return (
@@ -40,12 +33,12 @@ const KitchenLayout = () => {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <User className="h-4 w-4 text-gray-500" />
-              <span className="text-sm text-gray-700">{user.name}</span>
+              <span className="text-sm text-gray-700">{user.username}</span>
             </div>
             <Button 
               variant="outline" 
               size="sm"
-              onClick={handleLogout}
+              onClick={logout}
             >
               <LogOut className="h-4 w-4 mr-2" />
               Logout

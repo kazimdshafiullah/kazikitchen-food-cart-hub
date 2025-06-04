@@ -2,35 +2,28 @@
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Truck, Package, MapPin, LogOut, User } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { Navigate } from "react-router-dom";
 
 const RiderLayout = () => {
-  const navigate = useNavigate();
+  const { user, logout, loading } = useAuth();
   const location = useLocation();
-  const [user, setUser] = useState<any>(null);
 
-  useEffect(() => {
-    // Check if rider is logged in
-    const riderUser = localStorage.getItem('rider_user');
-    if (!riderUser) {
-      navigate('/rider/login');
-    } else {
-      setUser(JSON.parse(riderUser));
-    }
-  }, [navigate]);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
 
-  const handleLogout = () => {
-    localStorage.removeItem('rider_user');
-    navigate('/rider/login');
-  };
+  if (!user || user.role !== 'rider') {
+    return <Navigate to="/rider/login" replace />;
+  }
 
   const isActive = (path: string) => {
     return location.pathname === path;
   };
-
-  if (!user) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -45,12 +38,12 @@ const RiderLayout = () => {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <User className="h-4 w-4 text-gray-500" />
-              <span className="text-sm text-gray-700">{user.name}</span>
+              <span className="text-sm text-gray-700">{user.username}</span>
             </div>
             <Button 
               variant="outline" 
               size="sm"
-              onClick={handleLogout}
+              onClick={logout}
             >
               <LogOut className="h-4 w-4 mr-2" />
               Logout

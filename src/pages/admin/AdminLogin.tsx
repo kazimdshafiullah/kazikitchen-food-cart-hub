@@ -3,27 +3,26 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/components/ui/sonner";
-import { useAdminAuth } from "@/components/AdminLayout";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
 
 const AdminLogin = () => {
-  const [password, setPassword] = useState("");
+  const [credentials, setCredentials] = useState({ username: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAdminAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Demo login - in production use proper authentication
-    const success = login(password);
+    const success = await login({
+      ...credentials,
+      role: 'admin'
+    });
     
     if (success) {
-      toast.success("Login successful");
       navigate("/admin/dashboard");
-    } else {
-      toast.error("Invalid credentials");
     }
     
     setIsLoading(false);
@@ -31,41 +30,58 @@ const AdminLogin = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-xl shadow-lg">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-kazi-green">Kazi Kitchen Admin</h1>
-          <p className="mt-2 text-gray-600">Sign in to manage your store</p>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Admin Password
-            </label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter admin password"
-              required
-              className="mt-1"
-            />
-            <p className="text-xs text-gray-500 mt-2">
-              Demo password: admin123
-            </p>
-          </div>
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-bold text-orange-600">Kazi Kitchen Admin</CardTitle>
+          <CardDescription>Sign in to manage your store</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                Username
+              </label>
+              <Input
+                id="username"
+                name="username"
+                type="text"
+                value={credentials.username}
+                onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
+                placeholder="Enter username"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                value={credentials.password}
+                onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+                placeholder="Enter password"
+                required
+              />
+            </div>
 
-          <Button
-            type="submit"
-            className="w-full bg-kazi-green hover:bg-kazi-light-green"
-            disabled={isLoading}
-          >
-            {isLoading ? "Signing in..." : "Sign In"}
-          </Button>
-        </form>
-      </div>
+            <Button
+              type="submit"
+              className="w-full bg-orange-600 hover:bg-orange-700"
+              disabled={isLoading}
+            >
+              {isLoading ? "Signing in..." : "Sign In"}
+            </Button>
+          </form>
+          
+          <div className="mt-4 text-center text-sm text-gray-600">
+            <p>Default credentials:</p>
+            <p>Username: admin | Password: admin123</p>
+            <p className="text-red-600 mt-2">⚠️ Change password immediately in production!</p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
