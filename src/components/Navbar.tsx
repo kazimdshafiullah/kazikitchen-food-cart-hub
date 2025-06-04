@@ -5,14 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, ShoppingCart, Phone, MapPin } from "lucide-react";
-import { useCart } from "@/context/CartContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { cartItems } = useCart();
   const location = useLocation();
 
-  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  // For now, we'll use a placeholder for cart items until CartContext is properly set up
+  const totalItems = 0;
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -35,7 +34,7 @@ const Navbar = () => {
                 alt="Kazi Kitchen Logo" 
                 className="h-10 w-10"
               />
-              <span className="text-xl font-bold text-amber-800">Kazi Kitchen</span>
+              <span className="text-xl font-bold text-orange-600">Kazi Kitchen</span>
             </Link>
             
             <div className="hidden md:flex items-center space-x-6">
@@ -43,9 +42,9 @@ const Navbar = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`text-sm font-medium transition-colors hover:text-amber-600 ${
+                  className={`text-sm font-medium transition-colors hover:text-orange-500 ${
                     isActive(link.path) 
-                      ? "text-amber-800 border-b-2 border-amber-500" 
+                      ? "text-orange-600 border-b-2 border-orange-400" 
                       : "text-gray-700"
                   }`}
                 >
@@ -71,7 +70,7 @@ const Navbar = () => {
               <Link to="/cart">
                 <ShoppingCart className="h-5 w-5" />
                 {totalItems > 0 && (
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs bg-amber-500">
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs bg-orange-500">
                     {totalItems}
                   </Badge>
                 )}
@@ -90,8 +89,8 @@ const Navbar = () => {
                     <Link
                       key={link.path}
                       to={link.path}
-                      className={`text-lg font-medium transition-colors hover:text-amber-600 ${
-                        isActive(link.path) ? "text-amber-800" : "text-gray-700"
+                      className={`text-lg font-medium transition-colors hover:text-orange-500 ${
+                        isActive(link.path) ? "text-orange-600" : "text-gray-700"
                       }`}
                       onClick={() => setIsOpen(false)}
                     >
