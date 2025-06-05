@@ -15,38 +15,38 @@ const Footer = () => {
                 className="h-12 w-12 mr-3"
               />
               <div>
-                <span className="text-2xl font-bold text-orange-400">Kazi</span>
-                <span className="text-2xl font-bold text-amber-200">Kitchen</span>
+                <span className="text-2xl font-bold text-orange-300">Kazi</span>
+                <span className="text-2xl font-bold text-amber-100">Kitchen</span>
               </div>
             </Link>
-            <p className="mt-2 text-sm text-amber-200">
+            <p className="mt-2 text-sm text-amber-100">
               Delicious food delivered to your doorstep. We make food with passion.
             </p>
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-3 text-orange-400">Quick Links</h3>
+            <h3 className="text-lg font-semibold mb-3 text-orange-300">Quick Links</h3>
             <ul className="space-y-2">
-              <li><Link to="/" className="text-amber-200 hover:text-white transition-colors">Home</Link></li>
-              <li><Link to="/frozen-food" className="text-amber-200 hover:text-white transition-colors">Frozen Food</Link></li>
-              <li><Link to="/weekend-menu" className="text-amber-200 hover:text-white transition-colors">Weekend Menu</Link></li>
-              <li><Link to="/cart" className="text-amber-200 hover:text-white transition-colors">Cart</Link></li>
+              <li><Link to="/" className="text-amber-100 hover:text-white transition-colors">Home</Link></li>
+              <li><Link to="/frozen-food" className="text-amber-100 hover:text-white transition-colors">Frozen Food</Link></li>
+              <li><Link to="/weekend-menu" className="text-amber-100 hover:text-white transition-colors">Weekend Menu</Link></li>
+              <li><Link to="/cart" className="text-amber-100 hover:text-white transition-colors">Cart</Link></li>
             </ul>
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-3 text-orange-400">Categories</h3>
+            <h3 className="text-lg font-semibold mb-3 text-orange-300">Categories</h3>
             <ul className="space-y-2">
-              <li><Link to="/frozen-food" className="text-amber-200 hover:text-white transition-colors">Frozen Food</Link></li>
-              <li><Link to="/weekend-menu" className="text-amber-200 hover:text-white transition-colors">School Tiffin</Link></li>
-              <li><Link to="/weekend-menu" className="text-amber-200 hover:text-white transition-colors">Office Food</Link></li>
-              <li><Link to="/weekend-menu" className="text-amber-200 hover:text-white transition-colors">Weekly Plans</Link></li>
+              <li><Link to="/frozen-food" className="text-amber-100 hover:text-white transition-colors">Frozen Food</Link></li>
+              <li><Link to="/weekend-menu" className="text-amber-100 hover:text-white transition-colors">School Tiffin</Link></li>
+              <li><Link to="/weekend-menu" className="text-amber-100 hover:text-white transition-colors">Office Food</Link></li>
+              <li><Link to="/weekend-menu" className="text-amber-100 hover:text-white transition-colors">Weekly Plans</Link></li>
             </ul>
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-3 text-orange-400">Contact Us</h3>
-            <address className="not-italic text-amber-200">
+            <h3 className="text-lg font-semibold mb-3 text-orange-300">Contact Us</h3>
+            <address className="not-italic text-amber-100">
               <p>Dhaka, Bangladesh</p>
               <p className="mt-2">Email: info@kazikitchen.com</p>
               <p>Phone: +880 1234-567890</p>
@@ -55,11 +55,11 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-amber-700 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-amber-300">© {new Date().getFullYear()} Kazi Kitchen. All rights reserved.</p>
+          <p className="text-sm text-amber-200">© {new Date().getFullYear()} Kazi Kitchen. All rights reserved.</p>
           <div className="mt-4 md:mt-0">
             <ul className="flex space-x-4">
-              <li><a href="#" className="text-amber-300 hover:text-white transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="text-amber-300 hover:text-white transition-colors">Terms of Service</a></li>
+              <li><a href="#" className="text-amber-200 hover:text-white transition-colors">Privacy Policy</a></li>
+              <li><a href="#" className="text-amber-200 hover:text-white transition-colors">Terms of Service</a></li>
             </ul>
           </div>
         </div>

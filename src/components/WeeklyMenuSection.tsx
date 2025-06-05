@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Clock, Users, AlertCircle, ShoppingCart } from "lucide-react";
+import { Clock, Users, AlertCircle, ShoppingCart, Crown } from "lucide-react";
 import {
   useMainCategories,
   useSubCategories,
@@ -71,6 +71,34 @@ const WeeklyMenuSection = () => {
     weeks.push({ value: nextWeek, label: `Next Week (${nextWeek})` });
     
     return weeks;
+  };
+
+  // Group subcategories by food plan for School Tiffin
+  const groupedSubCategories = () => {
+    if (!subCategories) return {};
+    
+    return subCategories.reduce((acc, subCategory) => {
+      const plan = subCategory.food_plan || 'Regular';
+      if (!acc[plan]) acc[plan] = [];
+      acc[plan].push(subCategory);
+      return acc;
+    }, {} as Record<string, SubCategory[]>);
+  };
+
+  const getFoodPlanColor = (plan: string) => {
+    switch (plan) {
+      case 'Regular': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'Diet': return 'bg-green-100 text-green-800 border-green-200';
+      case 'Premium': return 'bg-purple-100 text-purple-800 border-purple-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const getFoodPlanIcon = (plan: string) => {
+    switch (plan) {
+      case 'Premium': return <Crown className="h-4 w-4" />;
+      default: return null;
+    }
   };
 
   if (mainCategoriesLoading) {
@@ -169,7 +197,7 @@ const WeeklyMenuSection = () => {
               <Tabs defaultValue="meal-type" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="meal-type">Meal Type</TabsTrigger>
-                  <TabsTrigger value="plan-type">Plan Type</TabsTrigger>
+                  <TabsTrigger value="plan-type">Food Plans</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="meal-type" className="mt-6">
@@ -194,24 +222,66 @@ const WeeklyMenuSection = () => {
                 </TabsContent>
 
                 <TabsContent value="plan-type" className="mt-6">
-                  <div className="grid md:grid-cols-3 gap-4">
-                    {subCategories?.map((subCategory) => (
-                      <Card 
-                        key={subCategory.id}
-                        className={`cursor-pointer transition-all hover:shadow-md ${
-                          selectedSubCategory?.id === subCategory.id 
-                            ? 'ring-2 ring-kazi-green shadow-md' 
-                            : ''
-                        }`}
-                        onClick={() => setSelectedSubCategory(subCategory)}
-                      >
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-lg">{subCategory.name}</CardTitle>
-                          <CardDescription>{subCategory.description}</CardDescription>
-                        </CardHeader>
-                      </Card>
-                    ))}
-                  </div>
+                  {selectedMainCategory.name.toLowerCase().includes('school') ? (
+                    // Display food plans for School Tiffin
+                    <div className="space-y-4">
+                      {Object.entries(groupedSubCategories()).map(([plan, categories]) => (
+                        <div key={plan} className="space-y-2">
+                          <h4 className="font-semibold text-lg flex items-center gap-2">
+                            {getFoodPlanIcon(plan)}
+                            {plan} Plan
+                          </h4>
+                          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {categories.map((subCategory) => (
+                              <Card 
+                                key={subCategory.id}
+                                className={`cursor-pointer transition-all hover:shadow-md border-2 ${
+                                  selectedSubCategory?.id === subCategory.id 
+                                    ? 'ring-2 ring-kazi-green shadow-md' 
+                                    : ''
+                                } ${getFoodPlanColor(plan)}`}
+                                onClick={() => setSelectedSubCategory(subCategory)}
+                              >
+                                <CardHeader className="pb-3">
+                                  <div className="flex items-center justify-between">
+                                    <CardTitle className="text-base">{subCategory.name}</CardTitle>
+                                    <Badge variant="outline" className={getFoodPlanColor(plan)}>
+                                      {plan}
+                                    </Badge>
+                                  </div>
+                                  {subCategory.description && (
+                                    <CardDescription className="text-sm">
+                                      {subCategory.description}
+                                    </CardDescription>
+                                  )}
+                                </CardHeader>
+                              </Card>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    // Display regular subcategories for Office Food
+                    <div className="grid md:grid-cols-3 gap-4">
+                      {subCategories?.map((subCategory) => (
+                        <Card 
+                          key={subCategory.id}
+                          className={`cursor-pointer transition-all hover:shadow-md ${
+                            selectedSubCategory?.id === subCategory.id 
+                              ? 'ring-2 ring-kazi-green shadow-md' 
+                              : ''
+                          }`}
+                          onClick={() => setSelectedSubCategory(subCategory)}
+                        >
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-lg">{subCategory.name}</CardTitle>
+                            <CardDescription>{subCategory.description}</CardDescription>
+                          </CardHeader>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
                 </TabsContent>
               </Tabs>
             </CardContent>
@@ -223,7 +293,8 @@ const WeeklyMenuSection = () => {
           <Card className="mb-8">
             <CardHeader>
               <CardTitle>
-                Menu - {selectedMealType.name} ({selectedSubCategory.name})
+                Menu - {selectedMealType.name} ({selectedSubCategory.name}
+                {selectedSubCategory.food_plan && ` - ${selectedSubCategory.food_plan}`})
               </CardTitle>
               <CardDescription>
                 Week starting {selectedWeek}

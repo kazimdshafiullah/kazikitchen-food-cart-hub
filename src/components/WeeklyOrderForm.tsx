@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Form,
   FormControl,
@@ -25,14 +26,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "@/components/ui/sonner";
-import { Minus, Plus, ShoppingCart } from "lucide-react";
+import { Minus, Plus, ShoppingCart, MapPin } from "lucide-react";
 import {
   MainCategory,
   SubCategory,
   MealType,
   WeeklyMenuItem,
   useCreateWeeklyOrder,
-  getDayName
+  useLocationPricing,
+  getDayName,
+  getAvailableLocations
 } from "@/hooks/useWeeklyMenu";
 
 const orderFormSchema = z.object({
@@ -40,6 +43,9 @@ const orderFormSchema = z.object({
   customer_email: z.string().email("Please enter a valid email"),
   customer_phone: z.string().min(10, "Please enter a valid phone number"),
   delivery_address: z.string().min(10, "Please enter a complete address"),
+  delivery_location: z.enum(['Dhanmondi', 'Farmgate', 'Panthapath', 'Karwanbazar', 'New Market', 'Banglamotor', 'Shahbag', 'Science Lab'], {
+    required_error: "Please select a delivery location"
+  }),
 });
 
 type OrderFormData = z.infer<typeof orderFormSchema>;
@@ -65,6 +71,7 @@ const WeeklyOrderForm = ({
 }: WeeklyOrderFormProps) => {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const createWeeklyOrder = useCreateWeeklyOrder();
+  const { data: locationPricing } = useLocationPricing();
 
   const form = useForm<OrderFormData>({
     resolver: zodResolver(orderFormSchema),
@@ -73,6 +80,7 @@ const WeeklyOrderForm = ({
       customer_email: "",
       customer_phone: "",
       delivery_address: "",
+      delivery_location: undefined,
     },
   });
 
@@ -85,11 +93,23 @@ const WeeklyOrderForm = ({
     }));
   };
 
-  const calculateTotal = () => {
+  const calculateSubtotal = () => {
     return weeklyMenu.reduce((total, item) => {
       const qty = quantities[item.id] || 0;
       return total + (Number(item.price) * qty);
     }, 0);
+  };
+
+  const getDeliveryFee = () => {
+    const selectedLocation = form.watch('delivery_location');
+    if (!selectedLocation || !locationPricing) return 0;
+    
+    const pricing = locationPricing.find(p => p.location === selectedLocation);
+    return pricing ? pricing.base_delivery_fee : 0;
+  };
+
+  const calculateTotal = () => {
+    return calculateSubtotal() + getDeliveryFee();
   };
 
   const getSelectedItems = () => {
@@ -109,6 +129,7 @@ const WeeklyOrderForm = ({
       customer_email: data.customer_email,
       customer_phone: data.customer_phone,
       delivery_address: data.delivery_address,
+      delivery_location: data.delivery_location,
       main_category_id: mainCategory.id,
       sub_category_id: subCategory.id,
       meal_type_id: mealType.id,
@@ -132,6 +153,8 @@ const WeeklyOrderForm = ({
     }
   };
 
+  const subtotal = calculateSubtotal();
+  const deliveryFee = getDeliveryFee();
   const total = calculateTotal();
   const selectedItemsCount = getSelectedItems().length;
 
@@ -140,7 +163,8 @@ const WeeklyOrderForm = ({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            Order Weekly {mealType.name} - {subCategory.name} Plan
+            Order Weekly {mealType.name} - {subCategory.name}
+            {subCategory.food_plan && ` (${subCategory.food_plan})`}
           </DialogTitle>
           <DialogDescription>
             {mainCategory.name} for week starting {weekStartDate}
@@ -258,6 +282,46 @@ const WeeklyOrderForm = ({
 
                 <FormField
                   control={form.control}
+                  name="delivery_location"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Delivery Location *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select delivery area">
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4" />
+                                {field.value || "Select delivery area"}
+                              </div>
+                            </SelectValue>
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {getAvailableLocations().map((location) => {
+                            const pricing = locationPricing?.find(p => p.location === location);
+                            return (
+                              <SelectItem key={location} value={location}>
+                                <div className="flex items-center justify-between w-full">
+                                  <span>{location}</span>
+                                  {pricing && (
+                                    <span className="ml-2 text-sm text-gray-500">
+                                      +৳{pricing.base_delivery_fee}
+                                    </span>
+                                  )}
+                                </div>
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="delivery_address"
                   render={({ field }) => (
                     <FormItem>
@@ -289,6 +353,17 @@ const WeeklyOrderForm = ({
                           <span>৳{(Number(item.price) * quantities[item.id]).toFixed(2)}</span>
                         </div>
                       ))}
+                      <Separator />
+                      <div className="flex justify-between text-sm">
+                        <span>Subtotal</span>
+                        <span>৳{subtotal.toFixed(2)}</span>
+                      </div>
+                      {deliveryFee > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span>Delivery Fee</span>
+                          <span>৳{deliveryFee.toFixed(2)}</span>
+                        </div>
+                      )}
                       <Separator />
                       <div className="flex justify-between font-semibold">
                         <span>Total Amount</span>

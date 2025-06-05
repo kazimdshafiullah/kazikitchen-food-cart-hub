@@ -33,6 +33,27 @@ export type Database = {
         }
         Relationships: []
       }
+      location_pricing: {
+        Row: {
+          base_delivery_fee: number | null
+          created_at: string | null
+          id: string
+          location: Database["public"]["Enums"]["location_enum"]
+        }
+        Insert: {
+          base_delivery_fee?: number | null
+          created_at?: string | null
+          id?: string
+          location: Database["public"]["Enums"]["location_enum"]
+        }
+        Update: {
+          base_delivery_fee?: number | null
+          created_at?: string | null
+          id?: string
+          location?: Database["public"]["Enums"]["location_enum"]
+        }
+        Relationships: []
+      }
       main_categories: {
         Row: {
           advance_days: number
@@ -133,6 +154,7 @@ export type Database = {
           customer_name: string
           customer_phone: string | null
           delivery_address: string
+          delivery_location: Database["public"]["Enums"]["location_enum"] | null
           id: string
           status: string | null
           total_amount: number
@@ -144,6 +166,9 @@ export type Database = {
           customer_name: string
           customer_phone?: string | null
           delivery_address: string
+          delivery_location?:
+            | Database["public"]["Enums"]["location_enum"]
+            | null
           id?: string
           status?: string | null
           total_amount: number
@@ -155,6 +180,9 @@ export type Database = {
           customer_name?: string
           customer_phone?: string | null
           delivery_address?: string
+          delivery_location?:
+            | Database["public"]["Enums"]["location_enum"]
+            | null
           id?: string
           status?: string | null
           total_amount?: number
@@ -216,6 +244,7 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          food_plan: Database["public"]["Enums"]["food_plan_enum"] | null
           id: string
           main_category_id: string
           name: string
@@ -223,6 +252,7 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
+          food_plan?: Database["public"]["Enums"]["food_plan_enum"] | null
           id?: string
           main_category_id: string
           name: string
@@ -230,6 +260,7 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
+          food_plan?: Database["public"]["Enums"]["food_plan_enum"] | null
           id?: string
           main_category_id?: string
           name?: string
@@ -434,6 +465,7 @@ export type Database = {
           customer_name: string
           customer_phone: string
           delivery_address: string
+          delivery_location: Database["public"]["Enums"]["location_enum"] | null
           id: string
           main_category_id: string
           meal_type_id: string
@@ -449,6 +481,9 @@ export type Database = {
           customer_name: string
           customer_phone: string
           delivery_address: string
+          delivery_location?:
+            | Database["public"]["Enums"]["location_enum"]
+            | null
           id?: string
           main_category_id: string
           meal_type_id: string
@@ -464,6 +499,9 @@ export type Database = {
           customer_name?: string
           customer_phone?: string
           delivery_address?: string
+          delivery_location?:
+            | Database["public"]["Enums"]["location_enum"]
+            | null
           id?: string
           main_category_id?: string
           meal_type_id?: string
@@ -505,7 +543,16 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      food_plan_enum: "Regular" | "Diet" | "Premium"
+      location_enum:
+        | "Dhanmondi"
+        | "Farmgate"
+        | "Panthapath"
+        | "Karwanbazar"
+        | "New Market"
+        | "Banglamotor"
+        | "Shahbag"
+        | "Science Lab"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -620,6 +667,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      food_plan_enum: ["Regular", "Diet", "Premium"],
+      location_enum: [
+        "Dhanmondi",
+        "Farmgate",
+        "Panthapath",
+        "Karwanbazar",
+        "New Market",
+        "Banglamotor",
+        "Shahbag",
+        "Science Lab",
+      ],
+    },
   },
 } as const

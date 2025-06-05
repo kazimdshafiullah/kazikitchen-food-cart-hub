@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -17,6 +18,7 @@ export interface SubCategory {
   main_category_id: string;
   name: string;
   description: string | null;
+  food_plan: 'Regular' | 'Diet' | 'Premium' | null;
   created_at: string;
 }
 
@@ -50,6 +52,7 @@ export interface WeeklyOrder {
   customer_email: string;
   customer_phone: string;
   delivery_address: string;
+  delivery_location: 'Dhanmondi' | 'Farmgate' | 'Panthapath' | 'Karwanbazar' | 'New Market' | 'Banglamotor' | 'Shahbag' | 'Science Lab';
   main_category_id: string;
   sub_category_id: string;
   meal_type_id: string;
@@ -67,6 +70,13 @@ export interface WeeklyOrderItem {
   day_of_week: number;
   quantity: number;
   price: number;
+  created_at: string;
+}
+
+export interface LocationPricing {
+  id: string;
+  location: 'Dhanmondi' | 'Farmgate' | 'Panthapath' | 'Karwanbazar' | 'New Market' | 'Banglamotor' | 'Shahbag' | 'Science Lab';
+  base_delivery_fee: number;
   created_at: string;
 }
 
@@ -150,6 +160,22 @@ export const useWeeklyMenu = (
   });
 };
 
+// Hook to get location pricing
+export const useLocationPricing = () => {
+  return useQuery({
+    queryKey: ["locationPricing"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("location_pricing")
+        .select("*")
+        .order("location");
+
+      if (error) throw error;
+      return data as LocationPricing[];
+    },
+  });
+};
+
 // Hook to create weekly order
 export const useCreateWeeklyOrder = () => {
   const queryClient = useQueryClient();
@@ -160,6 +186,7 @@ export const useCreateWeeklyOrder = () => {
       customer_email: string;
       customer_phone: string;
       delivery_address: string;
+      delivery_location: 'Dhanmondi' | 'Farmgate' | 'Panthapath' | 'Karwanbazar' | 'New Market' | 'Banglamotor' | 'Shahbag' | 'Science Lab';
       main_category_id: string;
       sub_category_id: string;
       meal_type_id: string;
@@ -262,4 +289,23 @@ export const isOrderingAllowed = (mainCategory: MainCategory) => {
 export const getDayName = (dayOfWeek: number) => {
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
   return days[dayOfWeek];
+};
+
+// Utility function to get available locations
+export const getAvailableLocations = () => {
+  return [
+    'Dhanmondi',
+    'Farmgate', 
+    'Panthapath',
+    'Karwanbazar',
+    'New Market',
+    'Banglamotor',
+    'Shahbag',
+    'Science Lab'
+  ] as const;
+};
+
+// Utility function to get food plans
+export const getFoodPlans = () => {
+  return ['Regular', 'Diet', 'Premium'] as const;
 };
