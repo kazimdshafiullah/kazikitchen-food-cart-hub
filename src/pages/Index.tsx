@@ -13,9 +13,9 @@ const Index = () => {
         <div className="container mx-auto text-center">
           <div className="mb-8">
             <img 
-              src="/lovable-uploads/d174cffb-ddda-42b6-a6fa-5f855c807c65.png" 
+              src="/lovable-uploads/b2259b6e-c2d4-4685-a56f-95379cddaf8f.png" 
               alt="Kazi Kitchen Logo" 
-              className="mx-auto h-48 w-auto mb-6"
+              className="mx-auto h-56 w-auto mb-6"
             />
           </div>
           <h1 className="text-5xl font-bold text-amber-800 mb-4">
