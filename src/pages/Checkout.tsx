@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/sonner";
 import { ChevronLeft, FileText, Package } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -16,11 +17,28 @@ const Checkout = () => {
   const { cart, subtotal, clearCart } = useCart();
   const { settings: paymentSettings, loading: paymentLoading } = usePaymentSettings();
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "bkash" | "ssl" | "">("");
+  const [deliveryLocation, setDeliveryLocation] = useState<string>("");
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState<string>("");
   
   // Convert USD to BDT (approximate rate: 1 USD = 110 BDT)
   const bdtSubtotal = subtotal * 110;
+  
+  // Available delivery locations
+  const deliveryLocations = [
+    'Dhanmondi',
+    'Farmgate', 
+    'Panthapath',
+    'Karwanbazar',
+    'New Market',
+    'Banglamotor',
+    'Shahbag',
+    'Science Lab',
+    'Elephant Road',
+    'Mirpur Road',
+    'Zigatola',
+    'Lalmatia'
+  ];
   
   // Available order IDs that exist in the mock data
   const availableOrderIds = [
@@ -97,6 +115,11 @@ const Checkout = () => {
       return;
     }
 
+    if (!deliveryLocation) {
+      toast.error("Please select a delivery location");
+      return;
+    }
+
     // Check COD order limits if applicable
     if (paymentMethod === "cash" && paymentSettings) {
       if (paymentSettings.cod_min_order > 0 && bdtSubtotal < paymentSettings.cod_min_order) {
@@ -168,6 +191,21 @@ const Checkout = () => {
               <h2 className="text-xl font-bold mb-4">Delivery Address</h2>
               
               <div className="space-y-4">
+                <div>
+                  <Label htmlFor="deliveryLocation">Delivery Location</Label>
+                  <Select value={deliveryLocation} onValueChange={setDeliveryLocation} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select delivery area" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {deliveryLocations.map((location) => (
+                        <SelectItem key={location} value={location}>
+                          {location}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div>
                   <Label htmlFor="address">Street Address</Label>
                   <Input id="address" required />
