@@ -89,35 +89,37 @@ const App = () => (
             <Route path="customer-dashboard" element={<CustomerDashboard />} />
           </Route>
 
-          {/* Admin routes - wrapped with AuthProvider */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={
+          {/* Admin routes - both login and dashboard wrapped with AuthProvider */}
+          <Route path="/admin/*" element={
             <AuthProvider>
-              <AdminLayout />
+              <Routes>
+                <Route path="login" element={<AdminLogin />} />
+                <Route path="/" element={<AdminLayout />}>
+                  <Route index element={<Dashboard />} />
+                  <Route path="orders" element={<Orders />} />
+                  <Route path="products" element={<Products />} />
+                  <Route path="customers" element={<Customers />} />
+                  <Route path="reports" element={<Reports />} />
+                  <Route path="settings" element={<Settings />} />
+                  <Route path="user-management" element={<UserManagement />} />
+                  <Route path="menu-management" element={<MenuManagement />} />
+                  <Route path="sub-categories" element={<SubCategories />} />
+                  <Route path="inventory" element={<Inventory />} />
+                  <Route path="customer-analytics" element={<CustomerAnalytics />} />
+                  <Route path="expense-management" element={<ExpenseManagement />} />
+                  <Route path="marketing" element={<Marketing />} />
+                  <Route path="social-media" element={<SocialMedia />} />
+                  <Route path="chat-management" element={<ChatManagement />} />
+                  <Route path="notifications" element={<Notifications />} />
+                  <Route path="site-design" element={<SiteDesign />} />
+                  <Route path="invoice" element={<Invoice />} />
+                  <Route path="offers" element={<Offers />} />
+                  <Route path="payments" element={<Payments />} />
+                  <Route path="server-analytics" element={<ServerAnalytics />} />
+                </Route>
+              </Routes>
             </AuthProvider>
-          }>
-            <Route index element={<Dashboard />} />
-            <Route path="orders" element={<Orders />} />
-            <Route path="products" element={<Products />} />
-            <Route path="customers" element={<Customers />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="user-management" element={<UserManagement />} />
-            <Route path="menu-management" element={<MenuManagement />} />
-            <Route path="sub-categories" element={<SubCategories />} />
-            <Route path="inventory" element={<Inventory />} />
-            <Route path="customer-analytics" element={<CustomerAnalytics />} />
-            <Route path="expense-management" element={<ExpenseManagement />} />
-            <Route path="marketing" element={<Marketing />} />
-            <Route path="social-media" element={<SocialMedia />} />
-            <Route path="chat-management" element={<ChatManagement />} />
-            <Route path="notifications" element={<Notifications />} />
-            <Route path="site-design" element={<SiteDesign />} />
-            <Route path="invoice" element={<Invoice />} />
-            <Route path="offers" element={<Offers />} />
-            <Route path="payments" element={<Payments />} />
-            <Route path="server-analytics" element={<ServerAnalytics />} />
-          </Route>
+          } />
 
           {/* Kitchen routes */}
           <Route path="/kitchen/login" element={<KitchenLogin />} />
