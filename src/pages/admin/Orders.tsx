@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,6 +11,12 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   Dialog, 
   DialogContent, 
@@ -26,7 +33,7 @@ import {
   TabsTrigger 
 } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { Check, Eye, Search, Filter, FileText, Clock, AlertTriangle, ChefHat, CheckCircle, Plus, Truck, X, Package } from "lucide-react";
+import { Check, Eye, Search, Filter, FileText, Clock, AlertTriangle, ChefHat, CheckCircle, Plus, Truck, X, Package, ChevronDown } from "lucide-react";
 import ManualOrderCreation from "@/components/ManualOrderCreation";
 import NotificationBell from "@/components/NotificationBell";
 import OrderSummary from "@/components/OrderSummary";
@@ -533,6 +540,35 @@ const Orders = () => {
       description: `${rider?.name} assigned to order ${orderId}.`
     });
   };
+
+  const handleChangeOrderStatus = (orderId: string, newStatus: string) => {
+    const updates: any = { status: newStatus };
+    
+    if (newStatus === "approved") {
+      updates.approvedAt = new Date().toLocaleString();
+      updates.kitchenStatus = "pending";
+    } else if (newStatus === "cancelled") {
+      updates.cancelledAt = new Date().toLocaleString();
+    }
+    
+    handleUpdateOrder(orderId, updates);
+    toast({
+      title: "Order Status Updated",
+      description: `Order ${orderId} status changed to ${newStatus}.`
+    });
+  };
+
+  const handleChangeRider = (orderId: string, riderId: string) => {
+    const rider = mockRiders.find(r => r.id === riderId);
+    handleUpdateOrder(orderId, { 
+      assignedRider: rider?.name,
+      riderStatus: "assigned"
+    });
+    toast({
+      title: "Rider Changed",
+      description: `Rider changed to ${rider?.name} for order ${orderId}.`
+    });
+  };
   
   return (
     <div className="space-y-6 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen p-6">
@@ -685,11 +721,11 @@ const Orders = () => {
                   <TableHead className="font-semibold">Order ID</TableHead>
                   <TableHead className="font-semibold">Customer</TableHead>
                   <TableHead className="font-semibold">Date</TableHead>
-                  <TableHead className="font-semibold">Status</TableHead>
                   <TableHead className="font-semibold">Kitchen</TableHead>
                   <TableHead className="font-semibold">Delivery</TableHead>
-                  <TableHead className="font-semibold">Assigned Rider</TableHead>
-                  <TableHead className="text-center font-semibold">Actions</TableHead>
+                  <TableHead className="font-semibold">Order Status</TableHead>
+                  <TableHead className="font-semibold">Rider Assignment</TableHead>
+                  <TableHead className="text-center font-semibold">View</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -703,16 +739,6 @@ const Orders = () => {
                     </TableCell>
                     <TableCell className="font-medium">{order.customer}</TableCell>
                     <TableCell>{order.date}</TableCell>
-                    <TableCell>
-                      <Badge className={`capitalize ${
-                        order.status === "delivered" ? "bg-green-100 text-green-800" :
-                        order.status === "approved" ? "bg-blue-100 text-blue-800" :
-                        order.status === "pending" ? "bg-yellow-100 text-yellow-800" : 
-                        "bg-red-100 text-red-800"
-                      }`}>
-                        {order.status}
-                      </Badge>
-                    </TableCell>
                     <TableCell>
                       <Badge className={`text-xs ${
                         order.kitchenStatus === "completed" ? "bg-green-100 text-green-800" :
@@ -735,61 +761,120 @@ const Orders = () => {
                         {order.riderStatus?.replace('_', ' ')}
                       </Badge>
                     </TableCell>
+                    
+                    {/* Order Status Column */}
                     <TableCell>
-                      {order.assignedRider ? (
-                        <span className="text-sm font-medium text-blue-600">{order.assignedRider}</span>
+                      {order.status === "pending" && !order.isFake ? (
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            onClick={() => handleApproveOrder(order.id)}
+                            className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1"
+                          >
+                            <Check className="h-3 w-3 mr-1" />
+                            Approve
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleRejectOrder(order.id)}
+                            className="text-xs px-2 py-1"
+                          >
+                            <X className="h-3 w-3 mr-1" />
+                            Reject
+                          </Button>
+                        </div>
                       ) : (
-                        <span className="text-gray-400 text-sm">Not assigned</span>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" className="text-xs">
+                              <Badge className={`mr-1 ${
+                                order.status === "delivered" ? "bg-green-100 text-green-800" :
+                                order.status === "approved" ? "bg-blue-100 text-blue-800" :
+                                order.status === "pending" ? "bg-yellow-100 text-yellow-800" : 
+                                "bg-red-100 text-red-800"
+                              }`}>
+                                {order.status}
+                              </Badge>
+                              <ChevronDown className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() => handleChangeOrderStatus(order.id, "approved")}>
+                              <Check className="h-3 w-3 mr-2" />
+                              Approve
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleChangeOrderStatus(order.id, "cancelled")}>
+                              <X className="h-3 w-3 mr-2" />
+                              Reject
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       )}
                     </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex gap-2 justify-center">
-                        {order.status === "pending" && !order.isFake && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() => handleApproveOrder(order.id)}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <Check className="h-4 w-4 mr-1" />
-                              Approve
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleRejectOrder(order.id)}
-                            >
-                              <X className="h-4 w-4 mr-1" />
-                              Reject
-                            </Button>
-                          </>
-                        )}
-                        
-                        {order.status === "approved" && 
-                         (order.kitchenStatus === "ready" || order.kitchenStatus === "completed") && 
-                         order.riderStatus === "not_assigned" && (
+
+                    {/* Rider Assignment Column */}
+                    <TableCell>
+                      {order.status === "approved" && 
+                       (order.kitchenStatus === "ready" || order.kitchenStatus === "completed") ? (
+                        order.assignedRider ? (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="outline" size="sm" className="text-xs">
+                                <span className="text-blue-600 mr-1">{order.assignedRider}</span>
+                                <ChevronDown className="h-3 w-3" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              {mockRiders.filter(rider => rider.status === "available" || rider.currentOrders < rider.maxOrders).map(rider => (
+                                <DropdownMenuItem key={rider.id} onClick={() => handleChangeRider(order.id, rider.id)}>
+                                  <div className="flex items-center justify-between w-full">
+                                    <span>{rider.name}</span>
+                                    <Badge variant={rider.status === "available" ? "secondary" : "outline"} className="text-xs ml-2">
+                                      {rider.status}
+                                    </Badge>
+                                  </div>
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        ) : (
                           <Select onValueChange={(riderId) => handleAssignRider(order.id, riderId)}>
-                            <SelectTrigger className="w-32">
+                            <SelectTrigger className="w-32 text-xs">
                               <SelectValue placeholder="Assign Rider" />
                             </SelectTrigger>
                             <SelectContent>
                               {mockRiders.filter(rider => rider.status === "available" || rider.currentOrders < rider.maxOrders).map(rider => (
                                 <SelectItem key={rider.id} value={rider.id}>
-                                  {rider.name}
+                                  <div className="flex items-center justify-between w-full">
+                                    <span>{rider.name}</span>
+                                    <Badge variant={rider.status === "available" ? "secondary" : "outline"} className="text-xs ml-2">
+                                      {rider.status}
+                                    </Badge>
+                                  </div>
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-                        )}
+                        )
+                      ) : order.assignedRider ? (
+                        <span className="text-sm font-medium text-blue-600">{order.assignedRider}</span>
+                      ) : (
+                        <span className="text-gray-400 text-sm">
+                          {order.status !== "approved" ? "Order pending" : "Food not ready"}
+                        </span>
+                      )}
+                    </TableCell>
 
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleViewOrder(order)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </div>
+                    {/* View Column */}
+                    <TableCell className="text-center">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleViewOrder(order)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
