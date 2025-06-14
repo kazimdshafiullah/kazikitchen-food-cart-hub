@@ -110,104 +110,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const createUser = async (userData: CreateUserData): Promise<boolean> => {
-    try {
-      // Only allow master account to create users
-      if (!profile?.can_create_users) {
-        toast({
-          title: "Access Denied",
-          description: "You don't have permission to create users",
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      const { data, error } = await supabase.auth.admin.createUser({
-        email: userData.email,
-        password: userData.password,
-        user_metadata: {
-          username: userData.username,
-          role: userData.role
-        },
-        email_confirm: true
-      });
-
-      if (error) {
-        toast({
-          title: "User Creation Failed",
-          description: error.message,
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      if (data.user) {
-        toast({
-          title: "User Created Successfully",
-          description: `User ${userData.username} has been created`
-        });
-        return true;
-      }
-
-      return false;
-    } catch (error) {
-      toast({
-        title: "User Creation Failed",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive"
-      });
-      return false;
-    }
-  };
-
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     try {
       console.log('Login attempt:', { username: credentials.username, role: credentials.role });
       
-      // Handle master user specially
+      // Handle master user specially - directly use email
       if (credentials.username === 'shafiullah' && credentials.role === 'admin') {
         console.log('Master user login detected');
         
         const masterEmail = 'kazimdshafiullah@gmail.com';
-        const masterPassword = 'admin123';
         
-        if (credentials.password !== masterPassword) {
-          toast({
-            title: "Login Failed",
-            description: "Invalid credentials",
-            variant: "destructive"
-          });
-          return false;
-        }
-
-        // Try to sign up the master user first (will fail silently if already exists)
-        try {
-          await supabase.auth.signUp({
-            email: masterEmail,
-            password: masterPassword,
-            options: {
-              data: {
-                username: 'shafiullah',
-                role: 'admin'
-              }
-            }
-          });
-        } catch (signUpError) {
-          // Ignore signup errors as user might already exist
-          console.log('Master user signup attempt (may already exist):', signUpError);
-        }
-
-        // Now try to sign in
+        // Try to sign in directly
         const { data, error } = await supabase.auth.signInWithPassword({
           email: masterEmail,
-          password: masterPassword
+          password: credentials.password
         });
 
         if (error) {
           console.error('Master user sign in error:', error);
           toast({
             title: "Login Failed",
-            description: "Authentication failed. Please try again.",
+            description: "Invalid credentials. Please check your password.",
             variant: "destructive"
           });
           return false;
@@ -289,6 +212,56 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       toast({
         title: "Login Failed",
         description: error instanceof Error ? error.message : "Invalid credentials",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
+  const createUser = async (userData: CreateUserData): Promise<boolean> => {
+    try {
+      // Only allow master account to create users
+      if (!profile?.can_create_users) {
+        toast({
+          title: "Access Denied",
+          description: "You don't have permission to create users",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      const { data, error } = await supabase.auth.admin.createUser({
+        email: userData.email,
+        password: userData.password,
+        user_metadata: {
+          username: userData.username,
+          role: userData.role
+        },
+        email_confirm: true
+      });
+
+      if (error) {
+        toast({
+          title: "User Creation Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      if (data.user) {
+        toast({
+          title: "User Created Successfully",
+          description: `User ${userData.username} has been created`
+        });
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      toast({
+        title: "User Creation Failed",
+        description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive"
       });
       return false;
