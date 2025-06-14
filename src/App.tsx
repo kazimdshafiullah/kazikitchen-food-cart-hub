@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Index from "./pages/Index";
+import Menu from "./pages/Menu";
 import FrozenFood from "./pages/FrozenFood";
 import WeekendMenu from "./pages/WeekendMenu";
 import Cart from "./pages/Cart";
@@ -69,6 +70,7 @@ const App = () => (
           {/* Public routes with main layout */}
           <Route path="/" element={<Layout />}>
             <Route index element={<Index />} />
+            <Route path="menu" element={<Menu />} />
             <Route path="frozen-food" element={<FrozenFood />} />
             <Route path="weekend-menu" element={<WeekendMenu />} />
             <Route path="cart" element={<Cart />} />

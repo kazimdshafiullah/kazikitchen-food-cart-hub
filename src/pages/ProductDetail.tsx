@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { useProduct } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
+import { getProductById } from "@/data/products";
 import { ShoppingCart, Plus, Minus, ChevronLeft } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,10 +16,26 @@ const ProductDetail = () => {
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   
-  const { data: product, isLoading: productLoading, error } = useProduct(id || "");
+  const { data: dbProduct, isLoading: productLoading, error } = useProduct(id || "");
   const { data: categories } = useCategories();
   
-  if (productLoading) {
+  // Fallback to mock data if database product not found
+  const mockProduct = getProductById(id || "");
+  const product = dbProduct || (mockProduct ? {
+    id: mockProduct.id,
+    name: mockProduct.name,
+    price: mockProduct.price,
+    image_url: mockProduct.image,
+    category_id: mockProduct.category,
+    description: mockProduct.description,
+    in_stock: true,
+    featured: mockProduct.featured || false,
+    popular: mockProduct.popular || false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  } : null);
+  
+  if (productLoading && !mockProduct) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Skeleton className="h-10 w-20 mb-6" />
@@ -35,7 +52,7 @@ const ProductDetail = () => {
     );
   }
   
-  if (error || !product) {
+  if (error && !mockProduct || !product) {
     return (
       <div className="container mx-auto px-4 py-12 text-center">
         <h2 className="text-2xl font-bold mb-4">Product not found</h2>
