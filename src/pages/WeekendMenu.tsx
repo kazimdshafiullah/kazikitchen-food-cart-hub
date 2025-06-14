@@ -1,448 +1,134 @@
+
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, Users, Star } from "lucide-react";
-
-// Mock data for weekend menu items
-const schoolTiffinMenu = [
-  {
-    day: "Sunday",
-    dayNumber: 0,
-    item: "Egg Roll",
-    price: 45,
-    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400",
-    description: "Delicious egg roll with fresh vegetables",
-    available: true,
-    deadline: "Saturday 10:00 PM"
-  },
-  {
-    day: "Monday", 
-    dayNumber: 1,
-    item: "Alu Paratha",
-    price: 40,
-    image: "https://images.unsplash.com/photo-1586511925558-a4c6376fe65f?w=400",
-    description: "Traditional potato-stuffed paratha",
-    available: true,
-    deadline: "Sunday 10:00 PM"
-  },
-  {
-    day: "Tuesday",
-    dayNumber: 2,
-    item: "Chicken Keema Paratha",
-    price: 65,
-    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400",
-    description: "Spiced chicken keema with soft paratha",
-    available: true,
-    deadline: "Monday 10:00 PM"
-  },
-  {
-    day: "Wednesday",
-    dayNumber: 3,
-    item: "Vegetable Roll",
-    price: 35,
-    image: "https://images.unsplash.com/photo-1601314002957-4edc5a6b8c24?w=400",
-    description: "Fresh vegetable roll with herbs",
-    available: true,
-    deadline: "Tuesday 10:00 PM"
-  },
-  {
-    day: "Thursday",
-    dayNumber: 4,
-    item: "Fish Fry with Rice",
-    price: 85,
-    image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-    description: "Crispy fish fry served with steamed rice",
-    available: true,
-    deadline: "Wednesday 10:00 PM"
-  }
-];
-
-const officeFoodMenu = {
-  breakfast: {
-    regular: [
-      {
-        day: "Sunday",
-        dayNumber: 0,
-        item: "Paratha with Egg Curry",
-        price: 65,
-        image: "https://images.unsplash.com/photo-1586511925558-a4c6376fe65f?w=400",
-        description: "Fresh paratha with spiced egg curry",
-        available: true
-      },
-      {
-        day: "Monday",
-        dayNumber: 1,
-        item: "Puri with Aloo Dum", 
-        price: 60,
-        image: "https://images.unsplash.com/photo-1586511925558-a4c6376fe65f?w=400",
-        description: "Crispy puri with traditional potato curry",
-        available: true
-      },
-      {
-        day: "Tuesday",
-        dayNumber: 2,
-        item: "Khichuri with Omelette",
-        price: 70,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Comfort khichuri with fluffy omelette",
-        available: true
-      },
-      {
-        day: "Wednesday",
-        dayNumber: 3,
-        item: "Bread with Dal",
-        price: 55,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Fresh bread with protein-rich lentil curry",
-        available: true
-      },
-      {
-        day: "Thursday",
-        dayNumber: 4,
-        item: "Rice with Fish Curry",
-        price: 80,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Steamed rice with traditional fish curry",
-        available: true
-      }
-    ],
-    diet: [
-      {
-        day: "Sunday",
-        dayNumber: 0,
-        item: "Oats with Fruits",
-        price: 75,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Healthy oats with fresh seasonal fruits",
-        available: true
-      },
-      {
-        day: "Monday",
-        dayNumber: 1,
-        item: "Wheat Bread with Boiled Egg",
-        price: 70,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Whole wheat bread with protein-rich boiled egg",
-        available: true
-      },
-      {
-        day: "Tuesday",
-        dayNumber: 2,
-        item: "Vegetable Upma",
-        price: 65,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Nutritious upma with mixed vegetables",
-        available: true
-      },
-      {
-        day: "Wednesday",
-        dayNumber: 3,
-        item: "Daliya with Vegetables",
-        price: 68,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Healthy broken wheat with fresh vegetables",
-        available: true
-      },
-      {
-        day: "Thursday",
-        dayNumber: 4,
-        item: "Brown Rice with Grilled Fish",
-        price: 90,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Nutritious brown rice with grilled fish",
-        available: true
-      }
-    ],
-    premium: [
-      {
-        day: "Sunday",
-        dayNumber: 0,
-        item: "Continental Breakfast",
-        price: 120,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Premium continental breakfast with variety",
-        available: true
-      },
-      {
-        day: "Monday",
-        dayNumber: 1,
-        item: "Pancakes with Chicken",
-        price: 115,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Fluffy pancakes with grilled chicken strips",
-        available: true
-      },
-      {
-        day: "Tuesday",
-        dayNumber: 2,
-        item: "French Toast with Beef",
-        price: 130,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Golden french toast with tender beef",
-        available: true
-      },
-      {
-        day: "Wednesday",
-        dayNumber: 3,
-        item: "Sandwich Platter",
-        price: 125,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Assorted premium sandwiches",
-        available: true
-      },
-      {
-        day: "Thursday",
-        dayNumber: 4,
-        item: "English Breakfast",
-        price: 140,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Full English breakfast with all essentials",
-        available: true
-      }
-    ]
-  },
-  lunch: {
-    regular: [
-      {
-        day: "Sunday",
-        dayNumber: 0,
-        item: "Chicken Curry Rice",
-        price: 140,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Traditional chicken curry with basmati rice",
-        available: true
-      },
-      {
-        day: "Monday",
-        dayNumber: 1,
-        item: "Fish Curry Rice", 
-        price: 145,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Fresh fish curry with steamed rice",
-        available: true
-      },
-      {
-        day: "Tuesday",
-        dayNumber: 2,
-        item: "Chicken Khichuri",
-        price: 120,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Comfort food with chicken and lentils",
-        available: true
-      },
-      {
-        day: "Wednesday",
-        dayNumber: 3,
-        item: "Beef Curry Rice",
-        price: 160,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Tender beef curry with fragrant rice",
-        available: true
-      },
-      {
-        day: "Thursday",
-        dayNumber: 4,
-        item: "Vegetable Biriyani",
-        price: 110,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Aromatic vegetable biriyani with spices",
-        available: true
-      }
-    ],
-    diet: [
-      {
-        day: "Sunday",
-        dayNumber: 0,
-        item: "Grilled Chicken Salad",
-        price: 160,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Healthy grilled chicken with mixed greens",
-        available: true
-      },
-      {
-        day: "Monday",
-        dayNumber: 1,
-        item: "Fish with Steamed Vegetables",
-        price: 165,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Low-fat fish with nutritious vegetables",
-        available: true
-      },
-      {
-        day: "Tuesday",
-        dayNumber: 2,
-        item: "Chicken Soup with Brown Rice",
-        price: 140,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Protein-rich soup with healthy brown rice",
-        available: true
-      },
-      {
-        day: "Wednesday",
-        dayNumber: 3,
-        item: "Lentil Curry with Quinoa",
-        price: 135,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "High-protein lentils with superfood quinoa",
-        available: true
-      },
-      {
-        day: "Thursday",
-        dayNumber: 4,
-        item: "Vegetable Stir Fry",
-        price: 120,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Fresh vegetables with minimal oil",
-        available: true
-      }
-    ],
-    premium: [
-      {
-        day: "Sunday",
-        dayNumber: 0,
-        item: "Mutton Biriyani",
-        price: 220,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Premium mutton biriyani with exotic spices",
-        available: true
-      },
-      {
-        day: "Monday",
-        dayNumber: 1,
-        item: "Prawn Curry Rice",
-        price: 200,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Fresh prawn curry with premium rice",
-        available: true
-      },
-      {
-        day: "Tuesday",
-        dayNumber: 2,
-        item: "Chicken Roast with Pulao",
-        price: 190,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Slow-cooked chicken roast with aromatic pulao",
-        available: true
-      },
-      {
-        day: "Wednesday",
-        dayNumber: 3,
-        item: "Fish Fry Special",
-        price: 185,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Premium fish fry with special seasonings",
-        available: true
-      },
-      {
-        day: "Thursday",
-        dayNumber: 4,
-        item: "Kacchi Biriyani",
-        price: 250,
-        image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-        description: "Traditional kacchi biriyani with tender meat",
-        available: true
-      }
-    ]
-  }
-};
+import { Calendar, Clock, Users, Star, Utensils, Crown, Heart } from "lucide-react";
+import { 
+  useMainCategories, 
+  useSubCategories, 
+  useMealTypes,
+  useWeeklyMenuByDate,
+  getDayName,
+  isOrderingAllowedForDate,
+  getWeekdayDates
+} from "@/hooks/useWeeklyMenu";
 
 const WeekendMenu = () => {
   const [activeTab, setActiveTab] = useState("school-tiffin");
   const [activeMealType, setActiveMealType] = useState("breakfast");
   const [activeOfficeCategory, setActiveOfficeCategory] = useState("regular");
 
-  // Modified function to show weekend items with better availability logic
-  const canOrderForDay = (dayNumber: number, orderType: string) => {
-    const now = new Date();
-    const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-    const currentTime = currentHour * 60 + currentMinute; // Convert to minutes
+  const { data: mainCategories } = useMainCategories();
+  const { data: mealTypes } = useMealTypes();
 
-    if (orderType === "school") {
-      // School tiffin: Order by 10 PM the day before
-      const orderCutoff = 22 * 60; // 10 PM in minutes
-      
-      // For weekend view, always show all days but mark as unavailable if past cutoff
-      if (currentDay === 6 && dayNumber === 0) { // Saturday ordering for Sunday
-        return currentTime < orderCutoff;
+  // Get School Tiffin and Office Food categories
+  const schoolTiffinCategory = mainCategories?.find(cat => cat.name === 'School Tiffin');
+  const officeFoodCategory = mainCategories?.find(cat => cat.name === 'Office Food');
+
+  const { data: schoolTiffinSubCategories } = useSubCategories(schoolTiffinCategory?.id);
+  const { data: officeFoodSubCategories } = useSubCategories(officeFoodCategory?.id);
+
+  // Get available dates for next 14 days (weekdays only)
+  const availableDates = useMemo(() => {
+    const today = new Date();
+    return getWeekdayDates(today, 10); // Get next 10 weekdays
+  }, []);
+
+  // Sample menu data for School Tiffin based on subcategories
+  const getSchoolTiffinMenuForDate = (date: Date, subCategory: any) => {
+    const dayOfWeek = date.getDay();
+    const dayName = getDayName(dayOfWeek);
+    
+    // Sample items based on food plan
+    const menuItems: Record<string, any> = {
+      'Regular': {
+        0: { item: "Egg Roll", price: 45, description: "Delicious egg roll with fresh vegetables" },
+        1: { item: "Alu Paratha", price: 40, description: "Traditional potato-stuffed paratha" },
+        2: { item: "Chicken Keema Paratha", price: 65, description: "Spiced chicken keema with soft paratha" },
+        3: { item: "Vegetable Roll", price: 35, description: "Fresh vegetable roll with herbs" },
+        4: { item: "Fish Fry with Rice", price: 85, description: "Crispy fish fry served with steamed rice" }
+      },
+      'Diet': {
+        0: { item: "Grilled Chicken Wrap", price: 55, description: "Healthy grilled chicken with vegetables" },
+        1: { item: "Vegetable Salad", price: 35, description: "Fresh mixed vegetable salad" },
+        2: { item: "Boiled Egg with Bread", price: 40, description: "Protein-rich boiled egg with whole wheat bread" },
+        3: { item: "Fruit Bowl", price: 30, description: "Seasonal fresh fruits" },
+        4: { item: "Grilled Fish with Salad", price: 70, description: "Healthy grilled fish with green salad" }
+      },
+      'Premium': {
+        0: { item: "Chicken Biriyani", price: 95, description: "Premium chicken biriyani with spices" },
+        1: { item: "Beef Tehari", price: 110, description: "Traditional beef tehari with premium ingredients" },
+        2: { item: "Mutton Curry with Rice", price: 125, description: "Tender mutton curry with basmati rice" },
+        3: { item: "Prawn Curry", price: 115, description: "Fresh prawn curry with rice" },
+        4: { item: "Special Mixed Platter", price: 140, description: "Premium mixed items platter" }
       }
-      if (currentDay === dayNumber - 1) { // Day before ordering
-        return currentTime < orderCutoff;
-      }
-      if (currentDay < dayNumber) { // Future days
-        return true;
-      }
-      if (currentDay > 4) { // If past Thursday, show next week items
-        return true;
-      }
-      
-      return false;
-    } else {
-      // Office food: Order by 9:30 AM the same day
-      const orderCutoff = 9 * 60 + 30; // 9:30 AM in minutes
-      
-      // For weekend view, show all days but mark availability
-      if (currentDay === dayNumber) {
-        return currentTime < orderCutoff;
-      }
-      if (currentDay < dayNumber) {
-        return true;
-      }
-      if (currentDay > 4) { // If past Thursday, show next week items
-        return true;
-      }
-      
-      return false;
+    };
+
+    const plan = subCategory?.food_plan || 'Regular';
+    const menuItem = menuItems[plan]?.[dayOfWeek];
+    
+    if (!menuItem) return null;
+
+    return {
+      day: dayName,
+      dayNumber: dayOfWeek,
+      date: date,
+      item: menuItem.item,
+      price: menuItem.price,
+      description: menuItem.description,
+      available: schoolTiffinCategory ? isOrderingAllowedForDate(schoolTiffinCategory, date) : false,
+      deadline: "Order by 10:00 PM the day before",
+      foodPlan: plan,
+      subCategory: subCategory
+    };
+  };
+
+  const getFoodPlanIcon = (plan: string) => {
+    switch (plan) {
+      case 'Regular': return <Utensils className="h-4 w-4" />;
+      case 'Diet': return <Heart className="h-4 w-4" />;
+      case 'Premium': return <Crown className="h-4 w-4" />;
+      default: return null;
     }
   };
 
-  // Show all weekend items, including next week if current week is ending
-  const getWeekendItems = (items: any[], orderType: string) => {
-    const now = new Date();
-    const currentDay = now.getDay();
-    
-    // Always show all current week items
-    let weekendItems = [...items];
-    
-    // If it's Friday (5) or Saturday (6), also show next week items
-    if (currentDay >= 5) {
-      const nextWeekItems = items.map(item => ({
-        ...item,
-        day: `Next ${item.day}`,
-        isNextWeek: true
-      }));
-      weekendItems = [...weekendItems, ...nextWeekItems];
+  const getFoodPlanColor = (plan: string) => {
+    switch (plan) {
+      case 'Regular': return 'bg-blue-500';
+      case 'Diet': return 'bg-green-500';
+      case 'Premium': return 'bg-purple-500';
+      default: return 'bg-gray-500';
     }
-    
-    return weekendItems;
   };
 
-  const MenuCard = ({ item, type = "school", mealType = "breakfast" }: { item: any, type?: string, mealType?: string }) => {
-    const isAvailable = canOrderForDay(item.dayNumber, type);
-    const isNextWeek = item.isNextWeek || false;
+  const MenuCard = ({ item, type = "school" }: { item: any, type?: string }) => {
+    const isAvailable = item.available;
     
     return (
       <Card className={`group transition-all duration-300 border ${isAvailable ? 'border-amber-200 hover:border-amber-400 hover:shadow-lg' : 'border-gray-200 opacity-75'}`}>
         <CardHeader className="p-0">
           <div className="relative overflow-hidden rounded-t-lg">
-            <img
-              src={item.image}
-              alt={item.item}
-              className={`w-full h-48 object-cover ${isAvailable ? 'group-hover:scale-105' : ''} transition-transform duration-300`}
-            />
-            <Badge className={`absolute top-2 left-2 ${isNextWeek ? 'bg-purple-500' : 'bg-amber-500'} text-white`}>
+            <div className="w-full h-48 bg-gradient-to-br from-orange-100 to-yellow-100 flex items-center justify-center">
+              <div className="text-6xl">🍽️</div>
+            </div>
+            <Badge className={`absolute top-2 left-2 ${getFoodPlanColor(item.foodPlan)} text-white`}>
               {item.day}
             </Badge>
+            {item.foodPlan && (
+              <Badge className={`absolute top-2 right-2 ${getFoodPlanColor(item.foodPlan)} text-white flex items-center gap-1`}>
+                {getFoodPlanIcon(item.foodPlan)}
+                {item.foodPlan}
+              </Badge>
+            )}
             {isAvailable ? (
-              <Badge className="absolute top-2 right-2 bg-green-500 text-white">
+              <Badge className="absolute bottom-2 right-2 bg-green-500 text-white">
                 Available
               </Badge>
             ) : (
-              <Badge className="absolute top-2 right-2 bg-red-500 text-white">
+              <Badge className="absolute bottom-2 right-2 bg-red-500 text-white">
                 Order Closed
               </Badge>
             )}
@@ -455,7 +141,7 @@ const WeekendMenu = () => {
           {type === "school" && item.deadline && (
             <div className="flex items-center text-xs text-amber-600 mb-3">
               <Clock className="w-3 h-3 mr-1" />
-              Order by: {item.deadline}
+              {item.deadline}
             </div>
           )}
           
@@ -468,7 +154,7 @@ const WeekendMenu = () => {
               disabled={!isAvailable}
             >
               {isAvailable ? (
-                <Link to={`/weekend-order/${type}/${item.day.toLowerCase().replace('next ', '')}/${mealType}/${activeOfficeCategory || 'school'}`}>
+                <Link to={`/weekend-order/${type}/${item.day.toLowerCase()}/${activeMealType || 'school-tiffin'}/${item.subCategory?.id || 'default'}`}>
                   Order Now
                 </Link>
               ) : (
@@ -481,13 +167,25 @@ const WeekendMenu = () => {
     );
   };
 
-  const weekendSchoolItems = useMemo(() => getWeekendItems(schoolTiffinMenu, "school"), []);
-  const weekendOfficeBreakfastRegular = useMemo(() => getWeekendItems(officeFoodMenu.breakfast.regular, "office"), []);
-  const weekendOfficeBreakfastDiet = useMemo(() => getWeekendItems(officeFoodMenu.breakfast.diet, "office"), []);
-  const weekendOfficeBreakfastPremium = useMemo(() => getWeekendItems(officeFoodMenu.breakfast.premium, "office"), []);
-  const weekendOfficeLunchRegular = useMemo(() => getWeekendItems(officeFoodMenu.lunch.regular, "office"), []);
-  const weekendOfficeLunchDiet = useMemo(() => getWeekendItems(officeFoodMenu.lunch.diet, "office"), []);
-  const weekendOfficeLunchPremium = useMemo(() => getWeekendItems(officeFoodMenu.lunch.premium, "office"), []);
+  // Generate School Tiffin menu items for each subcategory and date
+  const getSchoolTiffinMenuItems = () => {
+    if (!schoolTiffinSubCategories) return [];
+    
+    const menuItems: any[] = [];
+    
+    schoolTiffinSubCategories.forEach(subCategory => {
+      availableDates.slice(0, 5).forEach(date => { // Show first 5 weekdays
+        const menuItem = getSchoolTiffinMenuForDate(date, subCategory);
+        if (menuItem) {
+          menuItems.push(menuItem);
+        }
+      });
+    });
+    
+    return menuItems;
+  };
+
+  const schoolTiffinMenuItems = getSchoolTiffinMenuItems();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50">
@@ -521,146 +219,38 @@ const WeekendMenu = () => {
             <div className="mb-6 text-center">
               <h2 className="text-2xl font-bold text-amber-800 mb-2">School Tiffin Menu</h2>
               <p className="text-amber-600">Fresh daily tiffin for students - Order by 10 PM the day before</p>
+              
+              {schoolTiffinSubCategories && schoolTiffinSubCategories.length > 0 && (
+                <div className="mt-4 flex justify-center gap-4">
+                  {schoolTiffinSubCategories.map(subCategory => (
+                    <Badge key={subCategory.id} className={`${getFoodPlanColor(subCategory.food_plan || 'Regular')} text-white flex items-center gap-1`}>
+                      {getFoodPlanIcon(subCategory.food_plan || 'Regular')}
+                      {subCategory.name}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-              {weekendSchoolItems.map((item, index) => (
-                <MenuCard key={`${item.day}-${index}`} item={item} type="school" />
-              ))}
-            </div>
+            
+            {schoolTiffinMenuItems.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {schoolTiffinMenuItems.map((item, index) => (
+                  <MenuCard key={`${item.subCategory?.id}-${item.dayNumber}-${index}`} item={item} type="school" />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-amber-600">Loading School Tiffin menu items...</p>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="office-food">
             <div className="mb-6 text-center">
               <h2 className="text-2xl font-bold text-amber-800 mb-2">Office Food Menu</h2>
               <p className="text-amber-600">Professional catering for offices - Order by 9:30 AM same day</p>
+              <p className="text-amber-500 mt-2">Office Food menu integration coming soon...</p>
             </div>
-            
-            <Tabs value={activeMealType} onValueChange={setActiveMealType} className="w-full mb-6">
-              <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-6">
-                <TabsTrigger value="breakfast" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
-                  Breakfast
-                </TabsTrigger>
-                <TabsTrigger value="lunch" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
-                  Lunch
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="breakfast">
-                <Tabs value={activeOfficeCategory} onValueChange={setActiveOfficeCategory} className="w-full">
-                  <TabsList className="grid w-full grid-cols-3 max-w-lg mx-auto mb-8">
-                    <TabsTrigger value="regular" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
-                      Regular
-                    </TabsTrigger>
-                    <TabsTrigger value="diet" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
-                      Diet
-                    </TabsTrigger>
-                    <TabsTrigger value="premium" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
-                      Premium
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="regular">
-                    {weekendOfficeBreakfastRegular.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                        {weekendOfficeBreakfastRegular.map((item, index) => (
-                          <MenuCard key={`${item.day}-${index}`} item={item} type="office" mealType="breakfast" />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <p className="text-amber-600">No breakfast orders available for remaining days this week.</p>
-                      </div>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="diet">
-                    {weekendOfficeBreakfastDiet.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                        {weekendOfficeBreakfastDiet.map((item, index) => (
-                          <MenuCard key={`${item.day}-${index}`} item={item} type="office" mealType="breakfast" />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <p className="text-amber-600">No diet breakfast orders available for remaining days this week.</p>
-                      </div>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="premium">
-                    {weekendOfficeBreakfastPremium.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                        {weekendOfficeBreakfastPremium.map((item, index) => (
-                          <MenuCard key={`${item.day}-${index}`} item={item} type="office" mealType="breakfast" />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <p className="text-amber-600">No premium breakfast orders available for remaining days this week.</p>
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
-              </TabsContent>
-
-              <TabsContent value="lunch">
-                <Tabs value={activeOfficeCategory} onValueChange={setActiveOfficeCategory} className="w-full">
-                  <TabsList className="grid w-full grid-cols-3 max-w-lg mx-auto mb-8">
-                    <TabsTrigger value="regular" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
-                      Regular
-                    </TabsTrigger>
-                    <TabsTrigger value="diet" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
-                      Diet
-                    </TabsTrigger>
-                    <TabsTrigger value="premium" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
-                      Premium
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="regular">
-                    {weekendOfficeLunchRegular.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                        {weekendOfficeLunchRegular.map((item, index) => (
-                          <MenuCard key={`${item.day}-${index}`} item={item} type="office" mealType="lunch" />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <p className="text-amber-600">No lunch orders available for remaining days this week.</p>
-                      </div>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="diet">
-                    {weekendOfficeLunchDiet.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                        {weekendOfficeLunchDiet.map((item, index) => (
-                          <MenuCard key={`${item.day}-${index}`} item={item} type="office" mealType="lunch" />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <p className="text-amber-600">No diet lunch orders available for remaining days this week.</p>
-                      </div>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="premium">
-                    {weekendOfficeLunchPremium.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                        {weekendOfficeLunchPremium.map((item, index) => (
-                          <MenuCard key={`${item.day}-${index}`} item={item} type="office" mealType="lunch" />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <p className="text-amber-600">No premium lunch orders available for remaining days this week.</p>
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
-              </TabsContent>
-            </Tabs>
           </TabsContent>
         </Tabs>
 
