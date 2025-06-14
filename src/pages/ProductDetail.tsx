@@ -6,7 +6,6 @@ import { useCart } from "@/context/CartContext";
 import { useProduct } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import { ShoppingCart, Plus, Minus, ChevronLeft } from "lucide-react";
-import ProductCard from "@/components/ProductCard";
 import { toast } from "@/components/ui/sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -67,6 +66,13 @@ const ProductDetail = () => {
     };
     addToCart(cartProduct, quantity);
     toast.success(`Added ${quantity} ${product.name} to cart`);
+  };
+  
+  const handleBuyNow = () => {
+    // Add to cart first
+    handleAddToCart();
+    // Then navigate to cart
+    navigate("/cart");
   };
   
   const categoryName = categories?.find(c => c.id === product.category_id)?.name || "Food";
@@ -149,12 +155,12 @@ const ProductDetail = () => {
               Add to Cart
             </Button>
             <Button
-              asChild
               size="lg"
               className="flex-1 bg-kazi-orange hover:bg-opacity-90"
+              onClick={handleBuyNow}
               disabled={!product.in_stock}
             >
-              <Link to="/cart">Buy Now</Link>
+              Buy Now
             </Button>
           </div>
         </div>
