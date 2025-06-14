@@ -12,50 +12,72 @@ const ResetPassword = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [hasValidSession, setHasValidSession] = useState(false);
+  const [isValidating, setIsValidating] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if we have a valid session from the reset link
-    const checkSession = async () => {
+    // Listen for auth state changes and URL parameters
+    const handleAuthFlow = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        console.log("Session check:", { session, error });
+        // Check URL parameters for auth tokens
+        const urlParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = urlParams.get('access_token');
+        const refreshToken = urlParams.get('refresh_token');
+        const type = urlParams.get('type');
         
-        if (error) {
-          console.error("Session error:", error);
-          toast({
-            title: "Invalid Reset Link",
-            description: "The reset link is invalid or has expired. Please request a new one.",
-            variant: "destructive"
-          });
-          navigate("/admin/login");
-          return;
-        }
+        console.log("URL params:", { accessToken: !!accessToken, refreshToken: !!refreshToken, type });
 
-        if (!session) {
-          toast({
-            title: "Invalid Reset Link",
-            description: "The reset link is invalid or has expired. Please request a new one.",
-            variant: "destructive"
+        // If we have tokens in URL, this is from email link
+        if (accessToken && refreshToken && type === 'recovery') {
+          console.log("Setting session from URL tokens...");
+          
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
           });
-          navigate("/admin/login");
-          return;
-        }
 
-        setHasValidSession(true);
+          if (error) {
+            console.error("Error setting session:", error);
+            toast({
+              title: "Invalid Reset Link",
+              description: "The reset link is invalid or has expired. Please request a new one.",
+              variant: "destructive"
+            });
+            navigate("/admin/login");
+            return;
+          }
+
+          console.log("Session set successfully:", data);
+          setIsValidating(false);
+        } else {
+          // Check if we already have a valid session
+          const { data: { session }, error } = await supabase.auth.getSession();
+          console.log("Existing session check:", { session: !!session, error });
+          
+          if (error || !session) {
+            toast({
+              title: "Invalid Reset Link",
+              description: "The reset link is invalid or has expired. Please request a new one.",
+              variant: "destructive"
+            });
+            navigate("/admin/login");
+            return;
+          }
+
+          setIsValidating(false);
+        }
       } catch (error) {
-        console.error("Error checking session:", error);
+        console.error("Error in auth flow:", error);
         toast({
           title: "Error",
-          description: "An error occurred while validating the reset link.",
+          description: "An error occurred while processing the reset link.",
           variant: "destructive"
         });
         navigate("/admin/login");
       }
     };
 
-    checkSession();
+    handleAuthFlow();
   }, [navigate]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -123,7 +145,7 @@ const ResetPassword = () => {
     }
   };
 
-  if (!hasValidSession) {
+  if (isValidating) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <Card className="w-full max-w-md">
