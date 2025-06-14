@@ -10,10 +10,8 @@ import {
   useMainCategories, 
   useSubCategories, 
   useMealTypes,
-  getCurrentWeekStart,
-  getNextWeekStart,
   getDayName,
-  isOrderingAllowed 
+  getAvailableOrderingDates 
 } from "@/hooks/useWeeklyMenu";
 
 const WeekendMenuSection = () => {
@@ -187,13 +185,7 @@ const WeekendMenuSection = () => {
                   {subCategories?.map((subCategory) => (
                     <SelectItem key={subCategory.id} value={subCategory.id}>
                       <div className="flex items-center gap-2">
-                        {subCategory.food_plan && getFoodPlanIcon(subCategory.food_plan)}
                         {subCategory.name}
-                        {subCategory.food_plan && (
-                          <Badge className={`ml-2 ${getFoodPlanColor(subCategory.food_plan)}`}>
-                            {subCategory.food_plan}
-                          </Badge>
-                        )}
                       </div>
                     </SelectItem>
                   ))}
@@ -238,16 +230,10 @@ const WeekendMenuSection = () => {
                   <Card key={subCategory.id} className="border-2 border-amber-200">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        {subCategory.food_plan && getFoodPlanIcon(subCategory.food_plan)}
                         {subCategory.name}
-                        {subCategory.food_plan && (
-                          <Badge className={getFoodPlanColor(subCategory.food_plan)}>
-                            {subCategory.food_plan}
-                          </Badge>
-                        )}
                       </CardTitle>
                       <CardDescription>
-                        {subCategory.description || (subCategory.food_plan && getFoodPlanDescription(subCategory.food_plan))}
+                        {subCategory.description}
                       </CardDescription>
                     </CardHeader>
                   </Card>
@@ -306,7 +292,7 @@ const WeekendMenuSection = () => {
                 size="lg"
                 className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
               >
-                <Link to={`/weekend-order/${selectedMainCategory}/${getCurrentWeekStart()}/${selectedMealType || 'default'}/${selectedSubCategory}`}>
+                <Link to={`/weekend-order/${selectedMainCategory}/${new Date().toISOString().split('T')[0]}/${selectedMealType || 'default'}/${selectedSubCategory}`}>
                   <Clock className="w-5 h-5 mr-2" />
                   Proceed to Date Selection
                 </Link>

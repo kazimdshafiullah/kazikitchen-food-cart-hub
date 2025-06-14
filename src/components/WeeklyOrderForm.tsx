@@ -34,7 +34,6 @@ import {
   WeeklyMenuItem,
   useCreateWeeklyOrder,
   useLocationPricing,
-  getDayName,
   getAvailableLocations
 } from "@/hooks/useWeeklyMenu";
 
@@ -133,11 +132,9 @@ const WeeklyOrderForm = ({
       main_category_id: mainCategory.id,
       sub_category_id: subCategory.id,
       meal_type_id: mealType.id,
-      week_start_date: weekStartDate,
       total_amount: calculateTotal(),
       order_items: selectedItems.map(item => ({
         weekly_menu_id: item.id,
-        day_of_week: item.day_of_week,
         quantity: quantities[item.id],
         price: Number(item.price),
       })),
@@ -164,7 +161,6 @@ const WeeklyOrderForm = ({
         <DialogHeader>
           <DialogTitle>
             Order Weekly {mealType.name} - {subCategory.name}
-            {subCategory.food_plan && ` (${subCategory.food_plan})`}
           </DialogTitle>
           <DialogDescription>
             {mainCategory.name} for week starting {weekStartDate}
@@ -181,7 +177,7 @@ const WeeklyOrderForm = ({
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base">
-                      {getDayName(item.day_of_week)}
+                      {new Date(item.specific_date).toLocaleDateString('en-BD', { weekday: 'long' })}
                     </CardTitle>
                     <Badge variant={item.current_stock > 0 ? "default" : "destructive"}>
                       {item.current_stock} left
@@ -348,7 +344,7 @@ const WeeklyOrderForm = ({
                       {getSelectedItems().map((item) => (
                         <div key={item.id} className="flex justify-between text-sm">
                           <span>
-                            {getDayName(item.day_of_week)} - {item.item_name} x{quantities[item.id]}
+                            {new Date(item.specific_date).toLocaleDateString('en-BD', { weekday: 'long' })} - {item.item_name} x{quantities[item.id]}
                           </span>
                           <span>৳{(Number(item.price) * quantities[item.id]).toFixed(2)}</span>
                         </div>

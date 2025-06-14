@@ -386,3 +386,8 @@ export const getAvailableOrderingDates = (mainCategory: MainCategory, subCategor
   
   return dates;
 };
+
+// Utility function to get meal types as food plans
+export const getFoodPlans = () => {
+  return ['Regular', 'Diet', 'Premium'];
+};

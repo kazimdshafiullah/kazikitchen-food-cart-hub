@@ -9,10 +9,7 @@ import {
   useMainCategories,
   useSubCategories,
   useMealTypes,
-  useWeeklyMenu,
-  getCurrentWeekStart,
-  getNextWeekStart,
-  isOrderingAllowed,
+  useWeeklyMenuByDateRange,
   getDayName,
   MainCategory,
   SubCategory,
@@ -25,31 +22,31 @@ const WeeklyMenuSection = () => {
   const [selectedMainCategory, setSelectedMainCategory] = useState<MainCategory | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory | null>(null);
   const [selectedMealType, setSelectedMealType] = useState<MealType | null>(null);
-  const [selectedWeek, setSelectedWeek] = useState<string>(getCurrentWeekStart());
+  const [selectedWeek, setSelectedWeek] = useState<string>(new Date().toISOString().split('T')[0]);
   const [showOrderForm, setShowOrderForm] = useState(false);
 
   const { data: mainCategories, isLoading: mainCategoriesLoading } = useMainCategories();
   const { data: subCategories } = useSubCategories(selectedMainCategory?.id);
   const { data: mealTypes } = useMealTypes();
-  const { data: weeklyMenu } = useWeeklyMenu(
+  
+  // Calculate date range for the selected week (next 7 days from selected date)
+  const startDate = selectedWeek;
+  const endDate = new Date(selectedWeek);
+  endDate.setDate(endDate.getDate() + 6);
+  const endDateString = endDate.toISOString().split('T')[0];
+
+  const { data: weeklyMenu } = useWeeklyMenuByDateRange(
     selectedMainCategory?.id,
     selectedSubCategory?.id,
     selectedMealType?.id,
-    selectedWeek
+    startDate,
+    endDateString
   );
 
   const handleCategorySelect = (category: MainCategory) => {
     setSelectedMainCategory(category);
     setSelectedSubCategory(null);
     setSelectedMealType(null);
-    
-    // Set appropriate week based on ordering rules
-    const canOrderCurrent = isOrderingAllowed(category);
-    if (canOrderCurrent) {
-      setSelectedWeek(getCurrentWeekStart());
-    } else {
-      setSelectedWeek(getNextWeekStart());
-    }
   };
 
   const handleOrderClick = () => {
@@ -59,22 +56,22 @@ const WeeklyMenuSection = () => {
   };
 
   const getAvailableWeeks = () => {
-    if (!selectedMainCategory) return [];
-    
     const weeks = [];
-    const currentWeek = getCurrentWeekStart();
-    const nextWeek = getNextWeekStart();
+    const today = new Date();
     
-    if (isOrderingAllowed(selectedMainCategory)) {
-      weeks.push({ value: currentWeek, label: `This Week (${currentWeek})` });
+    for (let i = 0; i < 4; i++) { // Show next 4 weeks
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() + (i * 7));
+      const weekStartString = weekStart.toISOString().split('T')[0];
+      
+      weeks.push({ 
+        value: weekStartString, 
+        label: `Week ${i + 1} (${weekStartString})` 
+      });
     }
-    weeks.push({ value: nextWeek, label: `Next Week (${nextWeek})` });
     
     return weeks;
   };
-
-  // Check if selected category is School Tiffin
-  const isSchoolTiffin = selectedMainCategory?.name === 'School Tiffin';
 
   const getMealTypeIcon = (mealType: string) => {
     switch (mealType) {
@@ -132,42 +129,37 @@ const WeeklyMenuSection = () => {
 
         {/* Main Category Selection */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
-          {mainCategories?.map((category) => {
-            const hasAvailableWeeks = getAvailableWeeks().length > 0 || selectedMainCategory?.id === category.id;
-            return (
-              <Card 
-                key={category.id}
-                className={`cursor-pointer transition-all hover:shadow-lg ${
-                  selectedMainCategory?.id === category.id 
-                    ? 'ring-2 ring-kazi-orange shadow-lg' 
-                    : ''
-                }`}
-                onClick={() => handleCategorySelect(category)}
-              >
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl">{category.name}</CardTitle>
-                    <Badge variant={hasAvailableWeeks ? "default" : "secondary"}>
-                      Available
-                    </Badge>
+          {mainCategories?.map((category) => (
+            <Card 
+              key={category.id}
+              className={`cursor-pointer transition-all hover:shadow-lg ${
+                selectedMainCategory?.id === category.id 
+                  ? 'ring-2 ring-kazi-orange shadow-lg' 
+                  : ''
+              }`}
+              onClick={() => handleCategorySelect(category)}
+            >
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-xl">{category.name}</CardTitle>
+                  <Badge variant="default">Available</Badge>
+                </div>
+                <CardDescription>{category.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-4 w-4" />
+                    Order by {category.order_cutoff_time.slice(0, 5)}
                   </div>
-                  <CardDescription>{category.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      Order by {category.order_cutoff_time.slice(0, 5)}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="h-4 w-4" />
-                      {category.advance_days === 1 ? 'Next day delivery' : 'Same day delivery'}
-                    </div>
+                  <div className="flex items-center gap-1">
+                    <Users className="h-4 w-4" />
+                    {category.advance_days === 1 ? 'Next day delivery' : 'Same day delivery'}
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {selectedMainCategory && (
@@ -277,7 +269,7 @@ const WeeklyMenuSection = () => {
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-sm font-medium">
-                            {getDayName(item.day_of_week)}
+                            {new Date(item.specific_date).toLocaleDateString('en-BD', { weekday: 'long' })}
                           </CardTitle>
                           <Badge variant={item.current_stock > 0 ? "default" : "destructive"}>
                             {item.current_stock}/{item.stock_limit}
