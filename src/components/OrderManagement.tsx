@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +13,7 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { Search, MapPin, Calendar, Phone, Mail, User } from "lucide-react";
+import { Search, MapPin, Calendar, Phone, Mail, User, Eye } from "lucide-react";
 
 // Mock order data with updated delivery locations
 const mockOrders = [
@@ -230,11 +229,12 @@ const OrderManagement = () => {
               <TableRow>
                 <TableHead>Order ID</TableHead>
                 <TableHead>Customer</TableHead>
-                <TableHead>Delivery Location</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
                 <TableHead>Date</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>Kitchen</TableHead>
+                <TableHead>Delivery</TableHead>
+                <TableHead>Order Status</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>View</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -247,44 +247,48 @@ const OrderManagement = () => {
                       <div className="text-sm text-gray-500">{order.customerEmail}</div>
                     </div>
                   </TableCell>
+                  <TableCell>{order.orderDate}</TableCell>
+                  <TableCell>
+                    <Badge className={getStatusColor(order.status === 'pending' ? 'pending' : order.status === 'confirmed' ? 'confirmed' : order.status === 'processing' ? 'processing' : 'delivered')}>
+                      {order.status === 'pending' ? 'not started' : 
+                       order.status === 'confirmed' ? 'confirmed' :
+                       order.status === 'processing' ? 'cooking' : 
+                       order.status === 'delivered' ? 'completed' : 
+                       order.status === 'out-for-delivery' ? 'ready' : order.status}
+                    </Badge>
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
                       <MapPin className="h-4 w-4 text-gray-400" />
-                      {order.deliveryLocation}
+                      <span className="text-sm">{order.deliveryLocation}</span>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <Select
+                      value={order.status}
+                      onValueChange={(value) => updateOrderStatus(order.id, value)}
+                    >
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {orderStatuses.slice(1).map((status) => (
+                          <SelectItem key={status} value={status}>
+                            {status}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                   <TableCell>৳{order.totalAmount}</TableCell>
                   <TableCell>
-                    <Badge className={getStatusColor(order.status)}>
-                      {order.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{order.orderDate}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedOrder(order)}
-                      >
-                        View
-                      </Button>
-                      <Select
-                        value={order.status}
-                        onValueChange={(value) => updateOrderStatus(order.id, value)}
-                      >
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {orderStatuses.slice(1).map((status) => (
-                            <SelectItem key={status} value={status}>
-                              {status}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedOrder(order)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
