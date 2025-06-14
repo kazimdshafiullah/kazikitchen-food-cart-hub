@@ -1,24 +1,19 @@
 
 import { useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Minus, ShoppingCart, Star } from "lucide-react";
-import { useCart } from "@/context/CartContext";
-import { toast } from "@/components/ui/sonner";
 
 const FrozenFoodOrder = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
-  const { addToCart } = useCart();
 
   // Mock data - this would come from your database
   const getItemDetails = () => {
     const items: { [key: string]: any } = {
       "1": {
-        id: "1",
         name: "Alu Shingara",
         price: 45,
         image: "https://images.unsplash.com/photo-1601314002957-4edc5a6b8c24?w=400",
@@ -29,7 +24,6 @@ const FrozenFoodOrder = () => {
         servingSize: "1 piece"
       },
       "2": {
-        id: "2",
         name: "Veg Samosa",
         price: 40,
         image: "https://images.unsplash.com/photo-1601314002957-4edc5a6b8c24?w=400",
@@ -40,7 +34,6 @@ const FrozenFoodOrder = () => {
         servingSize: "1 piece"
       },
       "3": {
-        id: "3",
         name: "Chicken Roll",
         price: 85,
         image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400",
@@ -51,7 +44,6 @@ const FrozenFoodOrder = () => {
         servingSize: "1 roll"
       },
       "combo-1": {
-        id: "combo-1",
         name: "Combo-1",
         price: 180,
         originalPrice: 200,
@@ -82,23 +74,13 @@ const FrozenFoodOrder = () => {
   };
 
   const handleAddToCart = () => {
-    // Convert the item to cart product format
-    const cartProduct = {
-      id: itemDetails.id,
-      name: itemDetails.name,
-      price: itemDetails.price,
-      image: itemDetails.image,
-      category: itemDetails.category,
-      description: itemDetails.description
-    };
-
-    addToCart(cartProduct, quantity);
-    toast.success(`Added ${quantity}x ${itemDetails.name} to cart!`);
-    
-    // Navigate to cart after adding
-    setTimeout(() => {
-      navigate("/cart");
-    }, 1000);
+    // Add to cart logic here
+    console.log("Adding to cart:", {
+      item: itemDetails,
+      quantity: quantity,
+      totalPrice: getTotalPrice()
+    });
+    // Navigate to cart or show success message
   };
 
   return (

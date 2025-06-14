@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -13,9 +14,9 @@ const Index = () => {
         <div className="container mx-auto text-center">
           <div className="mb-8">
             <img 
-              src="/lovable-uploads/b2259b6e-c2d4-4685-a56f-95379cddaf8f.png" 
+              src="/lovable-uploads/2cfab3c4-b828-41e4-b378-a8bc7c2a9c57.png" 
               alt="Kazi Kitchen Logo" 
-              className="mx-auto h-56 w-auto mb-6"
+              className="mx-auto h-32 w-32 mb-6"
             />
           </div>
           <h1 className="text-5xl font-bold text-amber-800 mb-4">
