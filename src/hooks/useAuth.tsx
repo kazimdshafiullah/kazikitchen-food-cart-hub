@@ -50,7 +50,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
 
-      return profileData;
+      // Type assertion to ensure role is properly typed
+      return profileData as Profile;
     } catch (error) {
       console.error('Error fetching profile:', error);
       return null;
