@@ -312,11 +312,13 @@ export type Database = {
           day_of_week: number
           description: string | null
           id: string
+          image_url: string | null
           is_active: boolean
           item_name: string
           main_category_id: string
           meal_type_id: string
           price: number
+          specific_date: string
           stock_limit: number
           sub_category_id: string
           updated_at: string
@@ -328,11 +330,13 @@ export type Database = {
           day_of_week: number
           description?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           item_name: string
           main_category_id: string
           meal_type_id: string
           price: number
+          specific_date: string
           stock_limit?: number
           sub_category_id: string
           updated_at?: string
@@ -344,11 +348,13 @@ export type Database = {
           day_of_week?: number
           description?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           item_name?: string
           main_category_id?: string
           meal_type_id?: string
           price?: number
+          specific_date?: string
           stock_limit?: number
           sub_category_id?: string
           updated_at?: string

@@ -65,6 +65,52 @@ const WeekendMenuSection = () => {
       cat.id === selectedMainCategory && (cat.name.toLowerCase().includes('school') || cat.name.toLowerCase().includes('tiffin'))
     )) : false;
 
+  // Get available ordering dates (Sunday to Thursday, excluding weekends)
+  const getAvailableOrderingDates = () => {
+    const dates = [];
+    const today = new Date();
+    const currentDay = today.getDay(); // 0 = Sunday, 6 = Saturday
+    const currentHour = today.getHours();
+    
+    // For School Tiffin: Order by 10 PM the day before
+    // For Office Food: Order by 9:30 AM same day
+    
+    for (let i = 0; i < 14; i++) { // Check next 14 days
+      const checkDate = new Date(today);
+      checkDate.setDate(today.getDate() + i);
+      const dayOfWeek = checkDate.getDay();
+      
+      // Only include Sunday (0) to Thursday (4), skip Friday (5) and Saturday (6)
+      if (dayOfWeek >= 0 && dayOfWeek <= 4) {
+        let canOrder = false;
+        
+        if (isSchoolTiffin) {
+          // School Tiffin: Can order until 10 PM the day before
+          if (i === 1 && currentHour < 22) canOrder = true; // Tomorrow if before 10 PM
+          if (i > 1) canOrder = true; // Future days
+        } else {
+          // Office Food: Can order until 9:30 AM same day
+          if (i === 0 && currentHour < 9) canOrder = true; // Today if before 9:30 AM
+          if (i === 0 && currentHour === 9 && today.getMinutes() < 30) canOrder = true; // Today if before 9:30 AM
+          if (i > 0) canOrder = true; // Future days
+        }
+        
+        dates.push({
+          date: checkDate,
+          dateString: checkDate.toISOString().split('T')[0],
+          dayName: getDayName(dayOfWeek),
+          canOrder,
+          isToday: i === 0,
+          isTomorrow: i === 1
+        });
+      }
+    }
+    
+    return dates;
+  };
+
+  const availableDates = getAvailableOrderingDates();
+
   return (
     <section className="py-16 px-4 bg-white">
       <div className="container mx-auto">
@@ -73,6 +119,15 @@ const WeekendMenuSection = () => {
           <p className="text-xl text-amber-700 max-w-2xl mx-auto">
             Plan your weekly meals with our School Tiffin and Office Food options
           </p>
+          <div className="mt-4 p-4 bg-amber-100 rounded-lg">
+            <p className="text-amber-800 font-medium">
+              <Clock className="inline w-4 h-4 mr-2" />
+              School Tiffin: Order by 10:00 PM the day before | Office Food: Order by 9:30 AM same day
+            </p>
+            <p className="text-amber-700 text-sm mt-2">
+              Available days: Sunday to Thursday (Weekend excluded)
+            </p>
+          </div>
         </div>
 
         {/* Category Selection */}
@@ -184,6 +239,49 @@ const WeekendMenuSection = () => {
             </div>
           )}
 
+          {/* Available Dates Display */}
+          {selectedMainCategory && selectedSubCategory && (isSchoolTiffin || selectedMealType) && (
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-amber-800 mb-4">Available Ordering Dates</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                {availableDates.map((dateInfo) => (
+                  <Card 
+                    key={dateInfo.dateString} 
+                    className={`text-center transition-all ${
+                      dateInfo.canOrder 
+                        ? 'border-green-300 bg-green-50 hover:border-green-500' 
+                        : 'border-red-300 bg-red-50'
+                    }`}
+                  >
+                    <CardContent className="p-3">
+                      <div className="font-medium text-sm text-amber-800">
+                        {dateInfo.dayName}
+                      </div>
+                      <div className="text-xs text-amber-600 mb-2">
+                        {dateInfo.date.toLocaleDateString('en-BD')}
+                      </div>
+                      <Badge 
+                        className={`text-xs ${
+                          dateInfo.canOrder 
+                            ? 'bg-green-500 text-white' 
+                            : 'bg-red-500 text-white'
+                        }`}
+                      >
+                        {dateInfo.canOrder ? 'Available' : 'Order Closed'}
+                      </Badge>
+                      {dateInfo.isToday && (
+                        <div className="text-xs text-blue-600 font-medium mt-1">Today</div>
+                      )}
+                      {dateInfo.isTomorrow && (
+                        <div className="text-xs text-purple-600 font-medium mt-1">Tomorrow</div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Order Button */}
           {selectedMainCategory && selectedSubCategory && (isSchoolTiffin || selectedMealType) && (
             <div className="text-center">
@@ -194,7 +292,7 @@ const WeekendMenuSection = () => {
               >
                 <Link to={`/weekend-order/${selectedMainCategory}/${getCurrentWeekStart()}/${selectedMealType || 'default'}/${selectedSubCategory}`}>
                   <Clock className="w-5 h-5 mr-2" />
-                  Plan This Week's Menu
+                  Proceed to Date Selection
                 </Link>
               </Button>
             </div>

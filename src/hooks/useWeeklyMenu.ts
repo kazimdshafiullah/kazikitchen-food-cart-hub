@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -35,6 +34,7 @@ export interface WeeklyMenuItem {
   sub_category_id: string;
   meal_type_id: string;
   day_of_week: number;
+  specific_date: string;
   item_name: string;
   description: string | null;
   price: number;
@@ -42,6 +42,7 @@ export interface WeeklyMenuItem {
   current_stock: number;
   is_active: boolean;
   week_start_date: string;
+  image_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -132,7 +133,35 @@ export const useMealTypes = () => {
   });
 };
 
-// Hook to get weekly menu items
+// Hook to get weekly menu items by specific date
+export const useWeeklyMenuByDate = (
+  mainCategoryId?: string,
+  subCategoryId?: string,
+  mealTypeId?: string,
+  specificDate?: string
+) => {
+  return useQuery({
+    queryKey: ["weeklyMenuByDate", mainCategoryId, subCategoryId, mealTypeId, specificDate],
+    queryFn: async () => {
+      let query = supabase.from("weekly_menu").select("*");
+
+      if (mainCategoryId) query = query.eq("main_category_id", mainCategoryId);
+      if (subCategoryId) query = query.eq("sub_category_id", subCategoryId);
+      if (mealTypeId) query = query.eq("meal_type_id", mealTypeId);
+      if (specificDate) query = query.eq("specific_date", specificDate);
+
+      const { data, error } = await query
+        .eq("is_active", true)
+        .order("specific_date");
+
+      if (error) throw error;
+      return data as WeeklyMenuItem[];
+    },
+    enabled: !!(mainCategoryId && subCategoryId && specificDate),
+  });
+};
+
+// Hook to get weekly menu items (legacy - keep for backward compatibility)
 export const useWeeklyMenu = (
   mainCategoryId?: string,
   subCategoryId?: string,
@@ -247,6 +276,7 @@ export const useCreateWeeklyOrder = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["weeklyMenu"] });
+      queryClient.invalidateQueries({ queryKey: ["weeklyMenuByDate"] });
       queryClient.invalidateQueries({ queryKey: ["weeklyOrders"] });
     },
   });
@@ -270,7 +300,35 @@ export const getNextWeekStart = () => {
   return startDate.toISOString().split('T')[0];
 };
 
-// Utility function to check if ordering is allowed
+// Utility function to check if ordering is allowed for a specific date
+export const isOrderingAllowedForDate = (mainCategory: MainCategory, targetDate: Date) => {
+  const now = new Date();
+  const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
+  const cutoffTime = mainCategory.order_cutoff_time.slice(0, 5);
+  
+  // Get the date difference
+  const dayDifference = Math.floor((targetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  
+  if (mainCategory.advance_days === 1) {
+    // School Tiffin - can order until 10 PM the day before
+    if (dayDifference === 1) {
+      return currentTime <= cutoffTime;
+    } else if (dayDifference > 1) {
+      return true;
+    }
+    return false;
+  } else {
+    // Office Food - can order until 9:30 AM same day
+    if (dayDifference === 0) {
+      return currentTime <= cutoffTime;
+    } else if (dayDifference > 0) {
+      return true;
+    }
+    return false;
+  }
+};
+
+// Utility function to check if ordering is allowed (legacy)
 export const isOrderingAllowed = (mainCategory: MainCategory) => {
   const now = new Date();
   const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
@@ -288,7 +346,7 @@ export const isOrderingAllowed = (mainCategory: MainCategory) => {
 // Utility function to get day names
 export const getDayName = (dayOfWeek: number) => {
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
-  return days[dayOfWeek];
+  return days[dayOfWeek] || 'Unknown';
 };
 
 // Utility function to get available locations
@@ -308,4 +366,23 @@ export const getAvailableLocations = () => {
 // Utility function to get food plans
 export const getFoodPlans = () => {
   return ['Regular', 'Diet', 'Premium'] as const;
+};
+
+// Utility function to get weekday dates (excluding weekends)
+export const getWeekdayDates = (startDate: Date, numberOfDays: number = 14) => {
+  const dates = [];
+  let currentDate = new Date(startDate);
+  let addedDays = 0;
+  
+  while (addedDays < numberOfDays) {
+    const dayOfWeek = currentDate.getDay();
+    // Only include Sunday (0) to Thursday (4)
+    if (dayOfWeek >= 0 && dayOfWeek <= 4) {
+      dates.push(new Date(currentDate));
+      addedDays++;
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
+  return dates;
 };
