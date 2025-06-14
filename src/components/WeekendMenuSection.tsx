@@ -59,10 +59,10 @@ const WeekendMenuSection = () => {
     }
   };
 
-  // Check if selected category is School Tiffin (doesn't need meal type selection)
+  // Check if selected category is School Tiffin
   const isSchoolTiffin = selectedMainCategory && mainCategories ? 
     mainCategories.find(cat => 
-      cat.id === selectedMainCategory && (cat.name.toLowerCase().includes('school') || cat.name.toLowerCase().includes('tiffin'))
+      cat.id === selectedMainCategory && cat.name === 'School Tiffin'
     ) !== undefined : false;
 
   // Get available ordering dates (Sunday to Thursday, excluding weekends)
