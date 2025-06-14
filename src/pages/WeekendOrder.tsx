@@ -1,14 +1,18 @@
 
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Minus, ShoppingCart, Users, Crown } from "lucide-react";
+import { useCart } from "@/context/CartContext";
+import { toast } from "@/components/ui/sonner";
 
 const WeekendOrder = () => {
   const { type, day, mealType, category } = useParams();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const { addToCart } = useCart();
+  const navigate = useNavigate();
 
   // Mock data - this would come from your database
   const getItemDetails = () => {
@@ -104,9 +108,23 @@ const WeekendOrder = () => {
     
     const option = orderOptions.find(opt => opt.id === selectedOption);
     if (option) {
-      // Add to cart logic here
-      console.log("Adding to cart:", option);
-      // Navigate to cart or show success message
+      // Convert weekend order to cart format
+      const cartProduct = {
+        id: `weekend-${type}-${day}-${mealType}-${category}-${selectedOption}`,
+        name: `${itemDetails.name} (${option.title})`,
+        price: option.price,
+        image: itemDetails.image,
+        category: "weekend-menu",
+        description: `${itemDetails.description} - ${option.description}`
+      };
+      
+      addToCart(cartProduct, 1);
+      toast.success(`Added ${cartProduct.name} to cart`);
+      
+      // Navigate to cart after successful addition
+      setTimeout(() => {
+        navigate('/cart');
+      }, 1000);
     }
   };
 

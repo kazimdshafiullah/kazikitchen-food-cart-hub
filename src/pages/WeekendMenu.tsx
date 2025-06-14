@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -354,7 +355,7 @@ const WeekendMenu = () => {
   const [activeMealType, setActiveMealType] = useState("breakfast");
   const [activeOfficeCategory, setActiveOfficeCategory] = useState("regular");
 
-  // Function to check if we can still order for a specific day
+  // Modified function to show weekend items with better availability logic
   const canOrderForDay = (dayNumber: number, orderType: string) => {
     const now = new Date();
     const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
@@ -366,45 +367,67 @@ const WeekendMenu = () => {
       // School tiffin: Order by 10 PM the day before
       const orderCutoff = 22 * 60; // 10 PM in minutes
       
-      // If it's the same day and past 10 PM, can't order
-      if (currentDay === (dayNumber === 0 ? 6 : dayNumber - 1) && currentTime >= orderCutoff) {
-        return false;
+      // For weekend view, always show all days but mark as unavailable if past cutoff
+      if (currentDay === 6 && dayNumber === 0) { // Saturday ordering for Sunday
+        return currentTime < orderCutoff;
+      }
+      if (currentDay === dayNumber - 1) { // Day before ordering
+        return currentTime < orderCutoff;
+      }
+      if (currentDay < dayNumber) { // Future days
+        return true;
+      }
+      if (currentDay > 4) { // If past Thursday, show next week items
+        return true;
       }
       
-      // If it's past the delivery day, can't order
-      if (currentDay > dayNumber) {
-        return false;
-      }
-      
-      return true;
+      return false;
     } else {
       // Office food: Order by 9:30 AM the same day
       const orderCutoff = 9 * 60 + 30; // 9:30 AM in minutes
       
-      // If it's the same day and past 9:30 AM, can't order
-      if (currentDay === dayNumber && currentTime >= orderCutoff) {
-        return false;
+      // For weekend view, show all days but mark availability
+      if (currentDay === dayNumber) {
+        return currentTime < orderCutoff;
+      }
+      if (currentDay < dayNumber) {
+        return true;
+      }
+      if (currentDay > 4) { // If past Thursday, show next week items
+        return true;
       }
       
-      // If it's past the delivery day, can't order
-      if (currentDay > dayNumber) {
-        return false;
-      }
-      
-      return true;
+      return false;
     }
   };
 
-  // Filter menu items based on availability
-  const getAvailableItems = (items: any[], orderType: string) => {
-    return items.filter(item => canOrderForDay(item.dayNumber, orderType));
+  // Show all weekend items, including next week if current week is ending
+  const getWeekendItems = (items: any[], orderType: string) => {
+    const now = new Date();
+    const currentDay = now.getDay();
+    
+    // Always show all current week items
+    let weekendItems = [...items];
+    
+    // If it's Friday (5) or Saturday (6), also show next week items
+    if (currentDay >= 5) {
+      const nextWeekItems = items.map(item => ({
+        ...item,
+        day: `Next ${item.day}`,
+        isNextWeek: true
+      }));
+      weekendItems = [...weekendItems, ...nextWeekItems];
+    }
+    
+    return weekendItems;
   };
 
   const MenuCard = ({ item, type = "school", mealType = "breakfast" }: { item: any, type?: string, mealType?: string }) => {
     const isAvailable = canOrderForDay(item.dayNumber, type);
+    const isNextWeek = item.isNextWeek || false;
     
     return (
-      <Card className={`group transition-all duration-300 border ${isAvailable ? 'border-amber-200 hover:border-amber-400 hover:shadow-lg' : 'border-gray-200 opacity-50'}`}>
+      <Card className={`group transition-all duration-300 border ${isAvailable ? 'border-amber-200 hover:border-amber-400 hover:shadow-lg' : 'border-gray-200 opacity-75'}`}>
         <CardHeader className="p-0">
           <div className="relative overflow-hidden rounded-t-lg">
             <img
@@ -412,7 +435,7 @@ const WeekendMenu = () => {
               alt={item.item}
               className={`w-full h-48 object-cover ${isAvailable ? 'group-hover:scale-105' : ''} transition-transform duration-300`}
             />
-            <Badge className="absolute top-2 left-2 bg-amber-500 text-white">
+            <Badge className={`absolute top-2 left-2 ${isNextWeek ? 'bg-purple-500' : 'bg-amber-500'} text-white`}>
               {item.day}
             </Badge>
             {isAvailable ? (
@@ -446,7 +469,7 @@ const WeekendMenu = () => {
               disabled={!isAvailable}
             >
               {isAvailable ? (
-                <Link to={`/weekend-order/${type}/${item.day.toLowerCase()}/${mealType}/${activeOfficeCategory || 'school'}`}>
+                <Link to={`/weekend-order/${type}/${item.day.toLowerCase().replace('next ', '')}/${mealType}/${activeOfficeCategory || 'school'}`}>
                   Order Now
                 </Link>
               ) : (
@@ -459,7 +482,7 @@ const WeekendMenu = () => {
     );
   };
 
-  const availableSchoolItems = useMemo(() => getAvailableItems(schoolTiffinMenu, "school"), []);
+  const weekendSchoolItems = useMemo(() => getWeekendItems(schoolTiffinMenu, "school"), []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50">
@@ -494,18 +517,11 @@ const WeekendMenu = () => {
               <h2 className="text-2xl font-bold text-amber-800 mb-2">School Tiffin Menu</h2>
               <p className="text-amber-600">Fresh daily tiffin for students - Order by 10 PM the day before</p>
             </div>
-            {availableSchoolItems.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                {availableSchoolItems.map((item) => (
-                  <MenuCard key={item.day} item={item} type="school" />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-xl text-amber-600">No school tiffin orders available for remaining days this week.</p>
-                <p className="text-amber-500 mt-2">Please check back next week for new orders!</p>
-              </div>
-            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+              {weekendSchoolItems.map((item, index) => (
+                <MenuCard key={`${item.day}-${index}`} item={item} type="school" />
+              ))}
+            </div>
           </TabsContent>
 
           <TabsContent value="office-food">

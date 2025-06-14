@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,13 @@ const WeekendMenuSection = () => {
   const { data: mainCategories } = useMainCategories();
   const { data: subCategories } = useSubCategories(selectedMainCategory);
   const { data: mealTypes } = useMealTypes();
+
+  // Scroll to top when selections change
+  useEffect(() => {
+    if (selectedMainCategory) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [selectedMainCategory, selectedSubCategory, selectedMealType]);
 
   const getFoodPlanIcon = (plan: string) => {
     switch (plan) {
