@@ -1,51 +1,207 @@
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { apiClient, User, LoginCredentials } from '@/utils/api';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
+interface Profile {
+  id: string;
+  username: string;
+  role: 'admin' | 'kitchen' | 'rider';
+}
+
+interface AuthUser extends User {
+  profile?: Profile;
+}
+
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
+  profile: Profile | null;
   loading: boolean;
   login: (credentials: LoginCredentials) => Promise<boolean>;
   logout: () => Promise<void>;
-  changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
+  signUp: (email: string, password: string, role: string, username: string) => Promise<boolean>;
+}
+
+interface LoginCredentials {
+  username: string;
+  password: string;
+  role: 'admin' | 'kitchen' | 'rider';
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Fetch user profile from profiles table
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data: profileData, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return null;
+      }
+
+      return profileData;
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      return null;
+    }
+  };
 
   // Check for existing authentication on app load
   useEffect(() => {
-    const checkAuth = async () => {
+    const initializeAuth = async () => {
       try {
-        const response = await apiClient.verifyToken();
-        if (response.valid && response.user) {
-          setUser(response.user);
+        // Get initial session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          const profileData = await fetchProfile(session.user.id);
+          setUser({ ...session.user, profile: profileData });
+          setProfile(profileData);
         }
       } catch (error) {
-        console.log('No valid session found');
+        console.error('Error initializing auth:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    checkAuth();
+    initializeAuth();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          const profileData = await fetchProfile(session.user.id);
+          setUser({ ...session.user, profile: profileData });
+          setProfile(profileData);
+        } else {
+          setUser(null);
+          setProfile(null);
+        }
+        setLoading(false);
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (credentials: LoginCredentials): Promise<boolean> => {
+  const signUp = async (email: string, password: string, role: string, username: string): Promise<boolean> => {
     try {
-      const response = await apiClient.login(credentials);
-      if (response.success && response.user) {
-        setUser(response.user);
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            role,
+            username
+          }
+        }
+      });
+
+      if (error) {
         toast({
-          title: "Login Successful",
-          description: `Welcome back, ${response.user.username}!`
+          title: "Sign Up Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      if (data.user) {
+        toast({
+          title: "Sign Up Successful",
+          description: "Please check your email to confirm your account"
         });
         return true;
       }
+
+      return false;
+    } catch (error) {
+      toast({
+        title: "Sign Up Failed",
+        description: error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
+  const login = async (credentials: LoginCredentials): Promise<boolean> => {
+    try {
+      // For login with username, we need to find the user's email first
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', credentials.username)
+        .eq('role', credentials.role)
+        .single();
+
+      if (profileError || !profiles) {
+        toast({
+          title: "Login Failed",
+          description: "Invalid username or role",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      // Get the user's email from auth.users
+      const { data: { user: authUser }, error: userError } = await supabase.auth.admin.getUserById(profiles.id);
+      
+      if (userError || !authUser?.email) {
+        toast({
+          title: "Login Failed", 
+          description: "User not found",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      // Sign in with email and password
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: authUser.email,
+        password: credentials.password
+      });
+
+      if (error) {
+        toast({
+          title: "Login Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      if (data.user) {
+        const profileData = await fetchProfile(data.user.id);
+        if (profileData?.role !== credentials.role) {
+          await supabase.auth.signOut();
+          toast({
+            title: "Login Failed",
+            description: "Invalid role for this portal",
+            variant: "destructive"
+          });
+          return false;
+        }
+
+        toast({
+          title: "Login Successful",
+          description: `Welcome back, ${profileData?.username || 'User'}!`
+        });
+        return true;
+      }
+
       return false;
     } catch (error) {
       toast({
@@ -59,49 +215,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async (): Promise<void> => {
     try {
-      await apiClient.logout();
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Logout error:', error);
+      }
+      
       setUser(null);
+      setProfile(null);
+      
       toast({
         title: "Logged Out",
         description: "You have been successfully logged out"
       });
     } catch (error) {
       console.error('Logout error:', error);
-      // Clear user state even if API call fails
       setUser(null);
-    }
-  };
-
-  const changePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
-    try {
-      const response = await apiClient.changePassword(currentPassword, newPassword);
-      if (response.success) {
-        toast({
-          title: "Password Changed",
-          description: response.message
-        });
-        // Force logout after password change
-        await logout();
-        return true;
-      }
-      return false;
-    } catch (error) {
-      toast({
-        title: "Password Change Failed",
-        description: error instanceof Error ? error.message : "Failed to change password",
-        variant: "destructive"
-      });
-      return false;
+      setProfile(null);
     }
   };
 
   return (
     <AuthContext.Provider value={{
       user,
+      profile,
       loading,
       login,
       logout,
-      changePassword
+      signUp
     }}>
       {children}
     </AuthContext.Provider>

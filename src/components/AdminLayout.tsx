@@ -1,3 +1,4 @@
+
 import { Outlet, Navigate, Link } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarProvider, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from "@/components/ui/sidebar";
 import { 
@@ -9,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 
 const AdminLayout = () => {
-  const { user, logout, loading } = useAuth();
+  const { profile, logout, loading } = useAuth();
   
   if (loading) {
     return (
@@ -19,7 +20,7 @@ const AdminLayout = () => {
     );
   }
   
-  if (!user || user.role !== 'admin') {
+  if (!profile || profile.role !== 'admin') {
     return <Navigate to="/admin/login" replace />;
   }
 
@@ -187,7 +188,7 @@ const AdminLayout = () => {
             </SidebarContent>
             <div className="mt-auto p-4 border-t border-sidebar-border bg-white">
               <div className="text-sm text-gray-600 mb-2">
-                Logged in as: <strong>{user.username}</strong>
+                Logged in as: <strong>{profile.username}</strong>
               </div>
               <Button 
                 variant="outline" 

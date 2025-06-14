@@ -240,6 +240,30 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          role: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          role: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
       sub_categories: {
         Row: {
           created_at: string
@@ -274,71 +298,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      user_sessions: {
-        Row: {
-          created_at: string | null
-          expires_at: string
-          id: number
-          session_token: string
-          user_id: number | null
-        }
-        Insert: {
-          created_at?: string | null
-          expires_at: string
-          id?: number
-          session_token: string
-          user_id?: number | null
-        }
-        Update: {
-          created_at?: string | null
-          expires_at?: string
-          id?: number
-          session_token?: string
-          user_id?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      users: {
-        Row: {
-          created_at: string | null
-          email: string
-          id: number
-          is_active: boolean | null
-          password_hash: string
-          role: string
-          updated_at: string | null
-          username: string
-        }
-        Insert: {
-          created_at?: string | null
-          email: string
-          id?: number
-          is_active?: boolean | null
-          password_hash: string
-          role: string
-          updated_at?: string | null
-          username: string
-        }
-        Update: {
-          created_at?: string | null
-          email?: string
-          id?: number
-          is_active?: boolean | null
-          password_hash?: string
-          role?: string
-          updated_at?: string | null
-          username?: string
-        }
-        Relationships: []
       }
       weekly_menu: {
         Row: {

@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 
 const RiderLayout = () => {
-  const { user, logout, loading } = useAuth();
+  const { profile, logout, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -17,7 +17,7 @@ const RiderLayout = () => {
     );
   }
 
-  if (!user || user.role !== 'rider') {
+  if (!profile || profile.role !== 'rider') {
     return <Navigate to="/rider/login" replace />;
   }
 
@@ -38,7 +38,7 @@ const RiderLayout = () => {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <User className="h-4 w-4 text-gray-500" />
-              <span className="text-sm text-gray-700">{user.username}</span>
+              <span className="text-sm text-gray-700">{profile.username}</span>
             </div>
             <Button 
               variant="outline" 
