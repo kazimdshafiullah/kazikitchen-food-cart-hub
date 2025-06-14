@@ -306,7 +306,6 @@ export type Database = {
         Row: {
           created_at: string
           current_stock: number
-          day_of_week: number
           description: string | null
           id: string
           image_url: string | null
@@ -319,12 +318,10 @@ export type Database = {
           stock_limit: number
           sub_category_id: string
           updated_at: string
-          week_start_date: string
         }
         Insert: {
           created_at?: string
           current_stock?: number
-          day_of_week: number
           description?: string | null
           id?: string
           image_url?: string | null
@@ -337,12 +334,10 @@ export type Database = {
           stock_limit?: number
           sub_category_id: string
           updated_at?: string
-          week_start_date: string
         }
         Update: {
           created_at?: string
           current_stock?: number
-          day_of_week?: number
           description?: string | null
           id?: string
           image_url?: string | null
@@ -355,7 +350,6 @@ export type Database = {
           stock_limit?: number
           sub_category_id?: string
           updated_at?: string
-          week_start_date?: string
         }
         Relationships: [
           {
@@ -384,7 +378,6 @@ export type Database = {
       weekly_order_items: {
         Row: {
           created_at: string
-          day_of_week: number
           id: string
           price: number
           quantity: number
@@ -393,7 +386,6 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          day_of_week: number
           id?: string
           price: number
           quantity?: number
@@ -402,7 +394,6 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          day_of_week?: number
           id?: string
           price?: number
           quantity?: number
@@ -441,7 +432,6 @@ export type Database = {
           sub_category_id: string
           total_amount: number
           updated_at: string
-          week_start_date: string
         }
         Insert: {
           created_at?: string
@@ -459,7 +449,6 @@ export type Database = {
           sub_category_id: string
           total_amount: number
           updated_at?: string
-          week_start_date: string
         }
         Update: {
           created_at?: string
@@ -477,7 +466,6 @@ export type Database = {
           sub_category_id?: string
           total_amount?: number
           updated_at?: string
-          week_start_date?: string
         }
         Relationships: [
           {

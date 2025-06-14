@@ -5,21 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, Users, Star, Utensils, Crown, Heart } from "lucide-react";
+import { Calendar, Clock, Star, Utensils, Crown, Heart } from "lucide-react";
 import { 
   useMainCategories, 
   useSubCategories, 
   useMealTypes,
   useWeeklyMenuByDate,
   getDayName,
-  isOrderingAllowedForDate,
-  getWeekdayDates
+  getAvailableOrderingDates
 } from "@/hooks/useWeeklyMenu";
 
 const WeekendMenu = () => {
   const [activeTab, setActiveTab] = useState("school-tiffin");
   const [activeMealType, setActiveMealType] = useState("Regular");
-  const [activeOfficeCategory, setActiveOfficeCategory] = useState("regular");
+  const [activeSubCategory, setActiveSubCategory] = useState("breakfast");
 
   const { data: mainCategories } = useMainCategories();
   const { data: mealTypes } = useMealTypes();
@@ -31,18 +30,42 @@ const WeekendMenu = () => {
   const { data: schoolTiffinSubCategories } = useSubCategories(schoolTiffinCategory?.id);
   const { data: officeFoodSubCategories } = useSubCategories(officeFoodCategory?.id);
 
-  // Get available dates for next 14 days (weekdays only)
-  const availableDates = useMemo(() => {
-    const today = new Date();
-    return getWeekdayDates(today, 10); // Get next 10 weekdays
-  }, []);
+  // Get current meal type ID
+  const currentMealType = mealTypes?.find(mt => mt.name === activeMealType);
 
-  // Sample menu data for School Tiffin based on meal types
-  const getSchoolTiffinMenuForDate = (date: Date, mealType: string) => {
+  // Get current subcategory for School Tiffin (always Breakfast)
+  const schoolBreakfastSubCategory = schoolTiffinSubCategories?.find(sub => sub.name === 'Breakfast');
+
+  // Get available dates for School Tiffin
+  const availableDates = useMemo(() => {
+    if (!schoolTiffinCategory || !schoolBreakfastSubCategory) return [];
+    return getAvailableOrderingDates(schoolTiffinCategory, schoolBreakfastSubCategory);
+  }, [schoolTiffinCategory, schoolBreakfastSubCategory]);
+
+  const getMealTypeIcon = (mealType: string) => {
+    switch (mealType) {
+      case 'Regular': return <Utensils className="h-4 w-4" />;
+      case 'Diet': return <Heart className="h-4 w-4" />;
+      case 'Premium': return <Crown className="h-4 w-4" />;
+      default: return null;
+    }
+  };
+
+  const getMealTypeColor = (mealType: string) => {
+    switch (mealType) {
+      case 'Regular': return 'bg-blue-500';
+      case 'Diet': return 'bg-green-500';
+      case 'Premium': return 'bg-purple-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
+  // Sample menu data generator based on date and meal type
+  const getMenuItemForDate = (date: Date, mealType: string) => {
     const dayOfWeek = date.getDay();
     const dayName = getDayName(dayOfWeek);
     
-    // Sample items based on meal type
+    // Sample items based on meal type and day
     const menuItems: Record<string, any> = {
       'Regular': {
         0: { item: "Egg Roll", price: 45, description: "Delicious egg roll with fresh vegetables" },
@@ -78,33 +101,15 @@ const WeekendMenu = () => {
       item: menuItem.item,
       price: menuItem.price,
       description: menuItem.description,
-      available: schoolTiffinCategory ? isOrderingAllowedForDate(schoolTiffinCategory, date) : false,
-      deadline: "Order by 10:00 PM the day before",
+      available: true, // Will be determined by the dates array
       mealType: mealType,
-      subCategory: schoolTiffinSubCategories?.[0] // Use the Breakfast subcategory
+      subCategory: schoolBreakfastSubCategory,
+      dateString: date.toISOString().split('T')[0]
     };
   };
 
-  const getMealTypeIcon = (mealType: string) => {
-    switch (mealType) {
-      case 'Regular': return <Utensils className="h-4 w-4" />;
-      case 'Diet': return <Heart className="h-4 w-4" />;
-      case 'Premium': return <Crown className="h-4 w-4" />;
-      default: return null;
-    }
-  };
-
-  const getMealTypeColor = (mealType: string) => {
-    switch (mealType) {
-      case 'Regular': return 'bg-blue-500';
-      case 'Diet': return 'bg-green-500';
-      case 'Premium': return 'bg-purple-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const MenuCard = ({ item, type = "school" }: { item: any, type?: string }) => {
-    const isAvailable = item.available;
+  const MenuCard = ({ item, dateInfo }: { item: any, dateInfo: any }) => {
+    const isAvailable = dateInfo.canOrder;
     
     return (
       <Card className={`group transition-all duration-300 border ${isAvailable ? 'border-amber-200 hover:border-amber-400 hover:shadow-lg' : 'border-gray-200 opacity-75'}`}>
@@ -116,12 +121,10 @@ const WeekendMenu = () => {
             <Badge className={`absolute top-2 left-2 ${getMealTypeColor(item.mealType)} text-white`}>
               {item.day}
             </Badge>
-            {item.mealType && (
-              <Badge className={`absolute top-2 right-2 ${getMealTypeColor(item.mealType)} text-white flex items-center gap-1`}>
-                {getMealTypeIcon(item.mealType)}
-                {item.mealType}
-              </Badge>
-            )}
+            <Badge className={`absolute top-2 right-2 ${getMealTypeColor(item.mealType)} text-white flex items-center gap-1`}>
+              {getMealTypeIcon(item.mealType)}
+              {item.mealType}
+            </Badge>
             {isAvailable ? (
               <Badge className="absolute bottom-2 right-2 bg-green-500 text-white">
                 Available
@@ -136,13 +139,9 @@ const WeekendMenu = () => {
         <CardContent className="p-4">
           <CardTitle className="text-lg text-amber-800 mb-2">{item.item}</CardTitle>
           <p className="text-amber-600 text-sm mb-3">{item.description}</p>
-          
-          {type === "school" && item.deadline && (
-            <div className="flex items-center text-xs text-amber-600 mb-3">
-              <Clock className="w-3 h-3 mr-1" />
-              {item.deadline}
-            </div>
-          )}
+          <p className="text-xs text-amber-500 mb-3">
+            {dateInfo.date.toLocaleDateString('en-BD')}
+          </p>
           
           <div className="flex items-center justify-between">
             <span className="text-xl font-bold text-amber-800">৳{item.price}</span>
@@ -153,7 +152,7 @@ const WeekendMenu = () => {
               disabled={!isAvailable}
             >
               {isAvailable ? (
-                <Link to={`/weekend-order/${type}/${item.day.toLowerCase()}/${activeMealType}/${item.subCategory?.id || 'default'}`}>
+                <Link to={`/weekend-order/school/${item.dateString}/${activeMealType}/${item.subCategory?.id || 'default'}`}>
                   Order Now
                 </Link>
               ) : (
@@ -166,23 +165,14 @@ const WeekendMenu = () => {
     );
   };
 
-  // Generate School Tiffin menu items for each meal type and date
+  // Generate School Tiffin menu items for available dates
   const getSchoolTiffinMenuItems = () => {
-    if (!mealTypes) return [];
-    
     const menuItems: any[] = [];
     
-    // Get relevant meal types (Regular, Diet, Premium)
-    const relevantMealTypes = mealTypes.filter(mt => ['Regular', 'Diet', 'Premium'].includes(mt.name));
-    
-    relevantMealTypes.forEach(mealType => {
-      if (mealType.name === activeMealType) { // Only show items for active meal type
-        availableDates.slice(0, 5).forEach(date => { // Show first 5 weekdays
-          const menuItem = getSchoolTiffinMenuForDate(date, mealType.name);
-          if (menuItem) {
-            menuItems.push(menuItem);
-          }
-        });
+    availableDates.slice(0, 10).forEach(dateInfo => { // Show first 10 available dates
+      const menuItem = getMenuItemForDate(dateInfo.date, activeMealType);
+      if (menuItem) {
+        menuItems.push({ menuItem, dateInfo });
       }
     });
     
@@ -198,12 +188,15 @@ const WeekendMenu = () => {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-amber-800 mb-4">Weekend Order Menu</h1>
           <p className="text-xl text-amber-700 max-w-2xl mx-auto">
-            Plan your weekly meals with our School Tiffin and Office Food services
+            Plan your daily meals with our School Tiffin and Office Food services
           </p>
           <div className="mt-4 p-4 bg-amber-100 rounded-lg">
             <p className="text-amber-800 font-medium">
               <Clock className="inline w-4 h-4 mr-2" />
-              School Tiffin: Order by 10:00 PM the day before | Office Food: Order by 9:30 AM same day
+              School Tiffin: Order by 10:00 PM the day before | Office Food Breakfast: Order by 10:00 PM the day before | Office Food Lunch: Order by 9:30 AM same day
+            </p>
+            <p className="text-amber-700 text-sm mt-2">
+              Available days: Sunday to Thursday (Weekends excluded)
             </p>
           </div>
         </div>
@@ -246,8 +239,8 @@ const WeekendMenu = () => {
             
             {schoolTiffinMenuItems.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {schoolTiffinMenuItems.map((item, index) => (
-                  <MenuCard key={`${item.mealType}-${item.dayNumber}-${index}`} item={item} type="school" />
+                {schoolTiffinMenuItems.map(({ menuItem, dateInfo }, index) => (
+                  <MenuCard key={`${menuItem.mealType}-${menuItem.dateString}-${index}`} item={menuItem} dateInfo={dateInfo} />
                 ))}
               </div>
             ) : (
@@ -260,8 +253,46 @@ const WeekendMenu = () => {
           <TabsContent value="office-food">
             <div className="mb-6 text-center">
               <h2 className="text-2xl font-bold text-amber-800 mb-2">Office Food Menu</h2>
-              <p className="text-amber-600">Professional catering for offices - Order by 9:30 AM same day</p>
-              <p className="text-amber-500 mt-2">Office Food menu integration coming soon...</p>
+              <p className="text-amber-600">Professional catering for offices</p>
+              
+              {/* Sub Category Selection for Office Food */}
+              <div className="mt-4 flex justify-center gap-4 mb-4">
+                <Button
+                  variant={activeSubCategory === "breakfast" ? "default" : "outline"}
+                  onClick={() => setActiveSubCategory("breakfast")}
+                  className={activeSubCategory === "breakfast" ? "bg-amber-500 text-white" : "border-amber-300 text-amber-700 hover:bg-amber-50"}
+                >
+                  Breakfast (Order by 10 PM day before)
+                </Button>
+                <Button
+                  variant={activeSubCategory === "lunch" ? "default" : "outline"}
+                  onClick={() => setActiveSubCategory("lunch")}
+                  className={activeSubCategory === "lunch" ? "bg-amber-500 text-white" : "border-amber-300 text-amber-700 hover:bg-amber-50"}
+                >
+                  Lunch (Order by 9:30 AM same day)
+                </Button>
+              </div>
+
+              {/* Meal Type Selection */}
+              <div className="flex justify-center gap-4">
+                {mealTypes?.filter(mt => ['Regular', 'Diet', 'Premium'].includes(mt.name)).map(mealType => (
+                  <Button
+                    key={mealType.id}
+                    variant={activeMealType === mealType.name ? "default" : "outline"}
+                    onClick={() => setActiveMealType(mealType.name)}
+                    className={`flex items-center gap-2 ${
+                      activeMealType === mealType.name 
+                        ? `${getMealTypeColor(mealType.name)} text-white` 
+                        : `border-amber-300 text-amber-700 hover:bg-amber-50`
+                    }`}
+                  >
+                    {getMealTypeIcon(mealType.name)}
+                    {mealType.name}
+                  </Button>
+                ))}
+              </div>
+              
+              <p className="text-amber-500 mt-4">Office Food menu integration coming soon...</p>
             </div>
           </TabsContent>
         </Tabs>

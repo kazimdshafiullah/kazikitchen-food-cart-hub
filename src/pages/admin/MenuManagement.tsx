@@ -38,17 +38,17 @@ const MenuManagement = () => {
   const { data: allSubCategories } = useSubCategories();
   const { data: mealTypes } = useMealTypes();
 
-  // Get available dates (exclude weekends)
+  // Get available dates (exclude weekends - Friday and Saturday)
   const getAvailableDates = () => {
     const dates = [];
     const today = new Date();
     
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 60; i++) { // Show next 60 days
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       const dayOfWeek = date.getDay();
       
-      // Only include Sunday (0) to Thursday (4)
+      // Only include Sunday (0) to Thursday (4), exclude Friday (5) and Saturday (6)
       if (dayOfWeek >= 0 && dayOfWeek <= 4) {
         dates.push(date);
       }
@@ -116,13 +116,26 @@ const MenuManagement = () => {
     }
   };
 
+  const isDateDisabled = (date: Date) => {
+    const dayOfWeek = date.getDay();
+    // Disable Friday (5) and Saturday (6) - weekends
+    return dayOfWeek === 5 || dayOfWeek === 6;
+  };
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Menu Management</h1>
         <p className="text-gray-600">
-          Manage menu items with date-based scheduling for all categories
+          Manage menu items with specific dates - Date-based system for flexible menu planning
         </p>
+        <div className="mt-2 p-3 bg-blue-50 rounded-lg">
+          <p className="text-blue-800 text-sm">
+            <strong>Note:</strong> This system manages menu by specific dates rather than weekly patterns. 
+            You can upload menus for individual dates to accommodate government holidays and special events.
+            Available days: Sunday to Thursday (Weekends are excluded).
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -134,7 +147,7 @@ const MenuManagement = () => {
               Add New Menu Item
             </CardTitle>
             <CardDescription>
-              Create menu items with specific dates and pricing
+              Create menu items for specific dates with subcategory and meal type
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -181,6 +194,9 @@ const MenuManagement = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-gray-500 mt-1">
+                  School Tiffin: Breakfast | Office Food: Breakfast, Lunch
+                </p>
               </div>
             )}
 
@@ -204,6 +220,9 @@ const MenuManagement = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Available for all categories: Regular, Diet, Premium
+                </p>
               </div>
             )}
 
@@ -219,7 +238,7 @@ const MenuManagement = () => {
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {selectedDate ? format(selectedDate, "PPP") : "Select date"}
+                    {selectedDate ? format(selectedDate, "PPP") : "Select specific date"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -227,16 +246,13 @@ const MenuManagement = () => {
                     mode="single"
                     selected={selectedDate}
                     onSelect={handleDateSelect}
-                    disabled={(date) => {
-                      const dayOfWeek = date.getDay();
-                      return dayOfWeek === 5 || dayOfWeek === 6; // Disable Friday and Saturday
-                    }}
+                    disabled={isDateDisabled}
                     initialFocus
                   />
                 </PopoverContent>
               </Popover>
               <p className="text-xs text-gray-500 mt-1">
-                Only Sunday to Thursday available (weekends excluded)
+                Only Sunday to Thursday available (Weekends excluded). Plan specific dates for holidays.
               </p>
             </div>
 
@@ -334,7 +350,7 @@ const MenuManagement = () => {
           <CardHeader>
             <CardTitle>Existing Menu Items</CardTitle>
             <CardDescription>
-              View and manage current menu items by date
+              View and manage current menu items by specific dates
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -406,9 +422,14 @@ const MenuManagement = () => {
                 </div>
               </div>
               
-              <p className="text-center text-gray-500 py-8">
-                Create your first menu item above. All categories now require subcategory and meal type selection.
-              </p>
+              <div className="text-center py-8 bg-gray-50 rounded-lg">
+                <p className="text-gray-500 mb-2">
+                  Create your first date-specific menu item above.
+                </p>
+                <p className="text-xs text-gray-400">
+                  All menu items now require category, subcategory, meal type, and specific date.
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>

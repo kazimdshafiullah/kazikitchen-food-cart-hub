@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -17,7 +18,6 @@ export interface SubCategory {
   main_category_id: string;
   name: string;
   description: string | null;
-  food_plan: 'Regular' | 'Diet' | 'Premium' | null;
   created_at: string;
 }
 
@@ -33,7 +33,6 @@ export interface WeeklyMenuItem {
   main_category_id: string;
   sub_category_id: string;
   meal_type_id: string;
-  day_of_week: number;
   specific_date: string;
   item_name: string;
   description: string | null;
@@ -41,7 +40,6 @@ export interface WeeklyMenuItem {
   stock_limit: number;
   current_stock: number;
   is_active: boolean;
-  week_start_date: string;
   image_url: string | null;
   created_at: string;
   updated_at: string;
@@ -57,7 +55,6 @@ export interface WeeklyOrder {
   main_category_id: string;
   sub_category_id: string;
   meal_type_id: string;
-  week_start_date: string;
   total_amount: number;
   status: string;
   created_at: string;
@@ -68,7 +65,6 @@ export interface WeeklyOrderItem {
   id: string;
   weekly_order_id: string;
   weekly_menu_id: string;
-  day_of_week: number;
   quantity: number;
   price: number;
   created_at: string;
@@ -161,31 +157,33 @@ export const useWeeklyMenuByDate = (
   });
 };
 
-// Hook to get weekly menu items (legacy - keep for backward compatibility)
-export const useWeeklyMenu = (
+// Hook to get menu items for multiple dates
+export const useWeeklyMenuByDateRange = (
   mainCategoryId?: string,
   subCategoryId?: string,
   mealTypeId?: string,
-  weekStartDate?: string
+  startDate?: string,
+  endDate?: string
 ) => {
   return useQuery({
-    queryKey: ["weeklyMenu", mainCategoryId, subCategoryId, mealTypeId, weekStartDate],
+    queryKey: ["weeklyMenuByDateRange", mainCategoryId, subCategoryId, mealTypeId, startDate, endDate],
     queryFn: async () => {
       let query = supabase.from("weekly_menu").select("*");
 
       if (mainCategoryId) query = query.eq("main_category_id", mainCategoryId);
       if (subCategoryId) query = query.eq("sub_category_id", subCategoryId);
       if (mealTypeId) query = query.eq("meal_type_id", mealTypeId);
-      if (weekStartDate) query = query.eq("week_start_date", weekStartDate);
+      if (startDate) query = query.gte("specific_date", startDate);
+      if (endDate) query = query.lte("specific_date", endDate);
 
       const { data, error } = await query
         .eq("is_active", true)
-        .order("day_of_week");
+        .order("specific_date");
 
       if (error) throw error;
       return data as WeeklyMenuItem[];
     },
-    enabled: !!(mainCategoryId && subCategoryId && mealTypeId && weekStartDate),
+    enabled: !!(mainCategoryId && subCategoryId && mealTypeId && startDate),
   });
 };
 
@@ -219,11 +217,9 @@ export const useCreateWeeklyOrder = () => {
       main_category_id: string;
       sub_category_id: string;
       meal_type_id: string;
-      week_start_date: string;
       total_amount: number;
       order_items: {
         weekly_menu_id: string;
-        day_of_week: number;
         quantity: number;
         price: number;
       }[];
@@ -277,31 +273,14 @@ export const useCreateWeeklyOrder = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["weeklyMenu"] });
       queryClient.invalidateQueries({ queryKey: ["weeklyMenuByDate"] });
+      queryClient.invalidateQueries({ queryKey: ["weeklyMenuByDateRange"] });
       queryClient.invalidateQueries({ queryKey: ["weeklyOrders"] });
     },
   });
 };
 
-// Utility function to get current week start date (Sunday)
-export const getCurrentWeekStart = () => {
-  const today = new Date();
-  const dayOfWeek = today.getDay();
-  const startDate = new Date(today);
-  startDate.setDate(today.getDate() - dayOfWeek);
-  return startDate.toISOString().split('T')[0];
-};
-
-// Utility function to get next week start date
-export const getNextWeekStart = () => {
-  const today = new Date();
-  const dayOfWeek = today.getDay();
-  const startDate = new Date(today);
-  startDate.setDate(today.getDate() - dayOfWeek + 7); // Add 7 days for next week
-  return startDate.toISOString().split('T')[0];
-};
-
 // Utility function to check if ordering is allowed for a specific date
-export const isOrderingAllowedForDate = (mainCategory: MainCategory, targetDate: Date) => {
+export const isOrderingAllowedForDate = (mainCategory: MainCategory, subCategory: SubCategory, targetDate: Date) => {
   const now = new Date();
   const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
   const cutoffTime = mainCategory.order_cutoff_time.slice(0, 5);
@@ -309,7 +288,7 @@ export const isOrderingAllowedForDate = (mainCategory: MainCategory, targetDate:
   // Get the date difference
   const dayDifference = Math.floor((targetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   
-  if (mainCategory.advance_days === 1) {
+  if (mainCategory.name === 'School Tiffin') {
     // School Tiffin - can order until 10 PM the day before
     if (dayDifference === 1) {
       return currentTime <= cutoffTime;
@@ -317,30 +296,27 @@ export const isOrderingAllowedForDate = (mainCategory: MainCategory, targetDate:
       return true;
     }
     return false;
-  } else {
-    // Office Food - can order until 9:30 AM same day
-    if (dayDifference === 0) {
-      return currentTime <= cutoffTime;
-    } else if (dayDifference > 0) {
-      return true;
+  } else if (mainCategory.name === 'Office Food') {
+    if (subCategory.name === 'Breakfast') {
+      // Office Food Breakfast - can order until 10 PM the day before (same as School Tiffin)
+      if (dayDifference === 1) {
+        return currentTime <= '22:00';
+      } else if (dayDifference > 1) {
+        return true;
+      }
+      return false;
+    } else if (subCategory.name === 'Lunch') {
+      // Office Food Lunch - can order until 9:30 AM same day
+      if (dayDifference === 0) {
+        return currentTime <= cutoffTime;
+      } else if (dayDifference > 0) {
+        return true;
+      }
+      return false;
     }
-    return false;
   }
-};
-
-// Utility function to check if ordering is allowed (legacy)
-export const isOrderingAllowed = (mainCategory: MainCategory) => {
-  const now = new Date();
-  const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
-  const cutoffTime = mainCategory.order_cutoff_time.slice(0, 5);
   
-  if (mainCategory.advance_days === 1) {
-    // School Tiffin - can order until 10 PM for next day
-    return currentTime <= cutoffTime;
-  } else {
-    // Office Food - can order until 9:30 AM same day
-    return currentTime <= cutoffTime;
-  }
+  return false;
 };
 
 // Utility function to get day names
@@ -363,11 +339,6 @@ export const getAvailableLocations = () => {
   ] as const;
 };
 
-// Utility function to get food plans
-export const getFoodPlans = () => {
-  return ['Regular', 'Diet', 'Premium'] as const;
-};
-
 // Utility function to get weekday dates (excluding weekends)
 export const getWeekdayDates = (startDate: Date, numberOfDays: number = 14) => {
   const dates = [];
@@ -382,6 +353,35 @@ export const getWeekdayDates = (startDate: Date, numberOfDays: number = 14) => {
       addedDays++;
     }
     currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
+  return dates;
+};
+
+// Utility function to get available ordering dates based on category and subcategory
+export const getAvailableOrderingDates = (mainCategory: MainCategory, subCategory: SubCategory) => {
+  const dates = [];
+  const today = new Date();
+  
+  // Get next 30 days to check
+  for (let i = 0; i < 30; i++) {
+    const checkDate = new Date(today);
+    checkDate.setDate(today.getDate() + i);
+    const dayOfWeek = checkDate.getDay();
+    
+    // Only include Sunday (0) to Thursday (4), skip Friday (5) and Saturday (6)
+    if (dayOfWeek >= 0 && dayOfWeek <= 4) {
+      const canOrder = isOrderingAllowedForDate(mainCategory, subCategory, checkDate);
+      
+      dates.push({
+        date: checkDate,
+        dateString: checkDate.toISOString().split('T')[0],
+        dayName: getDayName(dayOfWeek),
+        canOrder,
+        isToday: i === 0,
+        isTomorrow: i === 1
+      });
+    }
   }
   
   return dates;
