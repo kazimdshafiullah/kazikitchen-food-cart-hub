@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -57,6 +56,51 @@ const salesVsTargetData = [
   { name: "Jun", sales: 3800, target: 4000 },
 ];
 
+// Kitchen performance data
+const kitchenPerformanceData = [
+  { name: "Kitchen A", ordersCompleted: 145, avgPrepTime: 18, efficiency: 94 },
+  { name: "Kitchen B", ordersCompleted: 132, avgPrepTime: 22, efficiency: 87 },
+  { name: "Kitchen C", ordersCompleted: 168, avgPrepTime: 16, efficiency: 96 },
+  { name: "Kitchen D", ordersCompleted: 121, avgPrepTime: 25, efficiency: 82 },
+];
+
+const kitchenOrderTrends = [
+  { day: "Mon", orders: 45, completed: 43 },
+  { day: "Tue", orders: 52, completed: 50 },
+  { day: "Wed", orders: 48, completed: 46 },
+  { day: "Thu", orders: 56, completed: 54 },
+  { day: "Fri", orders: 62, completed: 60 },
+  { day: "Sat", orders: 71, completed: 68 },
+  { day: "Sun", orders: 58, completed: 55 },
+];
+
+// Rider performance data
+const riderPerformanceData = [
+  { name: "Rider 1", deliveriesCompleted: 89, avgDeliveryTime: 28, rating: 4.8 },
+  { name: "Rider 2", deliveriesCompleted: 76, avgDeliveryTime: 32, rating: 4.6 },
+  { name: "Rider 3", deliveriesCompleted: 102, avgDeliveryTime: 25, rating: 4.9 },
+  { name: "Rider 4", deliveriesCompleted: 68, avgDeliveryTime: 35, rating: 4.4 },
+  { name: "Rider 5", deliveriesCompleted: 85, avgDeliveryTime: 30, rating: 4.7 },
+];
+
+const riderDeliveryTrends = [
+  { day: "Mon", assigned: 42, completed: 40, failed: 2 },
+  { day: "Tue", assigned: 48, completed: 46, failed: 2 },
+  { day: "Wed", assigned: 45, completed: 43, failed: 2 },
+  { day: "Thu", assigned: 53, completed: 51, failed: 2 },
+  { day: "Fri", assigned: 58, completed: 55, failed: 3 },
+  { day: "Sat", assigned: 65, completed: 62, failed: 3 },
+  { day: "Sun", assigned: 52, completed: 49, failed: 3 },
+];
+
+const riderLocationData = [
+  { area: "Dhaka Central", riders: 8, avgDeliveries: 12 },
+  { area: "Gulshan", riders: 5, avgDeliveries: 15 },
+  { area: "Dhanmondi", riders: 6, avgDeliveries: 14 },
+  { area: "Uttara", riders: 4, avgDeliveries: 11 },
+  { area: "Mirpur", riders: 7, avgDeliveries: 13 },
+];
+
 const Reports = () => {
   // Change the type here to DateRange to match what DatePickerWithRange expects
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -101,6 +145,8 @@ const Reports = () => {
           <TabsTrigger value="products">Products</TabsTrigger>
           <TabsTrigger value="expenses">Expenses</TabsTrigger>
           <TabsTrigger value="customers">Customers</TabsTrigger>
+          <TabsTrigger value="kitchen">Kitchen</TabsTrigger>
+          <TabsTrigger value="riders">Riders</TabsTrigger>
         </TabsList>
 
         <TabsContent value="sales" className="space-y-4">
@@ -350,6 +396,220 @@ const Reports = () => {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="kitchen" className="space-y-4">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Kitchen Performance</CardTitle>
+                <CardDescription>Individual kitchen efficiency metrics</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Kitchen</TableHead>
+                      <TableHead>Orders</TableHead>
+                      <TableHead>Avg Prep Time</TableHead>
+                      <TableHead>Efficiency</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {kitchenPerformanceData.map((kitchen) => (
+                      <TableRow key={kitchen.name}>
+                        <TableCell className="font-medium">{kitchen.name}</TableCell>
+                        <TableCell>{kitchen.ordersCompleted}</TableCell>
+                        <TableCell>{kitchen.avgPrepTime} min</TableCell>
+                        <TableCell className={kitchen.efficiency >= 90 ? "text-emerald-500" : "text-amber-500"}>
+                          {kitchen.efficiency}%
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Daily Order Trends</CardTitle>
+                <CardDescription>Orders received vs completed by day</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <BarChart
+                    width={400}
+                    height={300}
+                    data={kitchenOrderTrends}
+                    margin={{
+                      top: 5,
+                      right: 30,
+                      left: 20,
+                      bottom: 5,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="day" />
+                    <YAxis />
+                    <RechartTooltip />
+                    <Legend />
+                    <Bar dataKey="orders" name="Received" fill="#3b82f6" />
+                    <Bar dataKey="completed" name="Completed" fill="#10b981" />
+                  </BarChart>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Kitchen Analytics Summary</CardTitle>
+              <CardDescription>Overall kitchen performance metrics</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">566</div>
+                  <div className="text-sm text-blue-600">Total Orders</div>
+                </div>
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">91%</div>
+                  <div className="text-sm text-green-600">Avg Efficiency</div>
+                </div>
+                <div className="text-center p-4 bg-amber-50 rounded-lg">
+                  <div className="text-2xl font-bold text-amber-600">20 min</div>
+                  <div className="text-sm text-amber-600">Avg Prep Time</div>
+                </div>
+                <div className="text-center p-4 bg-purple-50 rounded-lg">
+                  <div className="text-2xl font-bold text-purple-600">4</div>
+                  <div className="text-sm text-purple-600">Active Kitchens</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="riders" className="space-y-4">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Rider Performance</CardTitle>
+                <CardDescription>Individual rider delivery metrics</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Rider</TableHead>
+                      <TableHead>Deliveries</TableHead>
+                      <TableHead>Avg Time</TableHead>
+                      <TableHead>Rating</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {riderPerformanceData.map((rider) => (
+                      <TableRow key={rider.name}>
+                        <TableCell className="font-medium">{rider.name}</TableCell>
+                        <TableCell>{rider.deliveriesCompleted}</TableCell>
+                        <TableCell>{rider.avgDeliveryTime} min</TableCell>
+                        <TableCell className={rider.rating >= 4.7 ? "text-emerald-500" : "text-amber-500"}>
+                          ⭐ {rider.rating}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Delivery Success Rate</CardTitle>
+                <CardDescription>Daily delivery completion trends</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <BarChart
+                    width={400}
+                    height={300}
+                    data={riderDeliveryTrends}
+                    margin={{
+                      top: 5,
+                      right: 30,
+                      left: 20,
+                      bottom: 5,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="day" />
+                    <YAxis />
+                    <RechartTooltip />
+                    <Legend />
+                    <Bar dataKey="assigned" name="Assigned" fill="#6b7280" />
+                    <Bar dataKey="completed" name="Completed" fill="#10b981" />
+                    <Bar dataKey="failed" name="Failed" fill="#ef4444" />
+                  </BarChart>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Coverage Areas</CardTitle>
+                <CardDescription>Rider distribution by area</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Area</TableHead>
+                      <TableHead>Active Riders</TableHead>
+                      <TableHead>Avg Deliveries/Day</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {riderLocationData.map((area) => (
+                      <TableRow key={area.area}>
+                        <TableCell className="font-medium">{area.area}</TableCell>
+                        <TableCell>{area.riders}</TableCell>
+                        <TableCell>{area.avgDeliveries}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Rider Analytics Summary</CardTitle>
+                <CardDescription>Overall rider performance metrics</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">420</div>
+                    <div className="text-sm text-blue-600">Total Deliveries</div>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">94%</div>
+                    <div className="text-sm text-green-600">Success Rate</div>
+                  </div>
+                  <div className="text-center p-4 bg-amber-50 rounded-lg">
+                    <div className="text-2xl font-bold text-amber-600">30 min</div>
+                    <div className="text-sm text-amber-600">Avg Delivery Time</div>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600">4.7</div>
+                    <div className="text-sm text-purple-600">Avg Rating</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
