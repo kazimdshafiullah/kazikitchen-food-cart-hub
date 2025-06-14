@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,136 +19,115 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "@/components/ui/sonner";
-import { Search, Plus, UserPlus, Shield } from "lucide-react";
+import { Search, Plus, UserPlus, Key } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
-// Mock users for demonstration with expanded roles
-const mockUsers = [
-  { id: 1, name: "Admin User", email: "admin@kazikitchen.com", role: "admin", status: "active", lastLogin: "2025-05-20 09:15" },
-  { id: 2, name: "Manager", email: "manager@kazikitchen.com", role: "manager", status: "active", lastLogin: "2025-05-19 14:30" },
-  { id: 3, name: "Kitchen Staff", email: "kitchen@kazikitchen.com", role: "kitchen", status: "active", lastLogin: "2025-05-18 10:45" },
-  { id: 4, name: "Delivery Rider", email: "rider@kazikitchen.com", role: "rider", status: "active", lastLogin: "2025-05-18 08:20" },
-  { id: 5, name: "Chat Agent", email: "chat@kazikitchen.com", role: "live_chat", status: "active", lastLogin: "2025-05-17 16:30" },
-  { id: 6, name: "Marketing Staff", email: "marketing@kazikitchen.com", role: "staff", status: "inactive", lastLogin: "2025-05-10 16:20" }
-];
-
-// Define permissions for each feature area with expanded options
-const permissionAreas = {
-  orders: "Manage orders and invoices",
-  products: "Manage products and categories",
-  inventory: "Manage inventory",
-  marketing: "Access marketing tools",
-  offers: "Create and manage offers",
-  payments: "Process payments",
-  customers: "Access customer data",
-  design: "Edit website design",
-  expenses: "Track expenses",
-  reports: "View reports",
-  users: "Manage users",
-  kitchen_access: "Access kitchen portal",
-  rider_access: "Access rider portal",
-  live_chat_access: "Access live chat management",
-  kitchen_notifications: "Receive kitchen status notifications",
-  rider_notifications: "Receive rider status notifications"
-};
-
-// Default permissions by role with expanded roles
-const defaultPermissions = {
-  admin: Object.keys(permissionAreas),
-  manager: ["orders", "products", "inventory", "marketing", "offers", "customers", "expenses", "reports", "kitchen_notifications", "rider_notifications"],
-  kitchen: ["kitchen_access", "orders"],
-  rider: ["rider_access", "orders"],
-  live_chat: ["live_chat_access", "customers"],
-  staff: ["orders", "inventory"]
-};
+interface UserProfile {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+  can_create_users: boolean;
+  created_at: string;
+}
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [users, setUsers] = useState(mockUsers);
+  const [users, setUsers] = useState<UserProfile[]>([]);
   const [addUserOpen, setAddUserOpen] = useState(false);
-  const [permissionsOpen, setPermissionsOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const { profile, createUser, updatePassword } = useAuth();
   
-  // New user form state with expanded role options
+  // New user form state
   const [newUser, setNewUser] = useState({
-    name: "",
+    username: "",
     email: "",
-    role: "staff",
+    role: "kitchen",
     password: "",
     confirmPassword: ""
   });
   
-  // Permissions state
-  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+  // Password reset state
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  
+  // Load users on component mount
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching users:', error);
+        return;
+      }
+
+      setUsers(data || []);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
   
   const filteredUsers = users.filter(user => {
-    return user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    return user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
            user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
            user.role.toLowerCase().includes(searchTerm.toLowerCase());
   });
   
-  const handleAddUser = () => {
-    if (!newUser.name || !newUser.email || !newUser.role || !newUser.password) {
-      toast.error("Please fill in all required fields");
+  const handleAddUser = async () => {
+    if (!newUser.username || !newUser.email || !newUser.role || !newUser.password) {
       return;
     }
     
     if (newUser.password !== newUser.confirmPassword) {
-      toast.error("Passwords do not match");
       return;
     }
     
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(newUser.email)) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
-    
-    const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
-    const today = new Date().toLocaleString();
-    
-    setUsers([
-      ...users,
-      {
-        id: newId,
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role,
-        status: "active",
-        lastLogin: today
-      }
-    ]);
-    
-    setNewUser({
-      name: "",
-      email: "",
-      role: "staff",
-      password: "",
-      confirmPassword: ""
+    const success = await createUser({
+      username: newUser.username,
+      email: newUser.email,
+      role: newUser.role as 'admin' | 'kitchen' | 'rider' | 'manager',
+      password: newUser.password
     });
-    
-    setAddUserOpen(false);
-    toast.success("User added successfully");
+
+    if (success) {
+      setNewUser({
+        username: "",
+        email: "",
+        role: "kitchen",
+        password: "",
+        confirmPassword: ""
+      });
+      setAddUserOpen(false);
+      fetchUsers(); // Refresh the user list
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!selectedUser || !newPassword || newPassword !== confirmNewPassword) {
+      return;
+    }
+
+    const success = await updatePassword(selectedUser.id, newPassword);
+    if (success) {
+      setNewPassword("");
+      setConfirmNewPassword("");
+      setResetPasswordOpen(false);
+      setSelectedUser(null);
+    }
   };
   
-  const openPermissionsDialog = (user: any) => {
+  const openResetPasswordDialog = (user: UserProfile) => {
     setSelectedUser(user);
-    setSelectedPermissions(defaultPermissions[user.role as keyof typeof defaultPermissions] || []);
-    setPermissionsOpen(true);
-  };
-  
-  const handleSavePermissions = () => {
-    toast.success(`Permissions updated for ${selectedUser?.name}`);
-    setPermissionsOpen(false);
-  };
-  
-  const togglePermission = (permission: string) => {
-    setSelectedPermissions(current => 
-      current.includes(permission)
-        ? current.filter(p => p !== permission)
-        : [...current, permission]
-    );
+    setResetPasswordOpen(true);
   };
 
   const getRoleDisplayName = (role: string) => {
@@ -156,12 +135,22 @@ const UserManagement = () => {
       admin: "Admin",
       manager: "Manager", 
       kitchen: "Kitchen Staff",
-      rider: "Delivery Rider",
-      live_chat: "Live Chat Agent",
-      staff: "Staff"
+      rider: "Delivery Rider"
     };
     return roleNames[role as keyof typeof roleNames] || role;
   };
+
+  // Only show this page if user has permission to create users
+  if (!profile?.can_create_users) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h2>
+          <p className="text-gray-600">You don't have permission to manage users.</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
@@ -191,36 +180,29 @@ const UserManagement = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
+              <TableHead>Username</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Last Login</TableHead>
-              <TableHead className="text-right">Permissions</TableHead>
+              <TableHead>Created</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredUsers.map(user => (
               <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.name}</TableCell>
+                <TableCell className="font-medium">{user.username}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{getRoleDisplayName(user.role)}</TableCell>
-                <TableCell>
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    user.status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-                  }`}>
-                    {user.status}
-                  </span>
-                </TableCell>
-                <TableCell>{user.lastLogin}</TableCell>
+                <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => openPermissionsDialog(user)}
+                    onClick={() => openResetPasswordDialog(user)}
+                    disabled={user.id === profile?.id} // Can't reset own password
                   >
-                    <Shield className="h-4 w-4 mr-1" />
-                    Permissions
+                    <Key className="h-4 w-4 mr-1" />
+                    Reset Password
                   </Button>
                 </TableCell>
               </TableRow>
@@ -235,17 +217,17 @@ const UserManagement = () => {
           <DialogHeader>
             <DialogTitle>Add New User</DialogTitle>
             <DialogDescription>
-              Create a new user account with specific role and permissions.
+              Create a new user account with specific role.
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium">Full Name</label>
+              <label htmlFor="username" className="text-sm font-medium">Username</label>
               <Input 
-                id="name"
-                value={newUser.name}
-                onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+                id="username"
+                value={newUser.username}
+                onChange={(e) => setNewUser({...newUser, username: e.target.value})}
               />
             </div>
             
@@ -273,8 +255,6 @@ const UserManagement = () => {
                   <SelectItem value="manager">Manager</SelectItem>
                   <SelectItem value="kitchen">Kitchen Staff</SelectItem>
                   <SelectItem value="rider">Delivery Rider</SelectItem>
-                  <SelectItem value="live_chat">Live Chat Agent</SelectItem>
-                  <SelectItem value="staff">Staff</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -308,78 +288,36 @@ const UserManagement = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
-      {/* Permissions Dialog */}
-      <Dialog open={permissionsOpen} onOpenChange={setPermissionsOpen}>
-        <DialogContent className="sm:max-w-lg">
+
+      {/* Reset Password Dialog */}
+      <Dialog open={resetPasswordOpen} onOpenChange={setResetPasswordOpen}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>User Permissions</DialogTitle>
+            <DialogTitle>Reset Password</DialogTitle>
             <DialogDescription>
-              {selectedUser && `Set permissions for ${selectedUser.name} (${getRoleDisplayName(selectedUser.role)})`}
+              {selectedUser && `Reset password for ${selectedUser.username}`}
             </DialogDescription>
           </DialogHeader>
           
-          <div className="py-2 max-h-80 overflow-y-auto">
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-medium mb-3">Admin Panel Access</h4>
-                <div className="space-y-3 pl-2">
-                  {Object.entries(permissionAreas).filter(([key]) => 
-                    !key.includes('_access') && !key.includes('_notifications')
-                  ).map(([key, description]) => (
-                    <div key={key} className="flex items-center space-x-2">
-                      <Checkbox 
-                        id={`permission-${key}`} 
-                        checked={selectedPermissions.includes(key)}
-                        onCheckedChange={() => togglePermission(key)}
-                      />
-                      <label htmlFor={`permission-${key}`} className="text-sm leading-none">
-                        {description}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="font-medium mb-3">Portal Access</h4>
-                <div className="space-y-3 pl-2">
-                  {Object.entries(permissionAreas).filter(([key]) => 
-                    key.includes('_access')
-                  ).map(([key, description]) => (
-                    <div key={key} className="flex items-center space-x-2">
-                      <Checkbox 
-                        id={`permission-${key}`} 
-                        checked={selectedPermissions.includes(key)}
-                        onCheckedChange={() => togglePermission(key)}
-                      />
-                      <label htmlFor={`permission-${key}`} className="text-sm leading-none">
-                        {description}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="font-medium mb-3">Notifications</h4>
-                <div className="space-y-3 pl-2">
-                  {Object.entries(permissionAreas).filter(([key]) => 
-                    key.includes('_notifications')
-                  ).map(([key, description]) => (
-                    <div key={key} className="flex items-center space-x-2">
-                      <Checkbox 
-                        id={`permission-${key}`} 
-                        checked={selectedPermissions.includes(key)}
-                        onCheckedChange={() => togglePermission(key)}
-                      />
-                      <label htmlFor={`permission-${key}`} className="text-sm leading-none">
-                        {description}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <label htmlFor="newPassword" className="text-sm font-medium">New Password</label>
+              <Input 
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="confirmNewPassword" className="text-sm font-medium">Confirm New Password</label>
+              <Input 
+                id="confirmNewPassword"
+                type="password"
+                value={confirmNewPassword}
+                onChange={(e) => setConfirmNewPassword(e.target.value)}
+              />
             </div>
           </div>
           
@@ -387,7 +325,7 @@ const UserManagement = () => {
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button onClick={handleSavePermissions}>Save Permissions</Button>
+            <Button onClick={handleResetPassword}>Reset Password</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

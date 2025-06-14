@@ -4,20 +4,15 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChefHat } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const KitchenLogin = () => {
-  const [loginCredentials, setLoginCredentials] = useState({ username: "", password: "" });
-  const [signupCredentials, setSignupCredentials] = useState({ 
-    username: "", 
-    email: "", 
-    password: "", 
-    confirmPassword: "" 
-  });
+  const [credentials, setCredentials] = useState({ username: "", password: "" });
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login, signUp } = useAuth();
+  const { login, resetPassword } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -25,7 +20,7 @@ const KitchenLogin = () => {
     setIsLoading(true);
     
     const success = await login({
-      ...loginCredentials,
+      ...credentials,
       role: 'kitchen'
     });
     
@@ -36,24 +31,14 @@ const KitchenLogin = () => {
     setIsLoading(false);
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    if (signupCredentials.password !== signupCredentials.confirmPassword) {
-      setIsLoading(false);
-      return;
-    }
-    
-    const success = await signUp(
-      signupCredentials.email,
-      signupCredentials.password,
-      'kitchen',
-      signupCredentials.username
-    );
-    
+    const success = await resetPassword(forgotPasswordEmail);
     if (success) {
-      setSignupCredentials({ username: "", email: "", password: "", confirmPassword: "" });
+      setShowForgotPassword(false);
+      setForgotPasswordEmail("");
     }
     
     setIsLoading(false);
@@ -70,96 +55,76 @@ const KitchenLogin = () => {
           <CardDescription>Access kitchen operations</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium">Username</label>
-                  <Input
-                    type="text"
-                    value={loginCredentials.username}
-                    onChange={(e) => setLoginCredentials({...loginCredentials, username: e.target.value})}
-                    placeholder="Enter username"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Password</label>
-                  <Input
-                    type="password"
-                    value={loginCredentials.password}
-                    onChange={(e) => setLoginCredentials({...loginCredentials, password: e.target.value})}
-                    placeholder="Enter password"
-                    required
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-orange-600 hover:bg-orange-700"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Signing in..." : "Sign In"}
-                </Button>
-              </form>
-            </TabsContent>
-            
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium">Username</label>
-                  <Input
-                    type="text"
-                    value={signupCredentials.username}
-                    onChange={(e) => setSignupCredentials({ ...signupCredentials, username: e.target.value })}
-                    placeholder="Choose username"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Email</label>
-                  <Input
-                    type="email"
-                    value={signupCredentials.email}
-                    onChange={(e) => setSignupCredentials({ ...signupCredentials, email: e.target.value })}
-                    placeholder="Enter email"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Password</label>
-                  <Input
-                    type="password"
-                    value={signupCredentials.password}
-                    onChange={(e) => setSignupCredentials({ ...signupCredentials, password: e.target.value })}
-                    placeholder="Create password"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Confirm Password</label>
-                  <Input
-                    type="password"
-                    value={signupCredentials.confirmPassword}
-                    onChange={(e) => setSignupCredentials({ ...signupCredentials, confirmPassword: e.target.value })}
-                    placeholder="Confirm password"
-                    required
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-orange-600 hover:bg-orange-700"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Creating Account..." : "Create Kitchen Account"}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+          {!showForgotPassword ? (
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Username</label>
+                <Input
+                  type="text"
+                  value={credentials.username}
+                  onChange={(e) => setCredentials({...credentials, username: e.target.value})}
+                  placeholder="Enter username"
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Password</label>
+                <Input
+                  type="password"
+                  value={credentials.password}
+                  onChange={(e) => setCredentials({...credentials, password: e.target.value})}
+                  placeholder="Enter password"
+                  required
+                />
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full bg-orange-600 hover:bg-orange-700"
+                disabled={isLoading}
+              >
+                {isLoading ? "Signing in..." : "Sign In"}
+              </Button>
+              
+              <Button
+                type="button"
+                variant="link"
+                className="w-full text-sm"
+                onClick={() => setShowForgotPassword(true)}
+              >
+                Forgot Password?
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Email Address</label>
+                <Input
+                  type="email"
+                  value={forgotPasswordEmail}
+                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  required
+                />
+              </div>
+              
+              <Button
+                type="submit"
+                className="w-full bg-orange-600 hover:bg-orange-700"
+                disabled={isLoading}
+              >
+                {isLoading ? "Sending..." : "Send Reset Email"}
+              </Button>
+              
+              <Button
+                type="button"
+                variant="link"
+                className="w-full text-sm"
+                onClick={() => setShowForgotPassword(false)}
+              >
+                Back to Login
+              </Button>
+            </form>
+          )}
         </CardContent>
       </Card>
     </div>

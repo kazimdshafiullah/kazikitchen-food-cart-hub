@@ -7,7 +7,9 @@ import { toast } from '@/hooks/use-toast';
 interface Profile {
   id: string;
   username: string;
-  role: 'admin' | 'kitchen' | 'rider';
+  email: string;
+  role: 'admin' | 'kitchen' | 'rider' | 'manager';
+  can_create_users: boolean;
 }
 
 interface AuthUser extends User {
@@ -20,13 +22,22 @@ interface AuthContextType {
   loading: boolean;
   login: (credentials: LoginCredentials) => Promise<boolean>;
   logout: () => Promise<void>;
-  signUp: (email: string, password: string, role: string, username: string) => Promise<boolean>;
+  createUser: (userData: CreateUserData) => Promise<boolean>;
+  resetPassword: (email: string) => Promise<boolean>;
+  updatePassword: (userId: string, newPassword: string) => Promise<boolean>;
 }
 
 interface LoginCredentials {
   username: string;
   password: string;
-  role: 'admin' | 'kitchen' | 'rider';
+  role: 'admin' | 'kitchen' | 'rider' | 'manager';
+}
+
+interface CreateUserData {
+  username: string;
+  email: string;
+  password: string;
+  role: 'admin' | 'kitchen' | 'rider' | 'manager';
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -97,22 +108,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, role: string, username: string): Promise<boolean> => {
+  const createUser = async (userData: CreateUserData): Promise<boolean> => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            role,
-            username
-          }
+      // Only allow master account to create users
+      if (!profile?.can_create_users) {
+        toast({
+          title: "Access Denied",
+          description: "You don't have permission to create users",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      const { data, error } = await supabase.auth.admin.createUser({
+        email: userData.email,
+        password: userData.password,
+        user_metadata: {
+          username: userData.username,
+          role: userData.role
         }
       });
 
       if (error) {
         toast({
-          title: "Sign Up Failed",
+          title: "User Creation Failed",
           description: error.message,
           variant: "destructive"
         });
@@ -121,8 +140,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (data.user) {
         toast({
-          title: "Sign Up Successful",
-          description: "Please check your email to confirm your account"
+          title: "User Created Successfully",
+          description: `User ${userData.username} has been created`
         });
         return true;
       }
@@ -130,7 +149,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return false;
     } catch (error) {
       toast({
-        title: "Sign Up Failed",
+        title: "User Creation Failed",
         description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive"
       });
@@ -143,7 +162,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // For login with username, we need to find the user's email first
       const { data: profiles, error: profileError } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, email')
         .eq('username', credentials.username)
         .eq('role', credentials.role)
         .single();
@@ -157,21 +176,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      // Get the user's email from auth.users
-      const { data: { user: authUser }, error: userError } = await supabase.auth.admin.getUserById(profiles.id);
-      
-      if (userError || !authUser?.email) {
-        toast({
-          title: "Login Failed", 
-          description: "User not found",
-          variant: "destructive"
-        });
-        return false;
-      }
-
       // Sign in with email and password
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: authUser.email,
+        email: profiles.email,
         password: credentials.password
       });
 
@@ -214,6 +221,76 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const resetPassword = async (email: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      });
+
+      if (error) {
+        toast({
+          title: "Password Reset Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      toast({
+        title: "Password Reset Email Sent",
+        description: "Check your email for password reset instructions"
+      });
+      return true;
+    } catch (error) {
+      toast({
+        title: "Password Reset Failed",
+        description: error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
+  const updatePassword = async (userId: string, newPassword: string): Promise<boolean> => {
+    try {
+      // Only allow master account to update passwords
+      if (!profile?.can_create_users) {
+        toast({
+          title: "Access Denied",
+          description: "You don't have permission to update passwords",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      const { error } = await supabase.auth.admin.updateUserById(userId, {
+        password: newPassword
+      });
+
+      if (error) {
+        toast({
+          title: "Password Update Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      toast({
+        title: "Password Updated Successfully",
+        description: "The user's password has been updated"
+      });
+      return true;
+    } catch (error) {
+      toast({
+        title: "Password Update Failed",
+        description: error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   const logout = async (): Promise<void> => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -242,7 +319,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       loading,
       login,
       logout,
-      signUp
+      createUser,
+      resetPassword,
+      updatePassword
     }}>
       {children}
     </AuthContext.Provider>

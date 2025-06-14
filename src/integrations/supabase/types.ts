@@ -242,21 +242,27 @@ export type Database = {
       }
       profiles: {
         Row: {
+          can_create_users: boolean | null
           created_at: string
+          email: string | null
           id: string
           role: string
           updated_at: string
           username: string | null
         }
         Insert: {
+          can_create_users?: boolean | null
           created_at?: string
+          email?: string | null
           id: string
           role: string
           updated_at?: string
           username?: string | null
         }
         Update: {
+          can_create_users?: boolean | null
           created_at?: string
+          email?: string | null
           id?: string
           role?: string
           updated_at?: string
