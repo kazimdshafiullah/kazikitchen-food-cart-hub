@@ -14,30 +14,36 @@ const PaymentMethodTab = () => {
   const { updateSettings, updating } = useUpdatePaymentSettings();
 
   const handleToggleChange = async (field: string, value: boolean) => {
-    console.log('Toggle change:', field, value, 'Settings ID:', settings?.id);
-    if (!settings) return;
+    console.log('Toggle change initiated:', field, value, 'Current settings ID:', settings?.id);
+    if (!settings) {
+      console.log('No settings available, cannot update');
+      return;
+    }
     
     try {
-      await updateSettings({
+      const result = await updateSettings({
         id: settings.id,
         [field]: value
       });
-      console.log('Toggle update successful');
+      console.log('Toggle update result:', result);
     } catch (error) {
       console.error('Toggle update failed:', error);
     }
   };
 
   const handleInputChange = async (field: string, value: string) => {
-    console.log('Input change:', field, value);
-    if (!settings) return;
+    console.log('Input change initiated:', field, value);
+    if (!settings) {
+      console.log('No settings available, cannot update');
+      return;
+    }
     
     try {
-      await updateSettings({
+      const result = await updateSettings({
         id: settings.id,
         [field]: parseFloat(value) || 0
       });
-      console.log('Input update successful');
+      console.log('Input update result:', result);
     } catch (error) {
       console.error('Input update failed:', error);
     }
@@ -61,7 +67,7 @@ const PaymentMethodTab = () => {
     );
   }
 
-  console.log('Current settings:', settings);
+  console.log('Rendering with current settings:', settings);
 
   return (
     <div className="space-y-6">
@@ -79,9 +85,9 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
             <Switch 
               id="bkash-enabled" 
-              checked={settings.bkash_enabled}
+              checked={!!settings.bkash_enabled}
               onCheckedChange={(checked) => {
-                console.log('bKash toggle clicked:', checked);
+                console.log('bKash toggle clicked - current state:', settings.bkash_enabled, 'new state:', checked);
                 handleToggleChange('bkash_enabled', checked);
               }}
               disabled={updating}
@@ -114,9 +120,9 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 pt-2">
             <Switch 
               id="bkash-live" 
-              checked={settings.bkash_live_mode}
+              checked={!!settings.bkash_live_mode}
               onCheckedChange={(checked) => {
-                console.log('bKash live mode toggle clicked:', checked);
+                console.log('bKash live mode toggle clicked - current state:', settings.bkash_live_mode, 'new state:', checked);
                 handleToggleChange('bkash_live_mode', checked);
               }}
               disabled={updating}
@@ -145,15 +151,15 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
             <Switch 
               id="ssl-enabled" 
-              checked={settings.ssl_enabled}
+              checked={!!settings.ssl_enabled}
               onCheckedChange={(checked) => {
-                console.log('SSL toggle clicked:', checked);
+                console.log('SSL toggle clicked - current state:', settings.ssl_enabled, 'new state:', checked);
                 handleToggleChange('ssl_enabled', checked);
               }}
               disabled={updating}
             />
             <label htmlFor="ssl-enabled" className="text-sm font-medium cursor-pointer">
-              Enable SSL Commerz for Customers {updating && "(Updating...)"}
+              Enable SSL Commerz for Customers {updating && "(Updating...")"}
             </label>
           </div>
           
@@ -170,9 +176,9 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 pt-2">
             <Switch 
               id="ssl-live" 
-              checked={settings.ssl_live_mode}
+              checked={!!settings.ssl_live_mode}
               onCheckedChange={(checked) => {
-                console.log('SSL live mode toggle clicked:', checked);
+                console.log('SSL live mode toggle clicked - current state:', settings.ssl_live_mode, 'new state:', checked);
                 handleToggleChange('ssl_live_mode', checked);
               }}
               disabled={updating}
@@ -201,9 +207,9 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg">
             <Switch 
               id="cod-enabled" 
-              checked={settings.cod_enabled}
+              checked={!!settings.cod_enabled}
               onCheckedChange={(checked) => {
-                console.log('COD toggle clicked:', checked);
+                console.log('COD toggle clicked - current state:', settings.cod_enabled, 'new state:', checked);
                 handleToggleChange('cod_enabled', checked);
               }}
               disabled={updating}

@@ -23,6 +23,7 @@ export const usePaymentSettings = () => {
 
   const fetchSettings = async () => {
     try {
+      console.log('Fetching payment settings...');
       setLoading(true);
       const { data, error } = await supabase
         .from('payment_settings')
@@ -34,6 +35,7 @@ export const usePaymentSettings = () => {
         throw error;
       }
 
+      console.log('Fetched settings:', data);
       setSettings(data);
       setError(null);
     } catch (err) {
@@ -59,8 +61,14 @@ export const usePaymentSettings = () => {
           table: 'payment_settings'
         },
         (payload) => {
-          console.log('Payment settings changed:', payload);
-          fetchSettings();
+          console.log('Payment settings changed via realtime:', payload);
+          if (payload.eventType === 'UPDATE' && payload.new) {
+            console.log('Updating local settings with:', payload.new);
+            setSettings(payload.new as PaymentSettings);
+          } else {
+            // Fallback to refetch
+            fetchSettings();
+          }
         }
       )
       .subscribe();
@@ -79,23 +87,28 @@ export const useUpdatePaymentSettings = () => {
 
   const updateSettings = async (updates: Partial<PaymentSettings>) => {
     try {
+      console.log('Starting update with:', updates);
       setUpdating(true);
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('payment_settings')
         .update(updates)
-        .eq('id', updates.id);
+        .eq('id', updates.id)
+        .select()
+        .single();
 
       if (error) {
         throw error;
       }
 
+      console.log('Update successful, returned data:', data);
+      
       toast({
         title: "Settings updated",
         description: "Payment settings have been saved successfully.",
       });
 
-      return { success: true };
+      return { success: true, data };
     } catch (err) {
       console.error('Error updating payment settings:', err);
       toast({
