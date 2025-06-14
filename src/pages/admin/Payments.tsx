@@ -14,18 +14,18 @@ const PaymentMethodTab = () => {
   const { updateSettings, updating } = useUpdatePaymentSettings();
 
   const handleToggleChange = async (field: string, value: boolean) => {
-    console.log('Toggle change initiated:', field, value, 'Current settings ID:', settings?.id);
+    console.log('Toggle change initiated:', field, value, 'Current settings:', settings);
     if (!settings) {
       console.log('No settings available, cannot update');
       return;
     }
     
     try {
-      const result = await updateSettings({
+      await updateSettings({
         id: settings.id,
         [field]: value
       });
-      console.log('Toggle update result:', result);
+      console.log('Toggle update completed successfully');
     } catch (error) {
       console.error('Toggle update failed:', error);
     }
@@ -39,11 +39,11 @@ const PaymentMethodTab = () => {
     }
     
     try {
-      const result = await updateSettings({
+      await updateSettings({
         id: settings.id,
         [field]: parseFloat(value) || 0
       });
-      console.log('Input update result:', result);
+      console.log('Input update completed successfully');
     } catch (error) {
       console.error('Input update failed:', error);
     }
@@ -67,7 +67,7 @@ const PaymentMethodTab = () => {
     );
   }
 
-  console.log('Rendering with current settings:', settings);
+  console.log('Rendering PaymentMethodTab with settings:', settings);
 
   return (
     <div className="space-y-6">
@@ -85,9 +85,9 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
             <Switch 
               id="bkash-enabled" 
-              checked={Boolean(settings.bkash_enabled)}
+              checked={settings.bkash_enabled === true}
               onCheckedChange={(checked) => {
-                console.log('bKash toggle clicked - current state:', settings.bkash_enabled, 'new state:', checked);
+                console.log('bKash toggle clicked - current:', settings.bkash_enabled, 'new:', checked);
                 handleToggleChange('bkash_enabled', checked);
               }}
               disabled={updating}
@@ -120,9 +120,9 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 pt-2">
             <Switch 
               id="bkash-live" 
-              checked={Boolean(settings.bkash_live_mode)}
+              checked={settings.bkash_live_mode === true}
               onCheckedChange={(checked) => {
-                console.log('bKash live mode toggle clicked - current state:', settings.bkash_live_mode, 'new state:', checked);
+                console.log('bKash live mode toggle clicked - current:', settings.bkash_live_mode, 'new:', checked);
                 handleToggleChange('bkash_live_mode', checked);
               }}
               disabled={updating}
@@ -151,9 +151,9 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
             <Switch 
               id="ssl-enabled" 
-              checked={Boolean(settings.ssl_enabled)}
+              checked={settings.ssl_enabled === true}
               onCheckedChange={(checked) => {
-                console.log('SSL toggle clicked - current state:', settings.ssl_enabled, 'new state:', checked);
+                console.log('SSL toggle clicked - current:', settings.ssl_enabled, 'new:', checked);
                 handleToggleChange('ssl_enabled', checked);
               }}
               disabled={updating}
@@ -176,9 +176,9 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 pt-2">
             <Switch 
               id="ssl-live" 
-              checked={Boolean(settings.ssl_live_mode)}
+              checked={settings.ssl_live_mode === true}
               onCheckedChange={(checked) => {
-                console.log('SSL live mode toggle clicked - current state:', settings.ssl_live_mode, 'new state:', checked);
+                console.log('SSL live mode toggle clicked - current:', settings.ssl_live_mode, 'new:', checked);
                 handleToggleChange('ssl_live_mode', checked);
               }}
               disabled={updating}
@@ -207,9 +207,9 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg">
             <Switch 
               id="cod-enabled" 
-              checked={Boolean(settings.cod_enabled)}
+              checked={settings.cod_enabled === true}
               onCheckedChange={(checked) => {
-                console.log('COD toggle clicked - current state:', settings.cod_enabled, 'new state:', checked);
+                console.log('COD toggle clicked - current:', settings.cod_enabled, 'new:', checked);
                 handleToggleChange('cod_enabled', checked);
               }}
               disabled={updating}
@@ -223,7 +223,7 @@ const PaymentMethodTab = () => {
             <label className="text-sm font-medium">Minimum Order Value (BDT)</label>
             <Input 
               type="number" 
-              value={settings.cod_min_order}
+              value={settings.cod_min_order || ''}
               onChange={(e) => handleInputChange('cod_min_order', e.target.value)}
               onBlur={(e) => handleInputChange('cod_min_order', e.target.value)}
               disabled={updating}
@@ -237,7 +237,7 @@ const PaymentMethodTab = () => {
             <label className="text-sm font-medium">Maximum Order Value (BDT)</label>
             <Input 
               type="number" 
-              value={settings.cod_max_order}
+              value={settings.cod_max_order || ''}
               onChange={(e) => handleInputChange('cod_max_order', e.target.value)}
               onBlur={(e) => handleInputChange('cod_max_order', e.target.value)}
               disabled={updating}
@@ -247,6 +247,11 @@ const PaymentMethodTab = () => {
             </p>
           </div>
         </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button onClick={() => toast.success("Settings saved!")}>
+            Save Settings
+          </Button>
+        </CardFooter>
       </Card>
     </div>
   );

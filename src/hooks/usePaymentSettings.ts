@@ -50,9 +50,9 @@ export const usePaymentSettings = () => {
   useEffect(() => {
     fetchSettings();
 
-    // Set up real-time subscription
+    // Set up real-time subscription for payment settings changes
     const channel = supabase
-      .channel('payment_settings_changes')
+      .channel('payment_settings_realtime')
       .on(
         'postgres_changes',
         {
@@ -61,19 +61,26 @@ export const usePaymentSettings = () => {
           table: 'payment_settings'
         },
         (payload) => {
-          console.log('Payment settings changed via realtime:', payload);
+          console.log('Real-time payment settings change:', payload);
+          
           if (payload.eventType === 'UPDATE' && payload.new) {
-            console.log('Updating local settings with:', payload.new);
+            console.log('Updating settings state with new data:', payload.new);
+            setSettings(payload.new as PaymentSettings);
+          } else if (payload.eventType === 'INSERT' && payload.new) {
+            console.log('New settings inserted:', payload.new);
             setSettings(payload.new as PaymentSettings);
           } else {
-            // Fallback to refetch
+            console.log('Refetching settings due to unknown change type');
             fetchSettings();
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
 
     return () => {
+      console.log('Cleaning up subscription');
       supabase.removeChannel(channel);
     };
   }, []);
@@ -87,7 +94,7 @@ export const useUpdatePaymentSettings = () => {
 
   const updateSettings = async (updates: Partial<PaymentSettings>) => {
     try {
-      console.log('Starting update with:', updates);
+      console.log('Starting payment settings update with:', updates);
       setUpdating(true);
       
       const { data, error } = await supabase
@@ -98,10 +105,11 @@ export const useUpdatePaymentSettings = () => {
         .single();
 
       if (error) {
+        console.error('Supabase update error:', error);
         throw error;
       }
 
-      console.log('Update successful, returned data:', data);
+      console.log('Payment settings update successful:', data);
       
       toast({
         title: "Settings updated",
@@ -110,7 +118,7 @@ export const useUpdatePaymentSettings = () => {
 
       return { success: true, data };
     } catch (err) {
-      console.error('Error updating payment settings:', err);
+      console.error('Payment settings update failed:', err);
       toast({
         title: "Error",
         description: "Failed to update payment settings.",
