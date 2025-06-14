@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -7,8 +6,49 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CreditCard, DollarSign, ChevronsUpDown, ShieldAlert, Smartphone } from "lucide-react";
+import { usePaymentSettings, useUpdatePaymentSettings } from "@/hooks/usePaymentSettings";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const PaymentMethodTab = () => {
+  const { settings, loading } = usePaymentSettings();
+  const { updateSettings, updating } = useUpdatePaymentSettings();
+
+  const handleToggleChange = async (field: string, value: boolean) => {
+    if (!settings) return;
+    
+    await updateSettings({
+      id: settings.id,
+      [field]: value
+    });
+  };
+
+  const handleInputChange = async (field: string, value: string) => {
+    if (!settings) return;
+    
+    await updateSettings({
+      id: settings.id,
+      [field]: parseFloat(value) || 0
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-48 w-full" />
+      </div>
+    );
+  }
+
+  if (!settings) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">Failed to load payment settings</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Card>
@@ -22,6 +62,18 @@ const PaymentMethodTab = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
+            <Switch 
+              id="bkash-enabled" 
+              checked={settings.bkash_enabled}
+              onCheckedChange={(checked) => handleToggleChange('bkash_enabled', checked)}
+              disabled={updating}
+            />
+            <label htmlFor="bkash-enabled" className="text-sm font-medium cursor-pointer">
+              Enable bKash for Customers
+            </label>
+          </div>
+          
           <div className="space-y-2">
             <label className="text-sm font-medium">App Key</label>
             <Input type="password" value="••••••••••••••••••••••••••" readOnly />
@@ -43,7 +95,12 @@ const PaymentMethodTab = () => {
           </div>
           
           <div className="flex items-center space-x-2 pt-2">
-            <Switch id="bkash-live" />
+            <Switch 
+              id="bkash-live" 
+              checked={settings.bkash_live_mode}
+              onCheckedChange={(checked) => handleToggleChange('bkash_live_mode', checked)}
+              disabled={updating}
+            />
             <label htmlFor="bkash-live" className="text-sm font-medium cursor-pointer">
               Enable Live Mode
             </label>
@@ -66,6 +123,18 @@ const PaymentMethodTab = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
+            <Switch 
+              id="ssl-enabled" 
+              checked={settings.ssl_enabled}
+              onCheckedChange={(checked) => handleToggleChange('ssl_enabled', checked)}
+              disabled={updating}
+            />
+            <label htmlFor="ssl-enabled" className="text-sm font-medium cursor-pointer">
+              Enable SSL Commerz for Customers
+            </label>
+          </div>
+          
           <div className="space-y-2">
             <label className="text-sm font-medium">Store ID</label>
             <Input type="password" value="••••••••••••••••••••••••••" readOnly />
@@ -77,7 +146,12 @@ const PaymentMethodTab = () => {
           </div>
           
           <div className="flex items-center space-x-2 pt-2">
-            <Switch id="ssl-live" />
+            <Switch 
+              id="ssl-live" 
+              checked={settings.ssl_live_mode}
+              onCheckedChange={(checked) => handleToggleChange('ssl_live_mode', checked)}
+              disabled={updating}
+            />
             <label htmlFor="ssl-live" className="text-sm font-medium cursor-pointer">
               Enable Live Mode
             </label>
@@ -100,16 +174,27 @@ const PaymentMethodTab = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center space-x-2">
-            <Switch id="cod-enabled" defaultChecked />
+          <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg">
+            <Switch 
+              id="cod-enabled" 
+              checked={settings.cod_enabled}
+              onCheckedChange={(checked) => handleToggleChange('cod_enabled', checked)}
+              disabled={updating}
+            />
             <label htmlFor="cod-enabled" className="text-sm font-medium cursor-pointer">
-              Enable Cash on Delivery
+              Enable Cash on Delivery for Customers
             </label>
           </div>
           
           <div className="space-y-2">
             <label className="text-sm font-medium">Minimum Order Value (BDT)</label>
-            <Input type="number" placeholder="0.00" defaultValue="250.00" />
+            <Input 
+              type="number" 
+              value={settings.cod_min_order}
+              onChange={(e) => handleInputChange('cod_min_order', e.target.value)}
+              onBlur={(e) => handleInputChange('cod_min_order', e.target.value)}
+              disabled={updating}
+            />
             <p className="text-xs text-muted-foreground">
               Set to 0 for no minimum order requirement
             </p>
@@ -117,15 +202,25 @@ const PaymentMethodTab = () => {
           
           <div className="space-y-2">
             <label className="text-sm font-medium">Maximum Order Value (BDT)</label>
-            <Input type="number" placeholder="5000.00" defaultValue="5000.00" />
+            <Input 
+              type="number" 
+              value={settings.cod_max_order}
+              onChange={(e) => handleInputChange('cod_max_order', e.target.value)}
+              onBlur={(e) => handleInputChange('cod_max_order', e.target.value)}
+              disabled={updating}
+            />
             <p className="text-xs text-muted-foreground">
               Set to 0 for no maximum order limit
             </p>
           </div>
         </CardContent>
         <CardFooter>
-          <Button className="ml-auto" onClick={() => toast.success("Settings saved!")}>
-            Save Settings
+          <Button 
+            className="ml-auto" 
+            onClick={() => toast.success("Settings saved!")}
+            disabled={updating}
+          >
+            {updating ? "Saving..." : "Save Settings"}
           </Button>
         </CardFooter>
       </Card>

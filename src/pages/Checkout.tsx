@@ -9,11 +9,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/components/ui/sonner";
 import { ChevronLeft, FileText, Package } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { usePaymentSettings } from "@/hooks/usePaymentSettings";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Checkout = () => {
   const navigate = useNavigate();
   const { cart, subtotal, clearCart } = useCart();
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "bkash" | "ssl">("cash");
+  const { settings: paymentSettings, loading: paymentLoading } = usePaymentSettings();
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "bkash" | "ssl" | "">("");
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState<string>("");
   
@@ -25,6 +28,25 @@ const Checkout = () => {
     "ORD-1001", "ORD-1002", "ORD-1003", "ORD-1004", "ORD-1005",
     "ORD-1006", "ORD-1007", "ORD-1008", "ORD-1009", "ORD-1010"
   ];
+
+  // Get available payment methods based on admin settings
+  const getAvailablePaymentMethods = () => {
+    if (!paymentSettings) return [];
+    
+    const methods = [];
+    if (paymentSettings.cod_enabled) methods.push("cash");
+    if (paymentSettings.bkash_enabled) methods.push("bkash");
+    if (paymentSettings.ssl_enabled) methods.push("ssl");
+    
+    return methods;
+  };
+
+  const availablePaymentMethods = getAvailablePaymentMethods();
+
+  // Auto-select first available payment method
+  if (paymentMethod === "" && availablePaymentMethods.length > 0) {
+    setPaymentMethod(availablePaymentMethods[0] as "cash" | "bkash" | "ssl");
+  }
   
   if (cart.length === 0 && !orderPlaced) {
     return (
@@ -70,6 +92,23 @@ const Checkout = () => {
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!paymentMethod) {
+      toast.error("Please select a payment method");
+      return;
+    }
+
+    // Check COD order limits if applicable
+    if (paymentMethod === "cash" && paymentSettings) {
+      if (paymentSettings.cod_min_order > 0 && bdtSubtotal < paymentSettings.cod_min_order) {
+        toast.error(`Minimum order value for Cash on Delivery is ৳${paymentSettings.cod_min_order}`);
+        return;
+      }
+      if (paymentSettings.cod_max_order > 0 && bdtSubtotal > paymentSettings.cod_max_order) {
+        toast.error(`Maximum order value for Cash on Delivery is ৳${paymentSettings.cod_max_order}`);
+        return;
+      }
+    }
     
     // Use a random order ID from the available ones
     const randomIndex = Math.floor(Math.random() * availableOrderIds.length);
@@ -155,25 +194,51 @@ const Checkout = () => {
             <div className="bg-white rounded-lg shadow p-6 mb-6">
               <h2 className="text-xl font-bold mb-4">Payment Method</h2>
               
-              <RadioGroup
-                value={paymentMethod}
-                onValueChange={(value) => setPaymentMethod(value as "cash" | "bkash" | "ssl")}
-              >
-                <div className="flex items-center space-x-2 mb-2">
-                  <RadioGroupItem value="cash" id="cash" />
-                  <Label htmlFor="cash" className="cursor-pointer">Cash on Delivery</Label>
+              {paymentLoading ? (
+                <div className="space-y-2">
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
                 </div>
-                <div className="flex items-center space-x-2 mb-2">
-                  <RadioGroupItem value="bkash" id="bkash" />
-                  <Label htmlFor="bkash" className="cursor-pointer">bKash (Mobile Banking)</Label>
+              ) : availablePaymentMethods.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-2">No payment methods are currently available</p>
+                  <p className="text-sm text-gray-400">Please contact support or try again later</p>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="ssl" id="ssl" />
-                  <Label htmlFor="ssl" className="cursor-pointer">SSL Commerz (Credit/Debit Card)</Label>
-                </div>
-              </RadioGroup>
+              ) : (
+                <RadioGroup
+                  value={paymentMethod}
+                  onValueChange={(value) => setPaymentMethod(value as "cash" | "bkash" | "ssl")}
+                >
+                  {availablePaymentMethods.includes("cash") && (
+                    <div className="flex items-center space-x-2 mb-2">
+                      <RadioGroupItem value="cash" id="cash" />
+                      <Label htmlFor="cash" className="cursor-pointer">Cash on Delivery</Label>
+                      {paymentSettings && (paymentSettings.cod_min_order > 0 || paymentSettings.cod_max_order > 0) && (
+                        <span className="text-xs text-gray-500 ml-2">
+                          {paymentSettings.cod_min_order > 0 && `Min: ৳${paymentSettings.cod_min_order}`}
+                          {paymentSettings.cod_min_order > 0 && paymentSettings.cod_max_order > 0 && " | "}
+                          {paymentSettings.cod_max_order > 0 && `Max: ৳${paymentSettings.cod_max_order}`}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {availablePaymentMethods.includes("bkash") && (
+                    <div className="flex items-center space-x-2 mb-2">
+                      <RadioGroupItem value="bkash" id="bkash" />
+                      <Label htmlFor="bkash" className="cursor-pointer">bKash (Mobile Banking)</Label>
+                    </div>
+                  )}
+                  {availablePaymentMethods.includes("ssl") && (
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="ssl" id="ssl" />
+                      <Label htmlFor="ssl" className="cursor-pointer">SSL Commerz (Credit/Debit Card)</Label>
+                    </div>
+                  )}
+                </RadioGroup>
+              )}
               
-              {paymentMethod === "bkash" && (
+              {paymentMethod === "bkash" && availablePaymentMethods.includes("bkash") && (
                 <div className="mt-4 p-4 bg-pink-50 rounded-md">
                   <p className="text-sm text-gray-500 mb-2">
                     You will be redirected to bKash to complete the payment.
@@ -187,7 +252,7 @@ const Checkout = () => {
                 </div>
               )}
               
-              {paymentMethod === "ssl" && (
+              {paymentMethod === "ssl" && availablePaymentMethods.includes("ssl") && (
                 <div className="mt-4 p-4 bg-blue-50 rounded-md">
                   <p className="text-sm text-gray-500 mb-2">
                     You will be redirected to SSL Commerz to complete the payment.
@@ -215,8 +280,9 @@ const Checkout = () => {
             <Button
               type="submit"
               className="w-full lg:w-auto bg-kazi-orange hover:bg-opacity-90"
+              disabled={paymentLoading || availablePaymentMethods.length === 0}
             >
-              Place Order
+              {paymentLoading ? "Loading..." : "Place Order"}
             </Button>
           </form>
         </div>

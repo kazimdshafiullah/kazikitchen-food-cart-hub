@@ -190,6 +190,45 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_settings: {
+        Row: {
+          bkash_enabled: boolean
+          bkash_live_mode: boolean
+          cod_enabled: boolean
+          cod_max_order: number | null
+          cod_min_order: number | null
+          created_at: string
+          id: string
+          ssl_enabled: boolean
+          ssl_live_mode: boolean
+          updated_at: string
+        }
+        Insert: {
+          bkash_enabled?: boolean
+          bkash_live_mode?: boolean
+          cod_enabled?: boolean
+          cod_max_order?: number | null
+          cod_min_order?: number | null
+          created_at?: string
+          id?: string
+          ssl_enabled?: boolean
+          ssl_live_mode?: boolean
+          updated_at?: string
+        }
+        Update: {
+          bkash_enabled?: boolean
+          bkash_live_mode?: boolean
+          cod_enabled?: boolean
+          cod_max_order?: number | null
+          cod_min_order?: number | null
+          created_at?: string
+          id?: string
+          ssl_enabled?: boolean
+          ssl_live_mode?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category_id: string | null
