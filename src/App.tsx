@@ -77,7 +77,7 @@ const App = () => (
             <Route path="checkout" element={<Checkout />} />
             <Route path="order-tracking" element={<OrderTracking />} />
             <Route path="product/:id" element={<ProductDetail />} />
-            <Route path="weekend-order" element={<WeekendOrder />} />
+            <Route path="weekend-order/:type/:day/:mealType/:category" element={<WeekendOrder />} />
             <Route path="frozen-food-order" element={<FrozenFoodOrder />} />
             <Route path="reset-password" element={<ResetPassword />} />
             
