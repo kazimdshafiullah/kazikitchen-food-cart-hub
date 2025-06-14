@@ -108,7 +108,6 @@ const PaymentMethodTab = () => {
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button variant="outline">Reset Keys</Button>
-          <Button onClick={() => toast.success("bKash settings saved!")}>Save Settings</Button>
         </CardFooter>
       </Card>
 
@@ -159,7 +158,6 @@ const PaymentMethodTab = () => {
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button variant="outline">Reset Keys</Button>
-          <Button onClick={() => toast.success("SSL Commerz settings saved!")}>Save Settings</Button>
         </CardFooter>
       </Card>
       
@@ -214,15 +212,6 @@ const PaymentMethodTab = () => {
             </p>
           </div>
         </CardContent>
-        <CardFooter>
-          <Button 
-            className="ml-auto" 
-            onClick={() => toast.success("Settings saved!")}
-            disabled={updating}
-          >
-            {updating ? "Saving..." : "Save Settings"}
-          </Button>
-        </CardFooter>
       </Card>
     </div>
   );
