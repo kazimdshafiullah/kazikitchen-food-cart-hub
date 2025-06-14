@@ -232,6 +232,7 @@ const OrderManagement = () => {
                 <TableHead>Date</TableHead>
                 <TableHead>Kitchen</TableHead>
                 <TableHead>Delivery</TableHead>
+                <TableHead>Location</TableHead>
                 <TableHead>Order Status</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>View</TableHead>
@@ -255,6 +256,14 @@ const OrderManagement = () => {
                        order.status === 'processing' ? 'cooking' : 
                        order.status === 'delivered' ? 'completed' : 
                        order.status === 'out-for-delivery' ? 'ready' : order.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={getStatusColor(order.status === 'delivered' ? 'delivered' : order.status === 'out-for-delivery' ? 'out-for-delivery' : 'pending')}>
+                      {order.status === 'delivered' ? 'delivered' : 
+                       order.status === 'out-for-delivery' ? 'out for delivery' : 
+                       order.status === 'processing' ? 'preparing' :
+                       'pending'}
                     </Badge>
                   </TableCell>
                   <TableCell>
