@@ -4,13 +4,15 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, ShoppingCart, Phone, MapPin } from "lucide-react";
+import { Menu, ShoppingCart, Phone, MapPin, User } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useCustomerAuth } from "@/hooks/useCustomerAuth";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { itemCount } = useCart();
+  const { customer } = useCustomerAuth();
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -64,6 +66,23 @@ const Navbar = () => {
               </div>
             </div>
 
+            {/* Customer Account Button */}
+            {customer ? (
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/customer-dashboard" className="flex items-center space-x-1">
+                  <User className="h-4 w-4" />
+                  <span className="hidden sm:inline">My Account</span>
+                </Link>
+              </Button>
+            ) : (
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/customer-login" className="flex items-center space-x-1">
+                  <User className="h-4 w-4" />
+                  <span className="hidden sm:inline">Sign In</span>
+                </Link>
+              </Button>
+            )}
+
             <Button asChild variant="ghost" size="sm" className="relative">
               <Link to="/cart">
                 <ShoppingCart className="h-5 w-5" />
@@ -95,6 +114,29 @@ const Navbar = () => {
                       {link.label}
                     </Link>
                   ))}
+                  
+                  <div className="pt-4 border-t">
+                    {customer ? (
+                      <Link
+                        to="/customer-dashboard"
+                        className="flex items-center space-x-2 text-lg font-medium text-gray-700"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <User className="h-4 w-4" />
+                        <span>My Account</span>
+                      </Link>
+                    ) : (
+                      <Link
+                        to="/customer-login"
+                        className="flex items-center space-x-2 text-lg font-medium text-gray-700"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <User className="h-4 w-4" />
+                        <span>Sign In</span>
+                      </Link>
+                    )}
+                  </div>
+                  
                   <div className="pt-4 border-t">
                     <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
                       <Phone className="h-4 w-4" />

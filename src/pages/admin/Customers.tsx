@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -20,31 +20,115 @@ import {
 } from "@/components/ui/dialog";
 import { Card } from "@/components/ui/card";
 import { Search, UserPlus, ChevronDown } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
-// Mock customers data
-const mockCustomers = [
-  { id: "CUS-1001", name: "John Doe", email: "john.doe@example.com", phone: "+1 (555) 123-4567", orders: 5, spent: 245.75, created: "2025-03-15" },
-  { id: "CUS-1002", name: "Sarah Lee", email: "sarah.lee@example.com", phone: "+1 (555) 234-5678", orders: 3, spent: 178.50, created: "2025-04-02" },
-  { id: "CUS-1003", name: "Mike Chen", email: "mike.chen@example.com", phone: "+1 (555) 345-6789", orders: 2, spent: 93.75, created: "2025-04-18" },
-  { id: "CUS-1004", name: "Emily Wong", email: "emily.wong@example.com", phone: "+1 (555) 456-7890", orders: 7, spent: 324.00, created: "2025-02-27" },
-  { id: "CUS-1005", name: "Alex Johnson", email: "alex.johnson@example.com", phone: "+1 (555) 567-8901", orders: 1, spent: 67.25, created: "2025-05-10" },
-  { id: "CUS-1006", name: "Lisa Garcia", email: "lisa.garcia@example.com", phone: "+1 (555) 678-9012", orders: 4, spent: 198.50, created: "2025-03-22" },
-  { id: "CUS-1007", name: "David Kim", email: "david.kim@example.com", phone: "+1 (555) 789-0123", orders: 2, spent: 84.99, created: "2025-04-11" },
-  { id: "CUS-1008", name: "Rachel Green", email: "rachel.green@example.com", phone: "+1 (555) 890-1234", orders: 6, spent: 255.25, created: "2025-02-14" },
-];
+interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  created_at: string;
+  orderCount?: number;
+  totalSpent?: number;
+}
 
 const Customers = () => {
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddCustomerDialogOpen, setIsAddCustomerDialogOpen] = useState(false);
   const [isViewCustomerDialogOpen, setIsViewCustomerDialogOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [customerOrders, setCustomerOrders] = useState<any[]>([]);
   
-  const filteredCustomers = mockCustomers.filter(customer => {
+  useEffect(() => {
+    fetchCustomers();
+  }, []);
+
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch customers with order statistics
+      const { data: customersData, error: customersError } = await supabase
+        .from('customers')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (customersError) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch customers",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Fetch order statistics for each customer
+      const customersWithStats = await Promise.all(
+        (customersData || []).map(async (customer) => {
+          const { data: ordersData } = await supabase
+            .from('orders')
+            .select('total_amount')
+            .eq('customer_id', customer.id);
+
+          const orderCount = ordersData?.length || 0;
+          const totalSpent = ordersData?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
+
+          return {
+            ...customer,
+            orderCount,
+            totalSpent
+          };
+        })
+      );
+
+      setCustomers(customersWithStats);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch customers",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCustomerOrders = async (customerId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          order_items (
+            *,
+            products (name, price)
+          )
+        `)
+        .eq('customer_id', customerId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching customer orders:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching customer orders:', error);
+      return [];
+    }
+  };
+  
+  const filteredCustomers = customers.filter(customer => {
     const searchValue = searchTerm.toLowerCase();
     return (
       customer.name.toLowerCase().includes(searchValue) ||
       customer.email.toLowerCase().includes(searchValue) ||
-      customer.phone.toLowerCase().includes(searchValue) ||
+      (customer.phone && customer.phone.toLowerCase().includes(searchValue)) ||
       customer.id.toLowerCase().includes(searchValue)
     );
   });
@@ -52,12 +136,27 @@ const Customers = () => {
   const handleAddCustomer = (e: React.FormEvent) => {
     e.preventDefault();
     setIsAddCustomerDialogOpen(false);
+    // Note: Customer registration should be done through the customer-facing signup form
+    toast({
+      title: "Info",
+      description: "Customers should register through the customer signup page",
+    });
   };
   
-  const handleViewCustomer = (customer: any) => {
+  const handleViewCustomer = async (customer: Customer) => {
     setSelectedCustomer(customer);
+    const orders = await fetchCustomerOrders(customer.id);
+    setCustomerOrders(orders);
     setIsViewCustomerDialogOpen(true);
   };
+  
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p>Loading customers...</p>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
@@ -106,13 +205,13 @@ const Customers = () => {
             <TableBody>
               {filteredCustomers.map(customer => (
                 <TableRow key={customer.id} onClick={() => handleViewCustomer(customer)} className="cursor-pointer">
-                  <TableCell className="font-medium">{customer.id}</TableCell>
+                  <TableCell className="font-medium">{customer.id.slice(-8)}</TableCell>
                   <TableCell>{customer.name}</TableCell>
                   <TableCell>{customer.email}</TableCell>
-                  <TableCell>{customer.phone}</TableCell>
-                  <TableCell>{customer.orders}</TableCell>
-                  <TableCell>${customer.spent.toFixed(2)}</TableCell>
-                  <TableCell>{customer.created}</TableCell>
+                  <TableCell>{customer.phone || 'N/A'}</TableCell>
+                  <TableCell>{customer.orderCount || 0}</TableCell>
+                  <TableCell>৳{customer.totalSpent?.toFixed(2) || '0.00'}</TableCell>
+                  <TableCell>{new Date(customer.created_at).toLocaleDateString()}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="sm">
                       View
@@ -137,58 +236,26 @@ const Customers = () => {
           <DialogHeader>
             <DialogTitle>Add Customer</DialogTitle>
             <DialogDescription>
-              Add a new customer to your database
+              Note: Customers should register through the customer signup page for proper authentication.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleAddCustomer}>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <label htmlFor="name" className="text-sm font-medium">
-                  Full Name
-                </label>
-                <Input
-                  id="name"
-                  placeholder="John Smith"
-                  required
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <label htmlFor="email" className="text-sm font-medium">
-                  Email
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="john@example.com"
-                  required
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <label htmlFor="phone" className="text-sm font-medium">
-                  Phone Number
-                </label>
-                <Input
-                  id="phone"
-                  placeholder="+1 (555) 123-4567"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsAddCustomerDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">Add Customer</Button>
-            </DialogFooter>
-          </form>
+          <div className="py-4">
+            <p className="text-sm text-gray-600">
+              Direct customers to the customer login page to create their own accounts with proper security.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddCustomerDialogOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
       
       {/* View Customer Dialog */}
       {selectedCustomer && (
         <Dialog open={isViewCustomerDialogOpen} onOpenChange={setIsViewCustomerDialogOpen}>
-          <DialogContent className="sm:max-w-lg">
+          <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Customer Details</DialogTitle>
               <DialogDescription>
@@ -210,7 +277,7 @@ const Customers = () => {
                   </div>
                   <div>
                     <dt className="text-xs text-muted-foreground">Phone</dt>
-                    <dd>{selectedCustomer.phone}</dd>
+                    <dd>{selectedCustomer.phone || 'Not provided'}</dd>
                   </div>
                 </dl>
               </div>
@@ -220,15 +287,15 @@ const Customers = () => {
                 <dl className="mt-2 space-y-1">
                   <div>
                     <dt className="text-xs text-muted-foreground">Customer Since</dt>
-                    <dd>{selectedCustomer.created}</dd>
+                    <dd>{new Date(selectedCustomer.created_at).toLocaleDateString()}</dd>
                   </div>
                   <div>
                     <dt className="text-xs text-muted-foreground">Total Orders</dt>
-                    <dd>{selectedCustomer.orders}</dd>
+                    <dd>{selectedCustomer.orderCount || 0}</dd>
                   </div>
                   <div>
                     <dt className="text-xs text-muted-foreground">Total Spent</dt>
-                    <dd>${selectedCustomer.spent.toFixed(2)}</dd>
+                    <dd>৳{selectedCustomer.totalSpent?.toFixed(2) || '0.00'}</dd>
                   </div>
                 </dl>
               </div>
@@ -236,13 +303,22 @@ const Customers = () => {
             
             <div className="pt-2">
               <h3 className="text-sm font-medium mb-2">Recent Orders</h3>
-              <div className="space-y-2">
-                {[...Array(Math.min(selectedCustomer.orders, 3))].map((_, i) => (
-                  <div key={i} className="flex justify-between text-sm border-b pb-2">
-                    <span>Order #{10245 + i}</span>
-                    <span>${(35 + i * 12).toFixed(2)}</span>
-                  </div>
-                ))}
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {customerOrders.length > 0 ? (
+                  customerOrders.slice(0, 5).map((order) => (
+                    <div key={order.id} className="flex justify-between text-sm border-b pb-2">
+                      <div>
+                        <span>Order #{order.id.slice(-8)}</span>
+                        <span className="text-muted-foreground ml-2">
+                          {new Date(order.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <span>৳{Number(order.total_amount).toFixed(2)}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">No orders found</p>
+                )}
               </div>
             </div>
             
@@ -250,7 +326,6 @@ const Customers = () => {
               <Button variant="outline" onClick={() => setIsViewCustomerDialogOpen(false)}>
                 Close
               </Button>
-              <Button>Edit Customer</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

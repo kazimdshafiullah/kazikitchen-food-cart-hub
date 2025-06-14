@@ -33,6 +33,36 @@ export type Database = {
         }
         Relationships: []
       }
+      customers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          password_hash: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          password_hash: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          password_hash?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       location_pricing: {
         Row: {
           base_delivery_fee: number | null
@@ -151,6 +181,7 @@ export type Database = {
         Row: {
           created_at: string
           customer_email: string
+          customer_id: string | null
           customer_name: string
           customer_phone: string | null
           delivery_address: string
@@ -163,6 +194,7 @@ export type Database = {
         Insert: {
           created_at?: string
           customer_email: string
+          customer_id?: string | null
           customer_name: string
           customer_phone?: string | null
           delivery_address: string
@@ -177,6 +209,7 @@ export type Database = {
         Update: {
           created_at?: string
           customer_email?: string
+          customer_id?: string | null
           customer_name?: string
           customer_phone?: string | null
           delivery_address?: string
@@ -188,7 +221,15 @@ export type Database = {
           total_amount?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_settings: {
         Row: {
