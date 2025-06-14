@@ -26,6 +26,8 @@ const mockOrders = [
     deliveryLocation: "Dhanmondi",
     totalAmount: 850,
     status: "pending",
+    kitchenStatus: "pending",
+    riderStatus: "assigned",
     orderDate: "2025-01-15",
     items: [
       { name: "Chicken Biryani", quantity: 2, price: 350 },
@@ -41,6 +43,8 @@ const mockOrders = [
     deliveryLocation: "Elephant Road",
     totalAmount: 650,
     status: "confirmed",
+    kitchenStatus: "completed",
+    riderStatus: "delivered",
     orderDate: "2025-01-15",
     items: [
       { name: "Fish Curry", quantity: 1, price: 300 },
@@ -56,6 +60,8 @@ const mockOrders = [
     deliveryLocation: "Mirpur Road",
     totalAmount: 720,
     status: "processing",
+    kitchenStatus: "cooking",
+    riderStatus: "delivering",
     orderDate: "2025-01-14",
     items: [
       { name: "Mutton Curry", quantity: 1, price: 450 },
@@ -71,6 +77,8 @@ const mockOrders = [
     deliveryLocation: "Zigatola",
     totalAmount: 920,
     status: "delivered",
+    kitchenStatus: "ready",
+    riderStatus: "picked_up",
     orderDate: "2025-01-14",
     items: [
       { name: "Special Biryani", quantity: 1, price: 500 },
@@ -86,6 +94,8 @@ const mockOrders = [
     deliveryLocation: "Lalmatia",
     totalAmount: 580,
     status: "cancelled",
+    kitchenStatus: "pending",
+    riderStatus: "assigned",
     orderDate: "2025-01-13",
     items: [
       { name: "Dal Curry", quantity: 2, price: 200 },
@@ -250,7 +260,13 @@ const OrderManagement = () => {
                   </TableCell>
                   <TableCell>{order.orderDate}</TableCell>
                   <TableCell>
-                    <Badge className={getStatusColor(order.status === 'pending' ? 'pending' : order.status === 'confirmed' ? 'confirmed' : order.status === 'processing' ? 'processing' : 'delivered')}>
+                    <Badge className={`text-xs ${
+                      order.kitchenStatus === "completed" ? "bg-green-100 text-green-800" :
+                      order.kitchenStatus === "ready" ? "bg-green-100 text-green-700" :
+                      order.kitchenStatus === "cooking" ? "bg-blue-100 text-blue-800" :
+                      order.kitchenStatus === "pending" ? "bg-yellow-100 text-yellow-800" :
+                      "bg-gray-100 text-gray-800"
+                    }`}>
                       {order.status === 'pending' ? 'not started' : 
                        order.status === 'confirmed' ? 'confirmed' :
                        order.status === 'processing' ? 'cooking' : 
@@ -259,7 +275,13 @@ const OrderManagement = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge className={getStatusColor(order.status === 'delivered' ? 'delivered' : order.status === 'out-for-delivery' ? 'out-for-delivery' : 'pending')}>
+                    <Badge className={`text-xs ${
+                      order.riderStatus === "delivered" ? "bg-green-100 text-green-800" :
+                      order.riderStatus === "delivering" ? "bg-orange-100 text-orange-800" :
+                      order.riderStatus === "picked_up" ? "bg-yellow-100 text-yellow-800" :
+                      order.riderStatus === "assigned" ? "bg-blue-100 text-blue-800" :
+                      "bg-gray-100 text-gray-800"
+                    }`}>
                       {order.status === 'delivered' ? 'delivered' : 
                        order.status === 'out-for-delivery' ? 'out for delivery' : 
                        order.status === 'processing' ? 'preparing' :
