@@ -58,6 +58,9 @@ import RiderLayout from "./components/RiderLayout";
 import RiderDashboard from "./pages/rider/RiderDashboard";
 import RiderMap from "./pages/rider/RiderMap";
 
+// Import AuthProvider
+import { AuthProvider } from "./hooks/useAuth";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -86,9 +89,13 @@ const App = () => (
             <Route path="customer-dashboard" element={<CustomerDashboard />} />
           </Route>
 
-          {/* Admin routes */}
+          {/* Admin routes - wrapped with AuthProvider */}
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<AdminLayout />}>
+          <Route path="/admin" element={
+            <AuthProvider>
+              <AdminLayout />
+            </AuthProvider>
+          }>
             <Route index element={<Dashboard />} />
             <Route path="orders" element={<Orders />} />
             <Route path="products" element={<Products />} />
