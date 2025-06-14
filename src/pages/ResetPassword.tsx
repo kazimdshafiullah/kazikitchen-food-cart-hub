@@ -12,20 +12,50 @@ const ResetPassword = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [hasValidSession, setHasValidSession] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     // Check if we have a valid session from the reset link
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log("Session check:", { session, error });
+        
+        if (error) {
+          console.error("Session error:", error);
+          toast({
+            title: "Invalid Reset Link",
+            description: "The reset link is invalid or has expired. Please request a new one.",
+            variant: "destructive"
+          });
+          navigate("/admin/login");
+          return;
+        }
+
+        if (!session) {
+          toast({
+            title: "Invalid Reset Link",
+            description: "The reset link is invalid or has expired. Please request a new one.",
+            variant: "destructive"
+          });
+          navigate("/admin/login");
+          return;
+        }
+
+        setHasValidSession(true);
+      } catch (error) {
+        console.error("Error checking session:", error);
         toast({
-          title: "Invalid Reset Link",
-          description: "The reset link is invalid or has expired. Please request a new one.",
+          title: "Error",
+          description: "An error occurred while validating the reset link.",
           variant: "destructive"
         });
         navigate("/admin/login");
       }
-    });
+    };
+
+    checkSession();
   }, [navigate]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -52,11 +82,16 @@ const ResetPassword = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
+      console.log("Attempting to update password...");
+      
+      const { data, error } = await supabase.auth.updateUser({
         password: password
       });
 
+      console.log("Password update response:", { data, error });
+
       if (error) {
+        console.error("Password update error:", error);
         toast({
           title: "Password Reset Failed",
           description: error.message,
@@ -70,10 +105,14 @@ const ResetPassword = () => {
         description: "Your password has been updated successfully. You can now log in with your new password."
       });
 
-      // Sign out and redirect to login
-      await supabase.auth.signOut();
-      navigate("/admin/login");
+      // Sign out and redirect to login after a short delay
+      setTimeout(async () => {
+        await supabase.auth.signOut();
+        navigate("/admin/login");
+      }, 2000);
+
     } catch (error) {
+      console.error("Unexpected error:", error);
       toast({
         title: "Password Reset Failed",
         description: "An unexpected error occurred. Please try again.",
@@ -83,6 +122,18 @@ const ResetPassword = () => {
       setIsLoading(false);
     }
   };
+
+  if (!hasValidSession) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6">
+            <div className="text-center">Validating reset link...</div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
