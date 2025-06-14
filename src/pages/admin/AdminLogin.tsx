@@ -9,10 +9,8 @@ import { Shield } from "lucide-react";
 
 const AdminLogin = () => {
   const [credentials, setCredentials] = useState({ username: "", password: "" });
-  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login, resetPassword } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -31,19 +29,6 @@ const AdminLogin = () => {
     setIsLoading(false);
   };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    const success = await resetPassword(forgotPasswordEmail);
-    if (success) {
-      setShowForgotPassword(false);
-      setForgotPasswordEmail("");
-    }
-    
-    setIsLoading(false);
-  };
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <Card className="w-full max-w-md">
@@ -53,93 +38,51 @@ const AdminLogin = () => {
           </div>
           <CardTitle className="text-2xl font-bold text-orange-600">Kazi Kitchen Admin</CardTitle>
           <CardDescription>Access your admin portal</CardDescription>
-          <div className="text-xs text-gray-500 mt-2">
-            Default Login: username "shafiullah", password "admin123"
+          <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-50 rounded">
+            <strong>Demo Credentials:</strong><br />
+            Username: <code>shafiullah</code><br />
+            Password: <code>admin123</code>
           </div>
         </CardHeader>
         <CardContent>
-          {!showForgotPassword ? (
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                  Username or Email
-                </label>
-                <Input
-                  id="username"
-                  name="username"
-                  type="text"
-                  value={credentials.username}
-                  onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
-                  placeholder="Enter username or email"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={credentials.password}
-                  onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                  placeholder="Enter password"
-                  required
-                />
-              </div>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                Username
+              </label>
+              <Input
+                id="username"
+                name="username"
+                type="text"
+                value={credentials.username}
+                onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
+                placeholder="Enter username"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                value={credentials.password}
+                onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+                placeholder="Enter password"
+                required
+              />
+            </div>
 
-              <Button
-                type="submit"
-                className="w-full bg-orange-600 hover:bg-orange-700"
-                disabled={isLoading}
-              >
-                {isLoading ? "Signing in..." : "Sign In"}
-              </Button>
-              
-              <Button
-                type="button"
-                variant="link"
-                className="w-full text-sm"
-                onClick={() => setShowForgotPassword(true)}
-              >
-                Forgot Password?
-              </Button>
-            </form>
-          ) : (
-            <form onSubmit={handleForgotPassword} className="space-y-4">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email Address
-                </label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={forgotPasswordEmail}
-                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  required
-                />
-              </div>
-              
-              <Button
-                type="submit"
-                className="w-full bg-orange-600 hover:bg-orange-700"
-                disabled={isLoading}
-              >
-                {isLoading ? "Sending..." : "Send Reset Email"}
-              </Button>
-              
-              <Button
-                type="button"
-                variant="link"
-                className="w-full text-sm"
-                onClick={() => setShowForgotPassword(false)}
-              >
-                Back to Login
-              </Button>
-            </form>
-          )}
+            <Button
+              type="submit"
+              className="w-full bg-orange-600 hover:bg-orange-700"
+              disabled={isLoading}
+            >
+              {isLoading ? "Signing in..." : "Sign In"}
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>

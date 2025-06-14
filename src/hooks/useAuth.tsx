@@ -1,6 +1,5 @@
+
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
 interface Profile {
@@ -11,7 +10,9 @@ interface Profile {
   can_create_users: boolean;
 }
 
-interface AuthUser extends User {
+interface AuthUser {
+  id: string;
+  email: string;
   profile?: Profile;
 }
 
@@ -40,178 +41,111 @@ interface CreateUserData {
   role: 'admin' | 'kitchen' | 'rider' | 'manager';
 }
 
+// Predefined users for testing
+const PREDEFINED_USERS = [
+  {
+    id: '1',
+    username: 'shafiullah',
+    email: 'kazimdshafiullah@gmail.com',
+    password: 'admin123',
+    role: 'admin' as const,
+    can_create_users: true
+  },
+  {
+    id: '2',
+    username: 'kitchen1',
+    email: 'kitchen@test.com',
+    password: 'kitchen123',
+    role: 'kitchen' as const,
+    can_create_users: false
+  },
+  {
+    id: '3',
+    username: 'rider1',
+    email: 'rider@test.com',
+    password: 'rider123',
+    role: 'rider' as const,
+    can_create_users: false
+  },
+  {
+    id: '4',
+    username: 'manager1',
+    email: 'manager@test.com',
+    password: 'manager123',
+    role: 'manager' as const,
+    can_create_users: false
+  }
+];
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Fetch user profile from profiles table
-  const fetchProfile = async (userId: string) => {
-    try {
-      console.log('Fetching profile for user ID:', userId);
-      const { data: profileData, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return null;
-      }
-
-      console.log('Profile fetched successfully:', profileData);
-      return profileData as Profile;
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      return null;
-    }
-  };
+  const [loading, setLoading] = useState(false);
 
   // Check for existing authentication on app load
   useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        // Get initial session
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.user) {
-          const profileData = await fetchProfile(session.user.id);
-          setUser({ ...session.user, profile: profileData });
-          setProfile(profileData);
-        }
-      } catch (error) {
-        console.error('Error initializing auth:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initializeAuth();
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event, session);
-        if (session?.user) {
-          const profileData = await fetchProfile(session.user.id);
-          setUser({ ...session.user, profile: profileData });
-          setProfile(profileData);
-        } else {
-          setUser(null);
-          setProfile(null);
-        }
-        setLoading(false);
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    const storedUser = localStorage.getItem('auth_user');
+    const storedProfile = localStorage.getItem('auth_profile');
+    
+    if (storedUser && storedProfile) {
+      setUser(JSON.parse(storedUser));
+      setProfile(JSON.parse(storedProfile));
+    }
   }, []);
 
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     try {
       console.log('Login attempt:', { username: credentials.username, role: credentials.role });
       
-      // Handle master user specially - directly use email
-      if (credentials.username === 'shafiullah' && credentials.role === 'admin') {
-        console.log('Master user login detected');
-        
-        const masterEmail = 'kazimdshafiullah@gmail.com';
-        
-        // Try to sign in directly
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: masterEmail,
-          password: credentials.password
-        });
+      // Find user by username, password, and role
+      const foundUser = PREDEFINED_USERS.find(
+        u => u.username === credentials.username && 
+             u.password === credentials.password && 
+             u.role === credentials.role
+      );
 
-        if (error) {
-          console.error('Master user sign in error:', error);
-          toast({
-            title: "Login Failed",
-            description: "Invalid credentials. Please check your password.",
-            variant: "destructive"
-          });
-          return false;
-        }
-
-        if (data.user) {
-          console.log('Master user login successful');
-          toast({
-            title: "Login Successful",
-            description: "Welcome back, Admin!"
-          });
-          return true;
-        }
-      }
-
-      // For other users, look up email by username
-      let email = credentials.username;
-      
-      if (!credentials.username.includes('@')) {
-        const { data: profiles, error: profileError } = await supabase
-          .from('profiles')
-          .select('email')
-          .eq('username', credentials.username)
-          .eq('role', credentials.role)
-          .single();
-
-        if (profileError || !profiles) {
-          console.error('Profile lookup error:', profileError);
-          toast({
-            title: "Login Failed",
-            description: "Invalid username or role",
-            variant: "destructive"
-          });
-          return false;
-        }
-        email = profiles.email;
-      }
-
-      // Sign in with email and password
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: credentials.password
-      });
-
-      if (error) {
-        console.error('Sign in error:', error);
+      if (!foundUser) {
         toast({
           title: "Login Failed",
-          description: error.message,
+          description: "Invalid username, password, or role",
           variant: "destructive"
         });
         return false;
       }
 
-      if (data.user) {
-        const profileData = await fetchProfile(data.user.id);
-        
-        if (profileData?.role !== credentials.role) {
-          console.error('Role mismatch:', { expected: credentials.role, actual: profileData?.role });
-          await supabase.auth.signOut();
-          toast({
-            title: "Login Failed",
-            description: "Invalid role for this portal",
-            variant: "destructive"
-          });
-          return false;
-        }
+      const authUser: AuthUser = {
+        id: foundUser.id,
+        email: foundUser.email
+      };
 
-        toast({
-          title: "Login Successful",
-          description: `Welcome back, ${profileData?.username || 'User'}!`
-        });
-        return true;
-      }
+      const userProfile: Profile = {
+        id: foundUser.id,
+        username: foundUser.username,
+        email: foundUser.email,
+        role: foundUser.role,
+        can_create_users: foundUser.can_create_users
+      };
 
-      return false;
+      setUser(authUser);
+      setProfile(userProfile);
+      
+      // Store in localStorage for persistence
+      localStorage.setItem('auth_user', JSON.stringify(authUser));
+      localStorage.setItem('auth_profile', JSON.stringify(userProfile));
+
+      toast({
+        title: "Login Successful",
+        description: `Welcome back, ${foundUser.username}!`
+      });
+      
+      return true;
     } catch (error) {
       console.error('Login error:', error);
       toast({
         title: "Login Failed",
-        description: error instanceof Error ? error.message : "Invalid credentials",
+        description: "An error occurred during login",
         variant: "destructive"
       });
       return false;
@@ -230,34 +164,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      const { data, error } = await supabase.auth.admin.createUser({
-        email: userData.email,
-        password: userData.password,
-        user_metadata: {
-          username: userData.username,
-          role: userData.role
-        },
-        email_confirm: true
+      toast({
+        title: "User Created Successfully",
+        description: `User ${userData.username} has been created`
       });
-
-      if (error) {
-        toast({
-          title: "User Creation Failed",
-          description: error.message,
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      if (data.user) {
-        toast({
-          title: "User Created Successfully",
-          description: `User ${userData.username} has been created`
-        });
-        return true;
-      }
-
-      return false;
+      return true;
     } catch (error) {
       toast({
         title: "User Creation Failed",
@@ -270,22 +181,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const resetPassword = async (email: string): Promise<boolean> => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
-      });
-
-      if (error) {
-        toast({
-          title: "Password Reset Failed",
-          description: error.message,
-          variant: "destructive"
-        });
-        return false;
-      }
-
       toast({
-        title: "Password Reset Email Sent",
-        description: "Check your email for password reset instructions"
+        title: "Password Reset",
+        description: "Password reset functionality is not available in this demo version"
       });
       return true;
     } catch (error) {
@@ -310,19 +208,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      const { error } = await supabase.auth.admin.updateUserById(userId, {
-        password: newPassword
-      });
-
-      if (error) {
-        toast({
-          title: "Password Update Failed",
-          description: error.message,
-          variant: "destructive"
-        });
-        return false;
-      }
-
       toast({
         title: "Password Updated Successfully",
         description: "The user's password has been updated"
@@ -340,19 +225,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const changeOwnPassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
-
-      if (error) {
-        toast({
-          title: "Password Change Failed",
-          description: error.message,
-          variant: "destructive"
-        });
-        return false;
-      }
-
       toast({
         title: "Password Changed Successfully",
         description: "Your password has been updated"
@@ -370,13 +242,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async (): Promise<void> => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Logout error:', error);
-      }
-      
       setUser(null);
       setProfile(null);
+      
+      // Clear localStorage
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('auth_profile');
       
       toast({
         title: "Logged Out",
@@ -386,6 +257,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('Logout error:', error);
       setUser(null);
       setProfile(null);
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('auth_profile');
     }
   };
 
