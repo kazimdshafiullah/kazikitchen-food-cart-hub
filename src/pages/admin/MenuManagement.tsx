@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,8 +33,13 @@ const MenuManagement = () => {
   
   const { toast } = useToast();
   const { data: mainCategories } = useMainCategories();
-  const { data: subCategories } = useSubCategories(newMenuItem.category);
+  
+  // Only fetch subcategories when a specific category is selected for the new menu item
+  const { data: subCategories } = useSubCategories(newMenuItem.category || undefined);
+  
+  // Fetch all subcategories for the filtering dropdown
   const { data: allSubCategories } = useSubCategories();
+  
   const { data: mealTypes } = useMealTypes();
 
   // Get available dates (exclude weekends - Friday and Saturday)
@@ -122,6 +126,17 @@ const MenuManagement = () => {
     return dayOfWeek === 5 || dayOfWeek === 6;
   };
 
+  // Filter subcategories to remove duplicates and ensure unique display
+  const getUniqueSubCategories = (subcats: any[] | undefined) => {
+    if (!subcats) return [];
+    
+    const uniqueSubcats = subcats.filter((subcat, index, self) => 
+      index === self.findIndex(s => s.name === subcat.name && s.main_category_id === subcat.main_category_id)
+    );
+    
+    return uniqueSubcats;
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -187,7 +202,7 @@ const MenuManagement = () => {
                     <SelectValue placeholder="Select sub category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {subCategories.map((subCategory) => (
+                    {getUniqueSubCategories(subCategories).map((subCategory) => (
                       <SelectItem key={subCategory.id} value={subCategory.id}>
                         {subCategory.name}
                       </SelectItem>
@@ -375,7 +390,7 @@ const MenuManagement = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all-subcategories">All sub categories</SelectItem>
-                  {allSubCategories?.map((subCategory) => (
+                  {getUniqueSubCategories(allSubCategories)?.map((subCategory) => (
                     <SelectItem key={subCategory.id} value={subCategory.id}>
                       {subCategory.name}
                     </SelectItem>
