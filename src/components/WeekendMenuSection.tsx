@@ -61,9 +61,9 @@ const WeekendMenuSection = () => {
 
   // Check if selected category is School Tiffin (doesn't need meal type selection)
   const isSchoolTiffin = selectedMainCategory && mainCategories ? 
-    Boolean(mainCategories.find(cat => 
+    mainCategories.find(cat => 
       cat.id === selectedMainCategory && (cat.name.toLowerCase().includes('school') || cat.name.toLowerCase().includes('tiffin'))
-    )) : false;
+    ) !== undefined : false;
 
   // Get available ordering dates (Sunday to Thursday, excluding weekends)
   const getAvailableOrderingDates = () => {
@@ -111,6 +111,17 @@ const WeekendMenuSection = () => {
 
   const availableDates = getAvailableOrderingDates();
 
+  // Check if we can proceed to order
+  const canProceedToOrder = () => {
+    if (!selectedMainCategory || !selectedSubCategory) return false;
+    
+    // For School Tiffin, we don't need meal type
+    if (isSchoolTiffin) return true;
+    
+    // For Office Food, we need meal type
+    return !!selectedMealType;
+  };
+
   return (
     <section className="py-16 px-4 bg-white">
       <div className="container mx-auto">
@@ -157,7 +168,7 @@ const WeekendMenuSection = () => {
 
             <div>
               <label className="block text-sm font-medium text-amber-800 mb-2">
-                Food Plan
+                {isSchoolTiffin ? "Meal Plan" : "Food Plan"}
               </label>
               <Select 
                 value={selectedSubCategory} 
@@ -170,7 +181,7 @@ const WeekendMenuSection = () => {
                 disabled={!selectedMainCategory}
               >
                 <SelectTrigger className="border-amber-300">
-                  <SelectValue placeholder="Select plan" />
+                  <SelectValue placeholder={isSchoolTiffin ? "Select meal plan" : "Select plan"} />
                 </SelectTrigger>
                 <SelectContent>
                   {subCategories?.map((subCategory) => (
@@ -200,7 +211,7 @@ const WeekendMenuSection = () => {
                 disabled={!selectedSubCategory || isSchoolTiffin}
               >
                 <SelectTrigger className="border-amber-300">
-                  <SelectValue placeholder={isSchoolTiffin ? "Not required" : "Select meal type"} />
+                  <SelectValue placeholder={isSchoolTiffin ? "Not required for Tiffin" : "Select meal type"} />
                 </SelectTrigger>
                 <SelectContent>
                   {mealTypes?.map((mealType) => (
@@ -210,6 +221,11 @@ const WeekendMenuSection = () => {
                   ))}
                 </SelectContent>
               </Select>
+              {isSchoolTiffin && (
+                <p className="text-xs text-amber-600 mt-1">
+                  School Tiffin doesn't require meal type selection
+                </p>
+              )}
             </div>
           </div>
 
@@ -240,7 +256,7 @@ const WeekendMenuSection = () => {
           )}
 
           {/* Available Dates Display */}
-          {selectedMainCategory && selectedSubCategory && (isSchoolTiffin || selectedMealType) && (
+          {canProceedToOrder() && (
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-amber-800 mb-4">Available Ordering Dates</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
@@ -283,7 +299,7 @@ const WeekendMenuSection = () => {
           )}
 
           {/* Order Button */}
-          {selectedMainCategory && selectedSubCategory && (isSchoolTiffin || selectedMealType) && (
+          {canProceedToOrder() && (
             <div className="text-center">
               <Button 
                 asChild 
