@@ -1,3 +1,4 @@
+
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -50,6 +51,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Fetch user profile from profiles table
   const fetchProfile = async (userId: string) => {
     try {
+      console.log('Fetching profile for user ID:', userId);
       const { data: profileData, error } = await supabase
         .from('profiles')
         .select('*')
@@ -61,6 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
 
+      console.log('Profile fetched successfully:', profileData);
       return profileData as Profile;
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -92,6 +95,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session);
         if (session?.user) {
           const profileData = await fetchProfile(session.user.id);
           setUser({ ...session.user, profile: profileData });
@@ -192,6 +196,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       console.log('Attempting to sign in with email:', email);
+
+      // For the master user, try to create the account if it doesn't exist
+      if (email === 'kazimdshafiullah@gmail.com' && credentials.password === 'admin123') {
+        console.log('Attempting master user login...');
+        
+        // Try to sign up first (in case the user doesn't exist)
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: email,
+          password: credentials.password,
+          options: {
+            data: {
+              username: 'shafiullah',
+              role: 'admin'
+            }
+          }
+        });
+
+        if (signUpError && !signUpError.message.includes('already registered')) {
+          console.error('Master user signup error:', signUpError);
+        } else {
+          console.log('Master user signup result:', signUpData);
+        }
+      }
 
       // Sign in with email and password
       const { data, error } = await supabase.auth.signInWithPassword({
