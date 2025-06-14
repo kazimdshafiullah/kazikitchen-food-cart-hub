@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -163,12 +164,11 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
   const handleApproveOrder = () => {
     onUpdateOrder(order.id, { 
       status: "approved", 
-      approvedAt: new Date().toLocaleString(),
-      kitchenStatus: "ready"
+      approvedAt: new Date().toLocaleString()
     });
     toast({
       title: "Order Approved",
-      description: `Order ${order.id} approved and ready for rider assignment!`
+      description: `Order ${order.id} approved and ready for processing!`
     });
   };
 
@@ -226,9 +226,8 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
     }
   };
   
-  const canAssignRider = order.status === "approved" && 
-                         (order.kitchenStatus === "ready" || order.kitchenStatus === "completed") && 
-                         order.riderStatus === "not_assigned";
+  // Rider assignment is available when order is approved (regardless of kitchen status)
+  const canAssignRider = order.status === "approved" && order.riderStatus === "not_assigned";
   
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -380,14 +379,14 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
               </Button>
             )}
             
-            {/* Rider Assignment */}
+            {/* Rider Assignment - Available immediately when order is approved */}
             {canAssignRider && (
               <div className="space-y-3 p-4 border rounded-lg bg-blue-50">
                 <div className="flex items-center gap-2">
                   <Truck className="h-5 w-5 text-blue-600" />
-                  <p className="font-medium text-blue-900">Ready for Delivery - Assign Rider</p>
+                  <p className="font-medium text-blue-900">Assign Delivery Rider</p>
                 </div>
-                <p className="text-sm text-blue-700">Food is ready in kitchen. Please assign a delivery rider.</p>
+                <p className="text-sm text-blue-700">Order is approved. Please assign a delivery rider.</p>
                 <Select onValueChange={handleAssignRider}>
                   <SelectTrigger className="bg-white">
                     <SelectValue placeholder="Select a rider for delivery" />
@@ -413,17 +412,17 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
               </div>
             )}
 
-            {/* Order Status Info */}
-            {order.status === "approved" && order.kitchenStatus !== "ready" && order.kitchenStatus !== "completed" && (
-              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            {/* Kitchen Status Information */}
+            {order.kitchenStatus === "ready" && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-yellow-600" />
-                  <span className="text-sm font-medium text-yellow-800">
-                    Order is being prepared in kitchen
+                  <ChefHat className="h-4 w-4 text-green-600" />
+                  <span className="text-sm font-medium text-green-800">
+                    Food is ready for pickup!
                   </span>
                 </div>
-                <p className="text-xs text-yellow-700 mt-1">
-                  Rider assignment will be available once food is ready
+                <p className="text-xs text-green-700 mt-1">
+                  Kitchen has completed preparing this order
                 </p>
               </div>
             )}
@@ -490,9 +489,8 @@ const Orders = () => {
     order.kitchenStatus === "ready" && order.riderStatus === "not_assigned"
   ).length;
   const awaitingRiderCount = orders.filter(order => 
-    (order.kitchenStatus === "ready" || order.kitchenStatus === "completed") && 
-    order.riderStatus === "not_assigned" && 
-    order.status === "approved"
+    order.status === "approved" && 
+    order.riderStatus === "not_assigned"
   ).length;
   
   const handleViewOrder = (order: any) => {
@@ -507,12 +505,11 @@ const Orders = () => {
   const handleApproveOrder = (orderId: string) => {
     handleUpdateOrder(orderId, { 
       status: "approved", 
-      approvedAt: new Date().toLocaleString(),
-      kitchenStatus: "ready"
+      approvedAt: new Date().toLocaleString()
     });
     toast({
       title: "Order Approved",
-      description: `Order ${orderId} approved and ready for rider assignment!`
+      description: `Order ${orderId} approved and ready for processing!`
     });
   };
 
@@ -545,7 +542,6 @@ const Orders = () => {
     
     if (newStatus === "approved") {
       updates.approvedAt = new Date().toLocaleString();
-      updates.kitchenStatus = "ready";
     } else if (newStatus === "cancelled") {
       updates.cancelledAt = new Date().toLocaleString();
     }
@@ -812,10 +808,9 @@ const Orders = () => {
                       )}
                     </TableCell>
 
-                    {/* Rider Assignment Column */}
+                    {/* Rider Assignment Column - Available immediately when order is approved */}
                     <TableCell>
-                      {order.status === "approved" && 
-                       (order.kitchenStatus === "ready" || order.kitchenStatus === "completed") ? (
+                      {order.status === "approved" ? (
                         order.assignedRider ? (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -859,9 +854,7 @@ const Orders = () => {
                       ) : order.assignedRider ? (
                         <span className="text-sm font-medium text-blue-600">{order.assignedRider}</span>
                       ) : (
-                        <span className="text-gray-400 text-sm">
-                          {order.status !== "approved" ? "Order pending" : "Food not ready"}
-                        </span>
+                        <span className="text-gray-400 text-sm">Order not approved</span>
                       )}
                     </TableCell>
 
