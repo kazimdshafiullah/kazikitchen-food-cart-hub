@@ -229,10 +229,21 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
+// Make the hook optional - don't throw error if used outside provider
 export const useCustomerAuth = () => {
   const context = useContext(CustomerAuthContext);
+  
+  // Return default values if used outside provider (for guest users)
   if (context === undefined) {
-    throw new Error('useCustomerAuth must be used within a CustomerAuthProvider');
+    return {
+      customer: null,
+      loading: false,
+      signUp: async () => false,
+      signIn: async () => false,
+      signOut: async () => {},
+      getCustomerOrders: async () => []
+    };
   }
+  
   return context;
 };
