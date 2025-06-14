@@ -96,7 +96,7 @@ const Navbar = () => {
 
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild className="md:hidden">
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" aria-label="Open mobile menu">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
