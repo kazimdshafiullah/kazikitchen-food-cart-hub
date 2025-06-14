@@ -23,7 +23,7 @@ const AdminLogin = () => {
     });
     
     if (success) {
-      navigate("/admin/dashboard");
+      navigate("/admin/");
     }
     
     setIsLoading(false);
