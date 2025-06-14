@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit2, Trash2, Upload, ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useMainCategories, useSubCategories, useMealTypes } from "@/hooks/useWeeklyMenu";
 
 const MenuManagement = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all-categories");
@@ -26,40 +28,10 @@ const MenuManagement = () => {
   });
   
   const { toast } = useToast();
-
-  // Mock data for categories
-  const categories = [
-    { id: "frozen-food", name: "Frozen Food" },
-    { id: "school-tiffin", name: "School Tiffin" },
-    { id: "office-food", name: "Office Food" },
-  ];
-
-  const subCategories = {
-    "office-food": [
-      { id: "breakfast", name: "Breakfast" },
-      { id: "lunch", name: "Lunch" },
-    ],
-    "school-tiffin": [
-      { id: "regular", name: "Regular" },
-    ],
-    "frozen-food": [
-      { id: "ready-meals", name: "Ready Meals" },
-      { id: "combo-packs", name: "Combo Packs" },
-    ],
-  };
-
-  const mealTypes = {
-    "breakfast": [
-      { id: "regular", name: "Regular" },
-      { id: "diet", name: "Diet" },
-      { id: "premium", name: "Premium" },
-    ],
-    "lunch": [
-      { id: "regular", name: "Regular" },
-      { id: "diet", name: "Diet" },
-      { id: "premium", name: "Premium" },
-    ],
-  };
+  const { data: mainCategories } = useMainCategories();
+  const { data: subCategories } = useSubCategories(newMenuItem.category);
+  const { data: allSubCategories } = useSubCategories();
+  const { data: mealTypes } = useMealTypes();
 
   const daysOfWeek = [
     { id: "0", name: "Sunday" },
@@ -68,6 +40,11 @@ const MenuManagement = () => {
     { id: "3", name: "Wednesday" },
     { id: "4", name: "Thursday" },
   ];
+
+  // Check if selected category is School Tiffin (doesn't need meal type)
+  const isSchoolTiffin = newMenuItem.category && mainCategories?.find(cat => 
+    cat.id === newMenuItem.category && (cat.name.toLowerCase().includes('school') || cat.name.toLowerCase().includes('tiffin'))
+  );
 
   const handleCreateMenuItem = () => {
     if (!newMenuItem.name || !newMenuItem.price || !newMenuItem.category) {
@@ -149,7 +126,7 @@ const MenuManagement = () => {
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((category) => (
+                  {mainCategories?.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
                     </SelectItem>
@@ -158,7 +135,7 @@ const MenuManagement = () => {
               </Select>
             </div>
 
-            {selectedCategory && selectedCategory !== "all-categories" && subCategories[selectedCategory as keyof typeof subCategories] && (
+            {newMenuItem.category && subCategories && subCategories.length > 0 && (
               <div>
                 <Label htmlFor="sub-category">Sub Category *</Label>
                 <Select
@@ -172,9 +149,16 @@ const MenuManagement = () => {
                     <SelectValue placeholder="Select sub category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {subCategories[selectedCategory as keyof typeof subCategories]?.map((subCategory) => (
+                    {subCategories.map((subCategory) => (
                       <SelectItem key={subCategory.id} value={subCategory.id}>
-                        {subCategory.name}
+                        <div className="flex items-center gap-2">
+                          {subCategory.name}
+                          {subCategory.food_plan && (
+                            <Badge variant="outline">
+                              {subCategory.food_plan}
+                            </Badge>
+                          )}
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -182,7 +166,7 @@ const MenuManagement = () => {
               </div>
             )}
 
-            {selectedSubCategory && selectedSubCategory !== "all-subcategories" && mealTypes[selectedSubCategory as keyof typeof mealTypes] && (
+            {newMenuItem.sub_category && !isSchoolTiffin && mealTypes && mealTypes.length > 0 && (
               <div>
                 <Label htmlFor="meal-type">Meal Type *</Label>
                 <Select
@@ -195,7 +179,7 @@ const MenuManagement = () => {
                     <SelectValue placeholder="Select meal type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {mealTypes[selectedSubCategory as keyof typeof mealTypes]?.map((mealType) => (
+                    {mealTypes.map((mealType) => (
                       <SelectItem key={mealType.id} value={mealType.id}>
                         {mealType.name}
                       </SelectItem>
@@ -205,7 +189,7 @@ const MenuManagement = () => {
               </div>
             )}
 
-            {(selectedCategory === "school-tiffin" || selectedCategory === "office-food") && (
+            {newMenuItem.category && (
               <div>
                 <Label htmlFor="day-of-week">Day of Week *</Label>
                 <Select
@@ -333,7 +317,7 @@ const MenuManagement = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all-categories">All categories</SelectItem>
-                  {categories.map((category) => (
+                  {mainCategories?.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
                     </SelectItem>
@@ -347,9 +331,16 @@ const MenuManagement = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all-subcategories">All sub categories</SelectItem>
-                  {selectedCategory && selectedCategory !== "all-categories" && subCategories[selectedCategory as keyof typeof subCategories]?.map((subCategory) => (
+                  {allSubCategories?.map((subCategory) => (
                     <SelectItem key={subCategory.id} value={subCategory.id}>
-                      {subCategory.name}
+                      <div className="flex items-center gap-2">
+                        {subCategory.name}
+                        {subCategory.food_plan && (
+                          <Badge variant="outline" className="text-xs">
+                            {subCategory.food_plan}
+                          </Badge>
+                        )}
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -361,7 +352,7 @@ const MenuManagement = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all-mealtypes">All meal types</SelectItem>
-                  {selectedSubCategory && selectedSubCategory !== "all-subcategories" && mealTypes[selectedSubCategory as keyof typeof mealTypes]?.map((mealType) => (
+                  {mealTypes?.map((mealType) => (
                     <SelectItem key={mealType.id} value={mealType.id}>
                       {mealType.name}
                     </SelectItem>

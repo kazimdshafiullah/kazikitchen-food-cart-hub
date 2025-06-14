@@ -59,6 +59,11 @@ const WeekendMenuSection = () => {
     }
   };
 
+  // Check if selected category is School Tiffin (doesn't need meal type selection)
+  const isSchoolTiffin = selectedMainCategory && mainCategories?.find(cat => 
+    cat.id === selectedMainCategory && (cat.name.toLowerCase().includes('school') || cat.name.toLowerCase().includes('tiffin'))
+  );
+
   return (
     <section className="py-16 px-4 bg-white">
       <div className="container mx-auto">
@@ -76,7 +81,11 @@ const WeekendMenuSection = () => {
               <label className="block text-sm font-medium text-amber-800 mb-2">
                 Choose Category
               </label>
-              <Select value={selectedMainCategory} onValueChange={setSelectedMainCategory}>
+              <Select value={selectedMainCategory} onValueChange={(value) => {
+                setSelectedMainCategory(value);
+                setSelectedSubCategory("");
+                setSelectedMealType("");
+              }}>
                 <SelectTrigger className="border-amber-300">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
@@ -96,7 +105,12 @@ const WeekendMenuSection = () => {
               </label>
               <Select 
                 value={selectedSubCategory} 
-                onValueChange={setSelectedSubCategory}
+                onValueChange={(value) => {
+                  setSelectedSubCategory(value);
+                  if (isSchoolTiffin) {
+                    setSelectedMealType(""); // Clear meal type for school tiffin
+                  }
+                }}
                 disabled={!selectedMainCategory}
               >
                 <SelectTrigger className="border-amber-300">
@@ -127,10 +141,10 @@ const WeekendMenuSection = () => {
               <Select 
                 value={selectedMealType} 
                 onValueChange={setSelectedMealType}
-                disabled={!selectedSubCategory}
+                disabled={!selectedSubCategory || isSchoolTiffin}
               >
                 <SelectTrigger className="border-amber-300">
-                  <SelectValue placeholder="Select meal type" />
+                  <SelectValue placeholder={isSchoolTiffin ? "Not required" : "Select meal type"} />
                 </SelectTrigger>
                 <SelectContent>
                   {mealTypes?.map((mealType) => (
@@ -170,14 +184,14 @@ const WeekendMenuSection = () => {
           )}
 
           {/* Order Button */}
-          {selectedMainCategory && selectedSubCategory && selectedMealType && (
+          {selectedMainCategory && selectedSubCategory && (isSchoolTiffin || selectedMealType) && (
             <div className="text-center">
               <Button 
                 asChild 
                 size="lg"
                 className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
               >
-                <Link to={`/weekend-order/${selectedMainCategory}/${getCurrentWeekStart()}/${selectedMealType}/${selectedSubCategory}`}>
+                <Link to={`/weekend-order/${selectedMainCategory}/${getCurrentWeekStart()}/${selectedMealType || 'default'}/${selectedSubCategory}`}>
                   <Clock className="w-5 h-5 mr-2" />
                   Plan This Week's Menu
                 </Link>
