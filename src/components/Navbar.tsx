@@ -5,13 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, ShoppingCart, Phone, MapPin } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-
-  // For now, we'll use a placeholder for cart items until CartContext is properly set up
-  const totalItems = 0;
+  const { itemCount } = useCart();
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -30,11 +29,10 @@ const Navbar = () => {
           <div className="flex items-center space-x-8">
             <Link to="/" className="flex items-center space-x-2">
               <img 
-                src="/lovable-uploads/2cfab3c4-b828-41e4-b378-a8bc7c2a9c57.png" 
+                src="/lovable-uploads/b2259b6e-c2d4-4685-a56f-95379cddaf8f.png" 
                 alt="Kazi Kitchen Logo" 
-                className="h-12 w-12"
+                className="h-12 w-auto"
               />
-              <span className="text-xl font-bold text-orange-600">Kazi Kitchen</span>
             </Link>
             
             <div className="hidden md:flex items-center space-x-6">
@@ -69,9 +67,9 @@ const Navbar = () => {
             <Button asChild variant="ghost" size="sm" className="relative">
               <Link to="/cart">
                 <ShoppingCart className="h-5 w-5" />
-                {totalItems > 0 && (
+                {itemCount > 0 && (
                   <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs bg-orange-500">
-                    {totalItems}
+                    {itemCount}
                   </Badge>
                 )}
               </Link>
