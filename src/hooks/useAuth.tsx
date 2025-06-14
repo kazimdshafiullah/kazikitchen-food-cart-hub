@@ -25,6 +25,7 @@ interface AuthContextType {
   createUser: (userData: CreateUserData) => Promise<boolean>;
   resetPassword: (email: string) => Promise<boolean>;
   updatePassword: (userId: string, newPassword: string) => Promise<boolean>;
+  changeOwnPassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
 }
 
 interface LoginCredentials {
@@ -61,7 +62,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
 
-      // Type assertion to ensure role is properly typed
       return profileData as Profile;
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -126,7 +126,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         user_metadata: {
           username: userData.username,
           role: userData.role
-        }
+        },
+        email_confirm: true
       });
 
       if (error) {
@@ -159,26 +160,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     try {
-      // For login with username, we need to find the user's email first
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, email')
-        .eq('username', credentials.username)
-        .eq('role', credentials.role)
-        .single();
+      let email = credentials.username;
+      
+      // If username is not an email, try to find the email from profiles
+      if (!credentials.username.includes('@')) {
+        const { data: profiles, error: profileError } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('username', credentials.username)
+          .eq('role', credentials.role)
+          .single();
 
-      if (profileError || !profiles) {
-        toast({
-          title: "Login Failed",
-          description: "Invalid username or role",
-          variant: "destructive"
-        });
-        return false;
+        if (profileError || !profiles) {
+          toast({
+            title: "Login Failed",
+            description: "Invalid username or role",
+            variant: "destructive"
+          });
+          return false;
+        }
+        email = profiles.email;
       }
 
       // Sign in with email and password
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: profiles.email,
+        email: email,
         password: credentials.password
       });
 
@@ -291,6 +297,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const changeOwnPassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        toast({
+          title: "Password Change Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      toast({
+        title: "Password Changed Successfully",
+        description: "Your password has been updated"
+      });
+      return true;
+    } catch (error) {
+      toast({
+        title: "Password Change Failed",
+        description: error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   const logout = async (): Promise<void> => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -321,7 +357,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       logout,
       createUser,
       resetPassword,
-      updatePassword
+      updatePassword,
+      changeOwnPassword
     }}>
       {children}
     </AuthContext.Provider>

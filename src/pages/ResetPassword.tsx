@@ -18,92 +18,22 @@ const ResetPassword = () => {
   useEffect(() => {
     const handleAuthFlow = async () => {
       try {
-        console.log("Full URL:", window.location.href);
-        console.log("Hash:", window.location.hash);
-        console.log("Search:", window.location.search);
+        // Get the current session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        // Check both hash and search params
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const searchParams = new URLSearchParams(window.location.search);
-        
-        // Try to get tokens from either hash or search params
-        let accessToken = hashParams.get('access_token') || searchParams.get('access_token');
-        let refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
-        let type = hashParams.get('type') || searchParams.get('type');
-        let error = hashParams.get('error') || searchParams.get('error');
-        let errorDescription = hashParams.get('error_description') || searchParams.get('error_description');
-        
-        console.log("Extracted params:", { 
-          accessToken: !!accessToken, 
-          refreshToken: !!refreshToken, 
-          type, 
-          error, 
-          errorDescription,
-          hashLength: window.location.hash.length,
-          searchLength: window.location.search.length
-        });
-
-        // Check for errors first
-        if (error) {
-          console.error("Auth error in URL:", error, errorDescription);
+        if (sessionError || !session) {
+          console.log("No valid session found for password reset");
           toast({
-            title: "Reset Link Error",
-            description: errorDescription || "The reset link is invalid or has expired.",
+            title: "Invalid Reset Link",
+            description: "The reset link is invalid or has expired. Please request a new one.",
             variant: "destructive"
           });
           navigate("/admin/login");
           return;
         }
 
-        // If we have tokens, try to set the session
-        if (accessToken && refreshToken && type === 'recovery') {
-          console.log("Found recovery tokens, setting session...");
-          
-          const { data, error: sessionError } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken
-          });
-
-          console.log("Set session result:", { data: !!data, error: sessionError });
-
-          if (sessionError) {
-            console.error("Error setting session:", sessionError);
-            toast({
-              title: "Invalid Reset Link",
-              description: "The reset link is invalid or has expired. Please request a new one.",
-              variant: "destructive"
-            });
-            navigate("/admin/login");
-            return;
-          }
-
-          console.log("Session set successfully, proceeding to password form");
-          setIsValidating(false);
-        } else {
-          // No tokens in URL, check if we have an existing session
-          console.log("No tokens in URL, checking existing session...");
-          const { data: { session }, error: getSessionError } = await supabase.auth.getSession();
-          
-          console.log("Existing session check:", { 
-            hasSession: !!session, 
-            error: getSessionError,
-            userId: session?.user?.id 
-          });
-          
-          if (getSessionError || !session) {
-            console.log("No valid session found, redirecting to login");
-            toast({
-              title: "Invalid Reset Link",
-              description: "The reset link is invalid or has expired. Please request a new one.",
-              variant: "destructive"
-            });
-            navigate("/admin/login");
-            return;
-          }
-
-          console.log("Valid session found, proceeding to password form");
-          setIsValidating(false);
-        }
+        console.log("Valid session found for password reset");
+        setIsValidating(false);
       } catch (error) {
         console.error("Error in auth flow:", error);
         toast({
@@ -142,17 +72,9 @@ const ResetPassword = () => {
     setIsLoading(true);
 
     try {
-      console.log("Attempting to update password...");
-      
-      // Check current session before updating
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log("Current session before password update:", { hasSession: !!session });
-      
-      const { data, error } = await supabase.auth.updateUser({
+      const { error } = await supabase.auth.updateUser({
         password: password
       });
-
-      console.log("Password update response:", { data: !!data, error });
 
       if (error) {
         console.error("Password update error:", error);
@@ -171,7 +93,6 @@ const ResetPassword = () => {
 
       // Sign out and redirect after a short delay
       setTimeout(async () => {
-        console.log("Signing out and redirecting...");
         await supabase.auth.signOut();
         navigate("/admin/login");
       }, 2000);

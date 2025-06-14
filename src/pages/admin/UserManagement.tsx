@@ -19,7 +19,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Search, Plus, UserPlus, Key } from "lucide-react";
+import { Search, UserPlus, Key, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -37,8 +37,9 @@ const UserManagement = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [addUserOpen, setAddUserOpen] = useState(false);
   const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
+  const [changeOwnPasswordOpen, setChangeOwnPasswordOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
-  const { profile, createUser, updatePassword } = useAuth();
+  const { profile, createUser, updatePassword, changeOwnPassword } = useAuth();
   
   // New user form state
   const [newUser, setNewUser] = useState({
@@ -52,6 +53,11 @@ const UserManagement = () => {
   // Password reset state
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  
+  // Own password change state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [ownNewPassword, setOwnNewPassword] = useState("");
+  const [ownConfirmPassword, setOwnConfirmPassword] = useState("");
   
   // Load users on component mount
   useEffect(() => {
@@ -107,7 +113,7 @@ const UserManagement = () => {
         confirmPassword: ""
       });
       setAddUserOpen(false);
-      fetchUsers(); // Refresh the user list
+      fetchUsers();
     }
   };
 
@@ -122,6 +128,20 @@ const UserManagement = () => {
       setConfirmNewPassword("");
       setResetPasswordOpen(false);
       setSelectedUser(null);
+    }
+  };
+
+  const handleChangeOwnPassword = async () => {
+    if (!currentPassword || !ownNewPassword || ownNewPassword !== ownConfirmPassword) {
+      return;
+    }
+
+    const success = await changeOwnPassword(currentPassword, ownNewPassword);
+    if (success) {
+      setCurrentPassword("");
+      setOwnNewPassword("");
+      setOwnConfirmPassword("");
+      setChangeOwnPasswordOpen(false);
     }
   };
   
@@ -170,10 +190,16 @@ const UserManagement = () => {
           />
         </div>
         
-        <Button onClick={() => setAddUserOpen(true)}>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Add User
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setChangeOwnPasswordOpen(true)}>
+            <Settings className="mr-2 h-4 w-4" />
+            Change My Password
+          </Button>
+          <Button onClick={() => setAddUserOpen(true)}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add User
+          </Button>
+        </div>
       </div>
       
       <div className="rounded-md border">
@@ -183,6 +209,7 @@ const UserManagement = () => {
               <TableHead>Username</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
+              <TableHead>Master User</TableHead>
               <TableHead>Created</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -193,13 +220,14 @@ const UserManagement = () => {
                 <TableCell className="font-medium">{user.username}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{getRoleDisplayName(user.role)}</TableCell>
+                <TableCell>{user.can_create_users ? "Yes" : "No"}</TableCell>
                 <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => openResetPasswordDialog(user)}
-                    disabled={user.id === profile?.id} // Can't reset own password
+                    disabled={user.id === profile?.id}
                   >
                     <Key className="h-4 w-4 mr-1" />
                     Reset Password
@@ -326,6 +354,57 @@ const UserManagement = () => {
               <Button variant="outline">Cancel</Button>
             </DialogClose>
             <Button onClick={handleResetPassword}>Reset Password</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Own Password Dialog */}
+      <Dialog open={changeOwnPasswordOpen} onOpenChange={setChangeOwnPasswordOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change My Password</DialogTitle>
+            <DialogDescription>
+              Update your own password
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <label htmlFor="currentPassword" className="text-sm font-medium">Current Password</label>
+              <Input 
+                id="currentPassword"
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="ownNewPassword" className="text-sm font-medium">New Password</label>
+              <Input 
+                id="ownNewPassword"
+                type="password"
+                value={ownNewPassword}
+                onChange={(e) => setOwnNewPassword(e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label htmlFor="ownConfirmPassword" className="text-sm font-medium">Confirm New Password</label>
+              <Input 
+                id="ownConfirmPassword"
+                type="password"
+                value={ownConfirmPassword}
+                onChange={(e) => setOwnConfirmPassword(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button onClick={handleChangeOwnPassword}>Change Password</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -53,13 +53,16 @@ const AdminLogin = () => {
           </div>
           <CardTitle className="text-2xl font-bold text-orange-600">Kazi Kitchen Admin</CardTitle>
           <CardDescription>Access your admin portal</CardDescription>
+          <div className="text-xs text-gray-500 mt-2">
+            Default Login: username "shafiullah", password "admin123"
+          </div>
         </CardHeader>
         <CardContent>
           {!showForgotPassword ? (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                  Username
+                  Username or Email
                 </label>
                 <Input
                   id="username"
@@ -67,7 +70,7 @@ const AdminLogin = () => {
                   type="text"
                   value={credentials.username}
                   onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
-                  placeholder="Enter username"
+                  placeholder="Enter username or email"
                   required
                 />
               </div>
