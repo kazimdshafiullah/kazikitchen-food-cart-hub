@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -483,6 +482,12 @@ const WeekendMenu = () => {
   };
 
   const weekendSchoolItems = useMemo(() => getWeekendItems(schoolTiffinMenu, "school"), []);
+  const weekendOfficeBreakfastRegular = useMemo(() => getWeekendItems(officeFoodMenu.breakfast.regular, "office"), []);
+  const weekendOfficeBreakfastDiet = useMemo(() => getWeekendItems(officeFoodMenu.breakfast.diet, "office"), []);
+  const weekendOfficeBreakfastPremium = useMemo(() => getWeekendItems(officeFoodMenu.breakfast.premium, "office"), []);
+  const weekendOfficeLunchRegular = useMemo(() => getWeekendItems(officeFoodMenu.lunch.regular, "office"), []);
+  const weekendOfficeLunchDiet = useMemo(() => getWeekendItems(officeFoodMenu.lunch.diet, "office"), []);
+  const weekendOfficeLunchPremium = useMemo(() => getWeekendItems(officeFoodMenu.lunch.premium, "office"), []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50">
@@ -555,10 +560,10 @@ const WeekendMenu = () => {
                   </TabsList>
 
                   <TabsContent value="regular">
-                    {getAvailableItems(officeFoodMenu.breakfast.regular, "office").length > 0 ? (
+                    {weekendOfficeBreakfastRegular.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                        {getAvailableItems(officeFoodMenu.breakfast.regular, "office").map((item) => (
-                          <MenuCard key={item.day} item={item} type="office" mealType="breakfast" />
+                        {weekendOfficeBreakfastRegular.map((item, index) => (
+                          <MenuCard key={`${item.day}-${index}`} item={item} type="office" mealType="breakfast" />
                         ))}
                       </div>
                     ) : (
@@ -569,10 +574,10 @@ const WeekendMenu = () => {
                   </TabsContent>
 
                   <TabsContent value="diet">
-                    {getAvailableItems(officeFoodMenu.breakfast.diet, "office").length > 0 ? (
+                    {weekendOfficeBreakfastDiet.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                        {getAvailableItems(officeFoodMenu.breakfast.diet, "office").map((item) => (
-                          <MenuCard key={item.day} item={item} type="office" mealType="breakfast" />
+                        {weekendOfficeBreakfastDiet.map((item, index) => (
+                          <MenuCard key={`${item.day}-${index}`} item={item} type="office" mealType="breakfast" />
                         ))}
                       </div>
                     ) : (
@@ -583,10 +588,10 @@ const WeekendMenu = () => {
                   </TabsContent>
 
                   <TabsContent value="premium">
-                    {getAvailableItems(officeFoodMenu.breakfast.premium, "office").length > 0 ? (
+                    {weekendOfficeBreakfastPremium.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                        {getAvailableItems(officeFoodMenu.breakfast.premium, "office").map((item) => (
-                          <MenuCard key={item.day} item={item} type="office" mealType="breakfast" />
+                        {weekendOfficeBreakfastPremium.map((item, index) => (
+                          <MenuCard key={`${item.day}-${index}`} item={item} type="office" mealType="breakfast" />
                         ))}
                       </div>
                     ) : (
@@ -613,10 +618,10 @@ const WeekendMenu = () => {
                   </TabsList>
 
                   <TabsContent value="regular">
-                    {getAvailableItems(officeFoodMenu.lunch.regular, "office").length > 0 ? (
+                    {weekendOfficeLunchRegular.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                        {getAvailableItems(officeFoodMenu.lunch.regular, "office").map((item) => (
-                          <MenuCard key={item.day} item={item} type="office" mealType="lunch" />
+                        {weekendOfficeLunchRegular.map((item, index) => (
+                          <MenuCard key={`${item.day}-${index}`} item={item} type="office" mealType="lunch" />
                         ))}
                       </div>
                     ) : (
@@ -627,10 +632,10 @@ const WeekendMenu = () => {
                   </TabsContent>
 
                   <TabsContent value="diet">
-                    {getAvailableItems(officeFoodMenu.lunch.diet, "office").length > 0 ? (
+                    {weekendOfficeLunchDiet.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                        {getAvailableItems(officeFoodMenu.lunch.diet, "office").map((item) => (
-                          <MenuCard key={item.day} item={item} type="office" mealType="lunch" />
+                        {weekendOfficeLunchDiet.map((item, index) => (
+                          <MenuCard key={`${item.day}-${index}`} item={item} type="office" mealType="lunch" />
                         ))}
                       </div>
                     ) : (
@@ -641,10 +646,10 @@ const WeekendMenu = () => {
                   </TabsContent>
 
                   <TabsContent value="premium">
-                    {getAvailableItems(officeFoodMenu.lunch.premium, "office").length > 0 ? (
+                    {weekendOfficeLunchPremium.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                        {getAvailableItems(officeFoodMenu.lunch.premium, "office").map((item) => (
-                          <MenuCard key={item.day} item={item} type="office" mealType="lunch" />
+                        {weekendOfficeLunchPremium.map((item, index) => (
+                          <MenuCard key={`${item.day}-${index}`} item={item} type="office" mealType="lunch" />
                         ))}
                       </div>
                     ) : (
