@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -165,11 +164,11 @@ const OrderDetails = ({ order, open, onClose, onUpdateOrder }: {
     onUpdateOrder(order.id, { 
       status: "approved", 
       approvedAt: new Date().toLocaleString(),
-      kitchenStatus: "pending"
+      kitchenStatus: "ready"
     });
     toast({
       title: "Order Approved",
-      description: `Order ${order.id} approved and sent to kitchen!`
+      description: `Order ${order.id} approved and ready for rider assignment!`
     });
   };
 
@@ -509,11 +508,11 @@ const Orders = () => {
     handleUpdateOrder(orderId, { 
       status: "approved", 
       approvedAt: new Date().toLocaleString(),
-      kitchenStatus: "pending"
+      kitchenStatus: "ready"
     });
     toast({
       title: "Order Approved",
-      description: `Order ${orderId} approved and sent to kitchen!`
+      description: `Order ${orderId} approved and ready for rider assignment!`
     });
   };
 
@@ -546,7 +545,7 @@ const Orders = () => {
     
     if (newStatus === "approved") {
       updates.approvedAt = new Date().toLocaleString();
-      updates.kitchenStatus = "pending";
+      updates.kitchenStatus = "ready";
     } else if (newStatus === "cancelled") {
       updates.cancelledAt = new Date().toLocaleString();
     }
