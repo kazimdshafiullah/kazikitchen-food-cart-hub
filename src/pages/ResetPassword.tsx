@@ -16,26 +16,34 @@ const ResetPassword = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Listen for auth state changes and URL parameters
     const handleAuthFlow = async () => {
       try {
-        // Check URL parameters for auth tokens
-        const urlParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = urlParams.get('access_token');
-        const refreshToken = urlParams.get('refresh_token');
-        const type = urlParams.get('type');
-        const error = urlParams.get('error');
-        const errorDescription = urlParams.get('error_description');
+        console.log("Full URL:", window.location.href);
+        console.log("Hash:", window.location.hash);
+        console.log("Search:", window.location.search);
         
-        console.log("URL params:", { 
+        // Check both hash and search params
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const searchParams = new URLSearchParams(window.location.search);
+        
+        // Try to get tokens from either hash or search params
+        let accessToken = hashParams.get('access_token') || searchParams.get('access_token');
+        let refreshToken = hashParams.get('refresh_token') || searchParams.get('refresh_token');
+        let type = hashParams.get('type') || searchParams.get('type');
+        let error = hashParams.get('error') || searchParams.get('error');
+        let errorDescription = hashParams.get('error_description') || searchParams.get('error_description');
+        
+        console.log("Extracted params:", { 
           accessToken: !!accessToken, 
           refreshToken: !!refreshToken, 
           type, 
           error, 
-          errorDescription 
+          errorDescription,
+          hashLength: window.location.hash.length,
+          searchLength: window.location.search.length
         });
 
-        // Check for errors in URL first
+        // Check for errors first
         if (error) {
           console.error("Auth error in URL:", error, errorDescription);
           toast({
@@ -47,17 +55,19 @@ const ResetPassword = () => {
           return;
         }
 
-        // If we have tokens in URL, this is from email link
+        // If we have tokens, try to set the session
         if (accessToken && refreshToken && type === 'recovery') {
-          console.log("Setting session from URL tokens...");
+          console.log("Found recovery tokens, setting session...");
           
-          const { data, error } = await supabase.auth.setSession({
+          const { data, error: sessionError } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
           });
 
-          if (error) {
-            console.error("Error setting session:", error);
+          console.log("Set session result:", { data: !!data, error: sessionError });
+
+          if (sessionError) {
+            console.error("Error setting session:", sessionError);
             toast({
               title: "Invalid Reset Link",
               description: "The reset link is invalid or has expired. Please request a new one.",
@@ -67,14 +77,21 @@ const ResetPassword = () => {
             return;
           }
 
-          console.log("Session set successfully:", data);
+          console.log("Session set successfully, proceeding to password form");
           setIsValidating(false);
         } else {
-          // Check if we already have a valid session
-          const { data: { session }, error } = await supabase.auth.getSession();
-          console.log("Existing session check:", { session: !!session, error });
+          // No tokens in URL, check if we have an existing session
+          console.log("No tokens in URL, checking existing session...");
+          const { data: { session }, error: getSessionError } = await supabase.auth.getSession();
           
-          if (error || !session) {
+          console.log("Existing session check:", { 
+            hasSession: !!session, 
+            error: getSessionError,
+            userId: session?.user?.id 
+          });
+          
+          if (getSessionError || !session) {
+            console.log("No valid session found, redirecting to login");
             toast({
               title: "Invalid Reset Link",
               description: "The reset link is invalid or has expired. Please request a new one.",
@@ -84,6 +101,7 @@ const ResetPassword = () => {
             return;
           }
 
+          console.log("Valid session found, proceeding to password form");
           setIsValidating(false);
         }
       } catch (error) {
@@ -126,11 +144,15 @@ const ResetPassword = () => {
     try {
       console.log("Attempting to update password...");
       
+      // Check current session before updating
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Current session before password update:", { hasSession: !!session });
+      
       const { data, error } = await supabase.auth.updateUser({
         password: password
       });
 
-      console.log("Password update response:", { data, error });
+      console.log("Password update response:", { data: !!data, error });
 
       if (error) {
         console.error("Password update error:", error);
@@ -147,8 +169,9 @@ const ResetPassword = () => {
         description: "Your password has been updated successfully. You can now log in with your new password."
       });
 
-      // Sign out and redirect to login after a short delay
+      // Sign out and redirect after a short delay
       setTimeout(async () => {
+        console.log("Signing out and redirecting...");
         await supabase.auth.signOut();
         navigate("/admin/login");
       }, 2000);
@@ -170,7 +193,10 @@ const ResetPassword = () => {
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <Card className="w-full max-w-md">
           <CardContent className="p-6">
-            <div className="text-center">Validating reset link...</div>
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
+              <div>Validating reset link...</div>
+            </div>
           </CardContent>
         </Card>
       </div>
