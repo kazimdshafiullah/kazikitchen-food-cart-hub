@@ -24,8 +24,28 @@ const ResetPassword = () => {
         const accessToken = urlParams.get('access_token');
         const refreshToken = urlParams.get('refresh_token');
         const type = urlParams.get('type');
+        const error = urlParams.get('error');
+        const errorDescription = urlParams.get('error_description');
         
-        console.log("URL params:", { accessToken: !!accessToken, refreshToken: !!refreshToken, type });
+        console.log("URL params:", { 
+          accessToken: !!accessToken, 
+          refreshToken: !!refreshToken, 
+          type, 
+          error, 
+          errorDescription 
+        });
+
+        // Check for errors in URL first
+        if (error) {
+          console.error("Auth error in URL:", error, errorDescription);
+          toast({
+            title: "Reset Link Error",
+            description: errorDescription || "The reset link is invalid or has expired.",
+            variant: "destructive"
+          });
+          navigate("/admin/login");
+          return;
+        }
 
         // If we have tokens in URL, this is from email link
         if (accessToken && refreshToken && type === 'recovery') {
