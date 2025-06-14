@@ -18,7 +18,7 @@ import {
 
 const WeekendMenu = () => {
   const [activeTab, setActiveTab] = useState("school-tiffin");
-  const [activeMealType, setActiveMealType] = useState("breakfast");
+  const [activeMealType, setActiveMealType] = useState("Regular");
   const [activeOfficeCategory, setActiveOfficeCategory] = useState("regular");
 
   const { data: mainCategories } = useMainCategories();
@@ -37,12 +37,12 @@ const WeekendMenu = () => {
     return getWeekdayDates(today, 10); // Get next 10 weekdays
   }, []);
 
-  // Sample menu data for School Tiffin based on subcategories
-  const getSchoolTiffinMenuForDate = (date: Date, subCategory: any) => {
+  // Sample menu data for School Tiffin based on meal types
+  const getSchoolTiffinMenuForDate = (date: Date, mealType: string) => {
     const dayOfWeek = date.getDay();
     const dayName = getDayName(dayOfWeek);
     
-    // Sample items based on food plan
+    // Sample items based on meal type
     const menuItems: Record<string, any> = {
       'Regular': {
         0: { item: "Egg Roll", price: 45, description: "Delicious egg roll with fresh vegetables" },
@@ -67,8 +67,7 @@ const WeekendMenu = () => {
       }
     };
 
-    const plan = subCategory?.food_plan || 'Regular';
-    const menuItem = menuItems[plan]?.[dayOfWeek];
+    const menuItem = menuItems[mealType]?.[dayOfWeek];
     
     if (!menuItem) return null;
 
@@ -81,13 +80,13 @@ const WeekendMenu = () => {
       description: menuItem.description,
       available: schoolTiffinCategory ? isOrderingAllowedForDate(schoolTiffinCategory, date) : false,
       deadline: "Order by 10:00 PM the day before",
-      foodPlan: plan,
-      subCategory: subCategory
+      mealType: mealType,
+      subCategory: schoolTiffinSubCategories?.[0] // Use the Breakfast subcategory
     };
   };
 
-  const getFoodPlanIcon = (plan: string) => {
-    switch (plan) {
+  const getMealTypeIcon = (mealType: string) => {
+    switch (mealType) {
       case 'Regular': return <Utensils className="h-4 w-4" />;
       case 'Diet': return <Heart className="h-4 w-4" />;
       case 'Premium': return <Crown className="h-4 w-4" />;
@@ -95,8 +94,8 @@ const WeekendMenu = () => {
     }
   };
 
-  const getFoodPlanColor = (plan: string) => {
-    switch (plan) {
+  const getMealTypeColor = (mealType: string) => {
+    switch (mealType) {
       case 'Regular': return 'bg-blue-500';
       case 'Diet': return 'bg-green-500';
       case 'Premium': return 'bg-purple-500';
@@ -114,13 +113,13 @@ const WeekendMenu = () => {
             <div className="w-full h-48 bg-gradient-to-br from-orange-100 to-yellow-100 flex items-center justify-center">
               <div className="text-6xl">🍽️</div>
             </div>
-            <Badge className={`absolute top-2 left-2 ${getFoodPlanColor(item.foodPlan)} text-white`}>
+            <Badge className={`absolute top-2 left-2 ${getMealTypeColor(item.mealType)} text-white`}>
               {item.day}
             </Badge>
-            {item.foodPlan && (
-              <Badge className={`absolute top-2 right-2 ${getFoodPlanColor(item.foodPlan)} text-white flex items-center gap-1`}>
-                {getFoodPlanIcon(item.foodPlan)}
-                {item.foodPlan}
+            {item.mealType && (
+              <Badge className={`absolute top-2 right-2 ${getMealTypeColor(item.mealType)} text-white flex items-center gap-1`}>
+                {getMealTypeIcon(item.mealType)}
+                {item.mealType}
               </Badge>
             )}
             {isAvailable ? (
@@ -154,7 +153,7 @@ const WeekendMenu = () => {
               disabled={!isAvailable}
             >
               {isAvailable ? (
-                <Link to={`/weekend-order/${type}/${item.day.toLowerCase()}/${activeMealType || 'school-tiffin'}/${item.subCategory?.id || 'default'}`}>
+                <Link to={`/weekend-order/${type}/${item.day.toLowerCase()}/${activeMealType}/${item.subCategory?.id || 'default'}`}>
                   Order Now
                 </Link>
               ) : (
@@ -167,19 +166,24 @@ const WeekendMenu = () => {
     );
   };
 
-  // Generate School Tiffin menu items for each subcategory and date
+  // Generate School Tiffin menu items for each meal type and date
   const getSchoolTiffinMenuItems = () => {
-    if (!schoolTiffinSubCategories) return [];
+    if (!mealTypes) return [];
     
     const menuItems: any[] = [];
     
-    schoolTiffinSubCategories.forEach(subCategory => {
-      availableDates.slice(0, 5).forEach(date => { // Show first 5 weekdays
-        const menuItem = getSchoolTiffinMenuForDate(date, subCategory);
-        if (menuItem) {
-          menuItems.push(menuItem);
-        }
-      });
+    // Get relevant meal types (Regular, Diet, Premium)
+    const relevantMealTypes = mealTypes.filter(mt => ['Regular', 'Diet', 'Premium'].includes(mt.name));
+    
+    relevantMealTypes.forEach(mealType => {
+      if (mealType.name === activeMealType) { // Only show items for active meal type
+        availableDates.slice(0, 5).forEach(date => { // Show first 5 weekdays
+          const menuItem = getSchoolTiffinMenuForDate(date, mealType.name);
+          if (menuItem) {
+            menuItems.push(menuItem);
+          }
+        });
+      }
     });
     
     return menuItems;
@@ -220,22 +224,30 @@ const WeekendMenu = () => {
               <h2 className="text-2xl font-bold text-amber-800 mb-2">School Tiffin Menu</h2>
               <p className="text-amber-600">Fresh daily tiffin for students - Order by 10 PM the day before</p>
               
-              {schoolTiffinSubCategories && schoolTiffinSubCategories.length > 0 && (
-                <div className="mt-4 flex justify-center gap-4">
-                  {schoolTiffinSubCategories.map(subCategory => (
-                    <Badge key={subCategory.id} className={`${getFoodPlanColor(subCategory.food_plan || 'Regular')} text-white flex items-center gap-1`}>
-                      {getFoodPlanIcon(subCategory.food_plan || 'Regular')}
-                      {subCategory.name}
-                    </Badge>
-                  ))}
-                </div>
-              )}
+              {/* Meal Type Selection */}
+              <div className="mt-4 flex justify-center gap-4">
+                {mealTypes?.filter(mt => ['Regular', 'Diet', 'Premium'].includes(mt.name)).map(mealType => (
+                  <Button
+                    key={mealType.id}
+                    variant={activeMealType === mealType.name ? "default" : "outline"}
+                    onClick={() => setActiveMealType(mealType.name)}
+                    className={`flex items-center gap-2 ${
+                      activeMealType === mealType.name 
+                        ? `${getMealTypeColor(mealType.name)} text-white` 
+                        : `border-amber-300 text-amber-700 hover:bg-amber-50`
+                    }`}
+                  >
+                    {getMealTypeIcon(mealType.name)}
+                    {mealType.name}
+                  </Button>
+                ))}
+              </div>
             </div>
             
             {schoolTiffinMenuItems.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {schoolTiffinMenuItems.map((item, index) => (
-                  <MenuCard key={`${item.subCategory?.id}-${item.dayNumber}-${index}`} item={item} type="school" />
+                  <MenuCard key={`${item.mealType}-${item.dayNumber}-${index}`} item={item} type="school" />
                 ))}
               </div>
             ) : (

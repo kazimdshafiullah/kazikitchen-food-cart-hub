@@ -38,11 +38,6 @@ const MenuManagement = () => {
   const { data: allSubCategories } = useSubCategories();
   const { data: mealTypes } = useMealTypes();
 
-  // Check if selected category is School Tiffin (doesn't need meal type)
-  const isSchoolTiffin = newMenuItem.category && mainCategories?.find(cat => 
-    cat.id === newMenuItem.category && cat.name === 'School Tiffin'
-  );
-
   // Get available dates (exclude weekends)
   const getAvailableDates = () => {
     const dates = [];
@@ -64,32 +59,20 @@ const MenuManagement = () => {
   const availableDates = getAvailableDates();
 
   const handleCreateMenuItem = () => {
-    if (!newMenuItem.name || !newMenuItem.price || !newMenuItem.category || !newMenuItem.sub_category || !newMenuItem.specific_date) {
+    if (!newMenuItem.name || !newMenuItem.price || !newMenuItem.category || !newMenuItem.sub_category || !newMenuItem.meal_type || !newMenuItem.specific_date) {
       toast({
         title: "Error",
-        description: "Please fill in required fields (Name, Price, Category, Sub Category, Date)",
+        description: "Please fill in all required fields",
         variant: "destructive",
       });
       return;
     }
 
-    if (!isSchoolTiffin && !newMenuItem.meal_type) {
-      toast({
-        title: "Error",
-        description: "Meal type is required for Office Food",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    console.log("Creating menu item:", {
-      ...newMenuItem,
-      meal_type: isSchoolTiffin ? null : newMenuItem.meal_type
-    });
+    console.log("Creating menu item:", newMenuItem);
     
     toast({
       title: "Success",
-      description: `Menu item created successfully for ${isSchoolTiffin ? 'School Tiffin' : 'Office Food'}`,
+      description: "Menu item created successfully",
     });
 
     // Reset form
@@ -138,7 +121,7 @@ const MenuManagement = () => {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Menu Management</h1>
         <p className="text-gray-600">
-          Manage menu items with date-based scheduling for School Tiffin and Office Food
+          Manage menu items with date-based scheduling for all categories
         </p>
       </div>
 
@@ -179,43 +162,29 @@ const MenuManagement = () => {
 
             {newMenuItem.category && subCategories && subCategories.length > 0 && (
               <div>
-                <Label htmlFor="sub-category">
-                  {isSchoolTiffin ? "Food Plan *" : "Sub Category *"}
-                </Label>
+                <Label htmlFor="sub-category">Sub Category *</Label>
                 <Select
                   value={newMenuItem.sub_category}
                   onValueChange={(value) => {
-                    setNewMenuItem(prev => ({ ...prev, sub_category: value, meal_type: "" }));
+                    setNewMenuItem(prev => ({ ...prev, sub_category: value }));
                     setSelectedSubCategory(value);
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={isSchoolTiffin ? "Select food plan" : "Select sub category"} />
+                    <SelectValue placeholder="Select sub category" />
                   </SelectTrigger>
                   <SelectContent>
                     {subCategories.map((subCategory) => (
                       <SelectItem key={subCategory.id} value={subCategory.id}>
-                        <div className="flex items-center gap-2">
-                          {subCategory.name}
-                          {subCategory.food_plan && (
-                            <Badge variant="outline" className="text-xs">
-                              {subCategory.food_plan}
-                            </Badge>
-                          )}
-                        </div>
+                        {subCategory.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                {isSchoolTiffin && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Choose between Regular, Diet, or Premium food plans for School Tiffin
-                  </p>
-                )}
               </div>
             )}
 
-            {newMenuItem.sub_category && !isSchoolTiffin && mealTypes && mealTypes.length > 0 && (
+            {newMenuItem.sub_category && mealTypes && mealTypes.length > 0 && (
               <div>
                 <Label htmlFor="meal-type">Meal Type *</Label>
                 <Select
@@ -235,17 +204,6 @@ const MenuManagement = () => {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-            )}
-
-            {isSchoolTiffin && newMenuItem.sub_category && (
-              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-800 font-medium">
-                  ℹ️ School Tiffin Information
-                </p>
-                <p className="text-xs text-blue-600 mt-1">
-                  School Tiffin doesn't require meal type selection. The selected food plan will apply to the entire tiffin service.
-                </p>
               </div>
             )}
 
@@ -403,14 +361,7 @@ const MenuManagement = () => {
                   <SelectItem value="all-subcategories">All sub categories</SelectItem>
                   {allSubCategories?.map((subCategory) => (
                     <SelectItem key={subCategory.id} value={subCategory.id}>
-                      <div className="flex items-center gap-2">
-                        {subCategory.name}
-                        {subCategory.food_plan && (
-                          <Badge variant="outline" className="text-xs">
-                            {subCategory.food_plan}
-                          </Badge>
-                        )}
-                      </div>
+                      {subCategory.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -439,9 +390,9 @@ const MenuManagement = () => {
                     <ImageIcon className="w-6 h-6 text-gray-400" />
                   </div>
                   <div>
-                    <h4 className="font-medium">Sample School Tiffin Item</h4>
+                    <h4 className="font-medium">Sample Menu Item</h4>
                     <p className="text-sm text-gray-600">৳45 - {format(new Date(), "MMM dd, yyyy")}</p>
-                    <p className="text-xs text-gray-500">School Tiffin Regular</p>
+                    <p className="text-xs text-gray-500">School Tiffin - Breakfast - Regular</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -456,7 +407,7 @@ const MenuManagement = () => {
               </div>
               
               <p className="text-center text-gray-500 py-8">
-                Create your first menu item above. For School Tiffin, select a food plan (Regular, Diet, Premium) instead of meal type.
+                Create your first menu item above. All categories now require subcategory and meal type selection.
               </p>
             </div>
           </CardContent>

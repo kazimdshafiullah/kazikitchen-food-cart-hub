@@ -157,7 +157,7 @@ export const useWeeklyMenuByDate = (
       if (error) throw error;
       return data as WeeklyMenuItem[];
     },
-    enabled: !!(mainCategoryId && subCategoryId && specificDate),
+    enabled: !!(mainCategoryId && subCategoryId && mealTypeId && specificDate),
   });
 };
 
