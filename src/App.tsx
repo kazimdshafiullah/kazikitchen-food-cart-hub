@@ -23,7 +23,7 @@ import CustomerDashboard from "./pages/CustomerDashboard";
 
 // Admin pages
 import AdminLogin from "./pages/admin/AdminLogin";
-import AdminLayout from "./components/AdminLayout";
+import { AdminLayout } from "./components/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import Orders from "./pages/admin/Orders";
 import Products from "./pages/admin/Products";
