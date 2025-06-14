@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -165,59 +164,86 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log('Login attempt:', { username: credentials.username, role: credentials.role });
       
-      let email = credentials.username;
-      
-      // If username is not an email, try to find the email from profiles
-      // But for master user, we know the email directly
-      if (!credentials.username.includes('@')) {
-        if (credentials.username === 'shafiullah' && credentials.role === 'admin') {
-          email = 'kazimdshafiullah@gmail.com';
-          console.log('Master user detected, using known email:', email);
-        } else {
-          // For other users, look up email in profiles table
-          const { data: profiles, error: profileError } = await supabase
-            .from('profiles')
-            .select('email')
-            .eq('username', credentials.username)
-            .eq('role', credentials.role)
-            .single();
+      // Handle master user specially
+      if (credentials.username === 'shafiullah' && credentials.role === 'admin') {
+        console.log('Master user login detected');
+        
+        const masterEmail = 'kazimdshafiullah@gmail.com';
+        const masterPassword = 'admin123';
+        
+        if (credentials.password !== masterPassword) {
+          toast({
+            title: "Login Failed",
+            description: "Invalid credentials",
+            variant: "destructive"
+          });
+          return false;
+        }
 
-          if (profileError || !profiles) {
-            console.error('Profile lookup error:', profileError);
-            toast({
-              title: "Login Failed",
-              description: "Invalid username or role",
-              variant: "destructive"
-            });
-            return false;
-          }
-          email = profiles.email;
+        // Try to sign up the master user first (will fail silently if already exists)
+        try {
+          await supabase.auth.signUp({
+            email: masterEmail,
+            password: masterPassword,
+            options: {
+              data: {
+                username: 'shafiullah',
+                role: 'admin'
+              }
+            }
+          });
+        } catch (signUpError) {
+          // Ignore signup errors as user might already exist
+          console.log('Master user signup attempt (may already exist):', signUpError);
+        }
+
+        // Now try to sign in
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: masterEmail,
+          password: masterPassword
+        });
+
+        if (error) {
+          console.error('Master user sign in error:', error);
+          toast({
+            title: "Login Failed",
+            description: "Authentication failed. Please try again.",
+            variant: "destructive"
+          });
+          return false;
+        }
+
+        if (data.user) {
+          console.log('Master user login successful');
+          toast({
+            title: "Login Successful",
+            description: "Welcome back, Admin!"
+          });
+          return true;
         }
       }
 
-      console.log('Attempting to sign in with email:', email);
+      // For other users, look up email by username
+      let email = credentials.username;
+      
+      if (!credentials.username.includes('@')) {
+        const { data: profiles, error: profileError } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('username', credentials.username)
+          .eq('role', credentials.role)
+          .single();
 
-      // For the master user, try to create the account if it doesn't exist
-      if (email === 'kazimdshafiullah@gmail.com' && credentials.password === 'admin123') {
-        console.log('Attempting master user login...');
-        
-        // Try to sign up first (in case the user doesn't exist)
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: email,
-          password: credentials.password,
-          options: {
-            data: {
-              username: 'shafiullah',
-              role: 'admin'
-            }
-          }
-        });
-
-        if (signUpError && !signUpError.message.includes('already registered')) {
-          console.error('Master user signup error:', signUpError);
-        } else {
-          console.log('Master user signup result:', signUpData);
+        if (profileError || !profiles) {
+          console.error('Profile lookup error:', profileError);
+          toast({
+            title: "Login Failed",
+            description: "Invalid username or role",
+            variant: "destructive"
+          });
+          return false;
         }
+        email = profiles.email;
       }
 
       // Sign in with email and password
@@ -237,7 +263,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (data.user) {
-        console.log('Sign in successful, fetching profile...');
         const profileData = await fetchProfile(data.user.id);
         
         if (profileData?.role !== credentials.role) {
@@ -251,7 +276,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return false;
         }
 
-        console.log('Login successful for user:', profileData);
         toast({
           title: "Login Successful",
           description: `Welcome back, ${profileData?.username || 'User'}!`
