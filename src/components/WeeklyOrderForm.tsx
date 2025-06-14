@@ -42,7 +42,7 @@ const orderFormSchema = z.object({
   customer_email: z.string().email("Please enter a valid email"),
   customer_phone: z.string().min(10, "Please enter a valid phone number"),
   delivery_address: z.string().min(10, "Please enter a complete address"),
-  delivery_location: z.enum(['Dhanmondi', 'Farmgate', 'Panthapath', 'Karwanbazar', 'New Market', 'Banglamotor', 'Shahbag', 'Science Lab'], {
+  delivery_location: z.enum(['Dhanmondi', 'Farmgate', 'Panthapath', 'Karwanbazar', 'New Market', 'Banglamotor', 'Shahbag', 'Science Lab', 'Elephant Road', 'Mirpur Road', 'Zigatola', 'Lalmatia'], {
     required_error: "Please select a delivery location"
   }),
 });

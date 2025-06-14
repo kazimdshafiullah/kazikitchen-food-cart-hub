@@ -51,7 +51,7 @@ export interface WeeklyOrder {
   customer_email: string;
   customer_phone: string;
   delivery_address: string;
-  delivery_location: 'Dhanmondi' | 'Farmgate' | 'Panthapath' | 'Karwanbazar' | 'New Market' | 'Banglamotor' | 'Shahbag' | 'Science Lab';
+  delivery_location: 'Dhanmondi' | 'Farmgate' | 'Panthapath' | 'Karwanbazar' | 'New Market' | 'Banglamotor' | 'Shahbag' | 'Science Lab' | 'Elephant Road' | 'Mirpur Road' | 'Zigatola' | 'Lalmatia';
   main_category_id: string;
   sub_category_id: string;
   meal_type_id: string;
@@ -72,7 +72,7 @@ export interface WeeklyOrderItem {
 
 export interface LocationPricing {
   id: string;
-  location: 'Dhanmondi' | 'Farmgate' | 'Panthapath' | 'Karwanbazar' | 'New Market' | 'Banglamotor' | 'Shahbag' | 'Science Lab';
+  location: 'Dhanmondi' | 'Farmgate' | 'Panthapath' | 'Karwanbazar' | 'New Market' | 'Banglamotor' | 'Shahbag' | 'Science Lab' | 'Elephant Road' | 'Mirpur Road' | 'Zigatola' | 'Lalmatia';
   base_delivery_fee: number;
   created_at: string;
 }
@@ -335,7 +335,11 @@ export const getAvailableLocations = () => {
     'New Market',
     'Banglamotor',
     'Shahbag',
-    'Science Lab'
+    'Science Lab',
+    'Elephant Road',
+    'Mirpur Road',
+    'Zigatola',
+    'Lalmatia'
   ] as const;
 };
 
