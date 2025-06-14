@@ -85,7 +85,7 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
             <Switch 
               id="bkash-enabled" 
-              checked={!!settings.bkash_enabled}
+              checked={Boolean(settings.bkash_enabled)}
               onCheckedChange={(checked) => {
                 console.log('bKash toggle clicked - current state:', settings.bkash_enabled, 'new state:', checked);
                 handleToggleChange('bkash_enabled', checked);
@@ -120,7 +120,7 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 pt-2">
             <Switch 
               id="bkash-live" 
-              checked={!!settings.bkash_live_mode}
+              checked={Boolean(settings.bkash_live_mode)}
               onCheckedChange={(checked) => {
                 console.log('bKash live mode toggle clicked - current state:', settings.bkash_live_mode, 'new state:', checked);
                 handleToggleChange('bkash_live_mode', checked);
@@ -151,7 +151,7 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
             <Switch 
               id="ssl-enabled" 
-              checked={!!settings.ssl_enabled}
+              checked={Boolean(settings.ssl_enabled)}
               onCheckedChange={(checked) => {
                 console.log('SSL toggle clicked - current state:', settings.ssl_enabled, 'new state:', checked);
                 handleToggleChange('ssl_enabled', checked);
@@ -159,7 +159,7 @@ const PaymentMethodTab = () => {
               disabled={updating}
             />
             <label htmlFor="ssl-enabled" className="text-sm font-medium cursor-pointer">
-              Enable SSL Commerz for Customers {updating && "(Updating...")"}
+              Enable SSL Commerz for Customers {updating && "(Updating...)"}
             </label>
           </div>
           
@@ -176,7 +176,7 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 pt-2">
             <Switch 
               id="ssl-live" 
-              checked={!!settings.ssl_live_mode}
+              checked={Boolean(settings.ssl_live_mode)}
               onCheckedChange={(checked) => {
                 console.log('SSL live mode toggle clicked - current state:', settings.ssl_live_mode, 'new state:', checked);
                 handleToggleChange('ssl_live_mode', checked);
@@ -207,7 +207,7 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg">
             <Switch 
               id="cod-enabled" 
-              checked={!!settings.cod_enabled}
+              checked={Boolean(settings.cod_enabled)}
               onCheckedChange={(checked) => {
                 console.log('COD toggle clicked - current state:', settings.cod_enabled, 'new state:', checked);
                 handleToggleChange('cod_enabled', checked);
