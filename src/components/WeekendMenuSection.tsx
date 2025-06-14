@@ -60,9 +60,10 @@ const WeekendMenuSection = () => {
   };
 
   // Check if selected category is School Tiffin (doesn't need meal type selection)
-  const isSchoolTiffin = selectedMainCategory && mainCategories?.find(cat => 
-    cat.id === selectedMainCategory && (cat.name.toLowerCase().includes('school') || cat.name.toLowerCase().includes('tiffin'))
-  );
+  const isSchoolTiffin = selectedMainCategory && mainCategories ? 
+    Boolean(mainCategories.find(cat => 
+      cat.id === selectedMainCategory && (cat.name.toLowerCase().includes('school') || cat.name.toLowerCase().includes('tiffin'))
+    )) : false;
 
   return (
     <section className="py-16 px-4 bg-white">
