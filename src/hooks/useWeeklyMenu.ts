@@ -213,7 +213,7 @@ export const useCreateWeeklyOrder = () => {
       customer_email: string;
       customer_phone: string;
       delivery_address: string;
-      delivery_location: 'Dhanmondi' | 'Farmgate' | 'Panthapath' | 'Karwanbazar' | 'New Market' | 'Banglamotor' | 'Shahbag' | 'Science Lab';
+      delivery_location: 'Dhanmondi' | 'Farmgate' | 'Panthapath' | 'Karwanbazar' | 'New Market' | 'Banglamotor' | 'Shahbag' | 'Science Lab' | 'Elephant Road' | 'Mirpur Road' | 'Zigatola' | 'Lalmatia';
       main_category_id: string;
       sub_category_id: string;
       meal_type_id: string;
