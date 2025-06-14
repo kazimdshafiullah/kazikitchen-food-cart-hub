@@ -13,6 +13,9 @@ interface ProductCardProps {
 const ProductCard = ({ product }: ProductCardProps) => {
   const { addToCart } = useCart();
 
+  console.log("ProductCard - Product:", product);
+  console.log("ProductCard - Link will go to:", `/product/${product.id}`);
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();

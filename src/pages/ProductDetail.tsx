@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -16,11 +15,16 @@ const ProductDetail = () => {
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   
+  console.log("ProductDetail - Product ID from URL:", id);
+  
   const { data: dbProduct, isLoading: productLoading, error } = useProduct(id || "");
   const { data: categories } = useCategories();
   
   // Fallback to mock data if database product not found
   const mockProduct = getProductById(id || "");
+  console.log("ProductDetail - Mock product found:", mockProduct);
+  console.log("ProductDetail - DB product found:", dbProduct);
+  
   const product = dbProduct || (mockProduct ? {
     id: mockProduct.id,
     name: mockProduct.name,
@@ -34,6 +38,8 @@ const ProductDetail = () => {
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   } : null);
+  
+  console.log("ProductDetail - Final product:", product);
   
   if (productLoading && !mockProduct) {
     return (
@@ -53,10 +59,12 @@ const ProductDetail = () => {
   }
   
   if (error && !mockProduct || !product) {
+    console.log("ProductDetail - Showing not found. Error:", error, "Product:", product);
     return (
       <div className="container mx-auto px-4 py-12 text-center">
         <h2 className="text-2xl font-bold mb-4">Product not found</h2>
         <p className="mb-4">The product you are looking for does not exist.</p>
+        <p className="mb-4 text-sm text-gray-500">Product ID: {id}</p>
         <Button asChild>
           <Link to="/">Back to Home</Link>
         </Button>
