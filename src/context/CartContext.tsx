@@ -40,9 +40,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const count = cart.reduce((acc, item) => acc + item.quantity, 0);
     setSubtotal(total);
     setItemCount(count);
+    
+    console.log('Cart updated:', cart);
+    console.log('Subtotal (USD):', total);
+    console.log('Item count:', count);
   }, [cart]);
   
   const addToCart = (product: Product, quantity: number = 1) => {
+    console.log('Adding to cart:', product, 'quantity:', quantity);
     setCart(prevCart => {
       const existingItemIndex = prevCart.findIndex(item => item.product.id === product.id);
       
@@ -64,6 +69,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
   
   const removeFromCart = (productId: string) => {
+    console.log('Removing from cart:', productId);
     setCart(prevCart => {
       const updatedCart = prevCart.filter(item => item.product.id !== productId);
       toast.info("Item removed from cart");
@@ -74,6 +80,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateQuantity = (productId: string, quantity: number) => {
     if (quantity < 1) return;
     
+    console.log('Updating quantity for:', productId, 'to:', quantity);
     setCart(prevCart => {
       const updatedCart = prevCart.map(item => {
         if (item.product.id === productId) {
@@ -86,6 +93,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
   
   const clearCart = () => {
+    console.log('Clearing cart');
     setCart([]);
     toast.info("Cart cleared");
   };

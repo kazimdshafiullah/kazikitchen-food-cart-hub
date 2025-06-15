@@ -51,40 +51,37 @@ const Checkout = () => {
 
   // Check if cart contains frozen food items
   const hasFrozenFood = cart.some(item => {
+    console.log('Checking item for frozen food:', item.product.name, 'is_frozen_food:', item.product.is_frozen_food);
     return item.product.is_frozen_food === true;
   });
   
-  // Calculate delivery fee based on your requirements
+  console.log('Has frozen food in cart:', hasFrozenFood);
+  console.log('BDT Subtotal:', bdtSubtotal);
+  
+  // Calculate delivery fee - only for frozen food, default 70 BDT
   const calculateDeliveryFee = () => {
-    if (!deliverySettings) return 0;
-    
-    // Delivery charge only applies if cart has frozen food
+    // No delivery charge if no frozen food
     if (!hasFrozenFood) {
+      console.log('No frozen food, delivery fee: 0');
       return 0;
     }
     
-    // For frozen food above 500 BDT, delivery is free
+    // Free delivery for frozen food orders above 500 BDT
     if (bdtSubtotal >= 500) {
+      console.log('Order above 500 BDT with frozen food, delivery fee: 0');
       return 0;
     }
     
-    // Default delivery charge for frozen food
-    return deliverySettings.frozen_food_delivery_fee;
+    // Default delivery charge for frozen food: 70 BDT
+    console.log('Frozen food order below 500 BDT, delivery fee: 70');
+    return 70;
   };
 
   const deliveryFee = calculateDeliveryFee();
   const totalAmount = bdtSubtotal + deliveryFee;
 
-  // Debug payment settings with more detailed logging
-  useEffect(() => {
-    console.log('=== CHECKOUT PAYMENT DEBUG ===');
-    console.log('Payment settings loading:', paymentLoading);
-    console.log('Payment settings error:', paymentError);
-    console.log('Payment settings data:', paymentSettings);
-    console.log('Has frozen food:', hasFrozenFood);
-    console.log('Delivery fee:', deliveryFee);
-    console.log('==============================');
-  }, [paymentSettings, paymentLoading, paymentError, hasFrozenFood, deliveryFee]);
+  console.log('Delivery fee:', deliveryFee);
+  console.log('Total amount:', totalAmount);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -102,6 +99,11 @@ const Checkout = () => {
   };
 
   const handlePlaceOrder = () => {
+    console.log('Placing order...');
+    console.log('Form data:', formData);
+    console.log('Payment method:', paymentMethod);
+    console.log('Delivery location:', deliveryLocation);
+    
     // Validation
     if (!formData.name || !formData.email || !formData.phone || !formData.address) {
       toast.error("Please fill in all required fields");
@@ -134,6 +136,8 @@ const Checkout = () => {
     const newOrderId = generateOrderId();
     setOrderId(newOrderId);
     setOrderPlaced(true);
+    
+    console.log('Order placed successfully:', newOrderId);
     
     // Clear cart after successful order
     setTimeout(() => {
