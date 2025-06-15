@@ -22,6 +22,10 @@ import { Search, UserPlus, Key, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { apiClient } from "@/utils/api"; // <-- Use custom backend API
+import { AddUserDialog } from "./UserDialogs/AddUserDialog";
+import { ResetPasswordDialog } from "./UserDialogs/ResetPasswordDialog";
+import { ChangeOwnPasswordDialog } from "./UserDialogs/ChangeOwnPasswordDialog";
+import { getRoleDisplayName } from "./userRoleUtils";
 
 interface CustomUser {
   id: string;
@@ -233,16 +237,6 @@ const UserManagement = () => {
     setResetPasswordOpen(true);
   };
 
-  const getRoleDisplayName = (role: string) => {
-    const roleNames = {
-      admin: "Admin",
-      manager: "Manager", 
-      kitchen: "Kitchen Staff",
-      rider: "Delivery Rider"
-    };
-    return roleNames[role as keyof typeof roleNames] || role;
-  };
-
   // Only show this page if user has permission to create users
   if (!profile?.can_create_users) {
     return (
@@ -324,168 +318,36 @@ const UserManagement = () => {
         </Table>
       </div>
       {/* Add User Dialog */}
-      <Dialog open={addUserOpen} onOpenChange={setAddUserOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add New User</DialogTitle>
-            <DialogDescription>
-              Create a new user account with specific role.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <label htmlFor="username" className="text-sm font-medium">Username</label>
-              <Input 
-                id="username"
-                value={newUser.username}
-                onChange={(e) => setNewUser({...newUser, username: e.target.value})}
-                placeholder="Enter username"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">Email</label>
-              <Input 
-                id="email"
-                type="email"
-                value={newUser.email}
-                onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                placeholder="Enter email"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="role" className="text-sm font-medium">Role</label>
-              <Select 
-                value={newUser.role} 
-                onValueChange={(value) => setNewUser({...newUser, role: value})}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="kitchen">Kitchen Staff</SelectItem>
-                  <SelectItem value="rider">Delivery Rider</SelectItem>
-                  <SelectItem value="manager">Manager</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">Password</label>
-              <Input 
-                id="password"
-                type="password"
-                value={newUser.password}
-                onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                placeholder="Enter password"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</label>
-              <Input 
-                id="confirmPassword"
-                type="password"
-                value={newUser.confirmPassword}
-                onChange={(e) => setNewUser({...newUser, confirmPassword: e.target.value})}
-                placeholder="Confirm password"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button onClick={handleAddUser}>Add User</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AddUserDialog
+        open={addUserOpen}
+        onOpenChange={setAddUserOpen}
+        newUser={newUser}
+        setNewUser={setNewUser}
+        handleAddUser={handleAddUser}
+      />
       {/* Reset Password Dialog */}
-      <Dialog open={resetPasswordOpen} onOpenChange={setResetPasswordOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Reset Password</DialogTitle>
-            <DialogDescription>
-              {selectedUser && `Reset password for ${selectedUser.username}`}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <label htmlFor="newPassword" className="text-sm font-medium">New Password</label>
-              <Input 
-                id="newPassword"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Enter new password"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="confirmNewPassword" className="text-sm font-medium">Confirm New Password</label>
-              <Input 
-                id="confirmNewPassword"
-                type="password"
-                value={confirmNewPassword}
-                onChange={(e) => setConfirmNewPassword(e.target.value)}
-                placeholder="Confirm new password"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button onClick={handleResetPassword}>Reset Password</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ResetPasswordDialog
+        open={resetPasswordOpen}
+        onOpenChange={setResetPasswordOpen}
+        selectedUser={selectedUser}
+        newPassword={newPassword}
+        setNewPassword={setNewPassword}
+        confirmNewPassword={confirmNewPassword}
+        setConfirmNewPassword={setConfirmNewPassword}
+        handleResetPassword={handleResetPassword}
+      />
       {/* Change Own Password Dialog */}
-      <Dialog open={changeOwnPasswordOpen} onOpenChange={setChangeOwnPasswordOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Change My Password</DialogTitle>
-            <DialogDescription>
-              Update your own password
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <label htmlFor="currentPassword" className="text-sm font-medium">Current Password</label>
-              <Input 
-                id="currentPassword"
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="Enter current password"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="ownNewPassword" className="text-sm font-medium">New Password</label>
-              <Input 
-                id="ownNewPassword"
-                type="password"
-                value={ownNewPassword}
-                onChange={(e) => setOwnNewPassword(e.target.value)}
-                placeholder="Enter new password"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="ownConfirmPassword" className="text-sm font-medium">Confirm New Password</label>
-              <Input 
-                id="ownConfirmPassword"
-                type="password"
-                value={ownConfirmPassword}
-                onChange={(e) => setOwnConfirmPassword(e.target.value)}
-                placeholder="Confirm new password"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button onClick={handleChangeOwnPassword}>Change Password</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ChangeOwnPasswordDialog
+        open={changeOwnPasswordOpen}
+        onOpenChange={setChangeOwnPasswordOpen}
+        currentPassword={currentPassword}
+        setCurrentPassword={setCurrentPassword}
+        ownNewPassword={ownNewPassword}
+        setOwnNewPassword={setOwnNewPassword}
+        ownConfirmPassword={ownConfirmPassword}
+        setOwnConfirmPassword={setOwnConfirmPassword}
+        handleChangeOwnPassword={handleChangeOwnPassword}
+      />
     </div>
   );
 };
