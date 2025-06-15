@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload } from "lucide-react";
 import { useMainCategories, useCreateMenuItem } from "@/hooks/useMenuManagement";
+import { toast } from "@/hooks/use-toast";
 
 const FrozenFoodTab = () => {
   const [newItem, setNewItem] = useState({
