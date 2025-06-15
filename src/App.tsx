@@ -11,6 +11,8 @@ import FrozenFood from "./pages/FrozenFood";
 import WeekendMenu from "./pages/WeekendMenu";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
+import FrozenFoodCheckout from "./pages/FrozenFoodCheckout";
+import WeekendMenuCheckout from "./pages/WeekendMenuCheckout";
 import OrderTracking from "./pages/OrderTracking";
 import ProductDetail from "./pages/ProductDetail";
 import WeekendOrder from "./pages/WeekendOrder";
@@ -77,6 +79,8 @@ const App = () => (
             <Route path="weekend-menu" element={<WeekendMenu />} />
             <Route path="cart" element={<Cart />} />
             <Route path="checkout" element={<Checkout />} />
+            <Route path="frozen-food-checkout" element={<FrozenFoodCheckout />} />
+            <Route path="weekend-menu-checkout" element={<WeekendMenuCheckout />} />
             <Route path="order-tracking" element={<OrderTracking />} />
             <Route path="product/:id" element={<ProductDetail />} />
             <Route path="weekend-order/:type/:day/:mealType/:category" element={<WeekendOrder />} />
