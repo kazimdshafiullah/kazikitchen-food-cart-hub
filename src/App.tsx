@@ -82,7 +82,6 @@ const App = () => (
             <Route path="product/:id" element={<ProductDetail />} />
             <Route path="weekend-order/:type/:day/:mealType/:category" element={<WeekendOrder />} />
             <Route path="frozen-food-order" element={<FrozenFoodOrder />} />
-            <Route path="reset-password" element={<ResetPassword />} />
             
             {/* Customer routes */}
             <Route path="customer-login" element={<CustomerLogin />} />
@@ -94,6 +93,7 @@ const App = () => (
             <AuthProvider>
               <Routes>
                 <Route path="login" element={<AdminLogin />} />
+                <Route path="reset-password" element={<ResetPassword />} />
                 <Route path="/" element={<AdminLayout />}>
                   <Route index element={<Dashboard />} />
                   <Route path="dashboard" element={<Dashboard />} />
