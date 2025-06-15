@@ -96,6 +96,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_enabled: boolean | null
           name: string
           order_cutoff_time: string
           updated_at: string
@@ -105,6 +106,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_enabled?: boolean | null
           name: string
           order_cutoff_time: string
           updated_at?: string
@@ -114,6 +116,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_enabled?: boolean | null
           name?: string
           order_cutoff_time?: string
           updated_at?: string
@@ -125,18 +128,21 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_enabled: boolean | null
           name: string
         }
         Insert: {
           created_at?: string
           description?: string | null
           id?: string
+          is_enabled?: boolean | null
           name: string
         }
         Update: {
           created_at?: string
           description?: string | null
           id?: string
+          is_enabled?: boolean | null
           name?: string
         }
         Relationships: []
@@ -364,6 +370,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_enabled: boolean | null
           main_category_id: string
           name: string
         }
@@ -371,6 +378,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_enabled?: boolean | null
           main_category_id: string
           name: string
         }
@@ -378,6 +386,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_enabled?: boolean | null
           main_category_id?: string
           name?: string
         }

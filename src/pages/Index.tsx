@@ -9,33 +9,18 @@ import WeeklyMenuSection from "@/components/WeeklyMenuSection";
 import Footer from "@/components/Footer";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
-import { Utensils, ShoppingBag, Clock, Settings } from "lucide-react";
+import { Utensils, ShoppingBag, Clock } from "lucide-react";
 
 const Index = () => {
   const { data: products = [] } = useProducts();
   const { data: categories = [] } = useCategories();
 
   const featuredProducts = products.filter(product => product.featured);
-  const popularProducts = products.filter(product => product.popular);
 
   return (
     <div className="min-h-screen">
       <TopBanner />
       
-      {/* Admin Quick Access */}
-      <div className="bg-amber-50 border-b border-amber-200">
-        <div className="container mx-auto px-4 py-2">
-          <div className="flex justify-end">
-            <Link to="/admin/menu-management">
-              <Button variant="ghost" size="sm" className="text-amber-700 hover:text-amber-900 hover:bg-amber-100">
-                <Settings className="w-4 h-4 mr-2" />
-                Admin Menu Management
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-
       <Hero />
       
       {/* Quick Action Cards */}

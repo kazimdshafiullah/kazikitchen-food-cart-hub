@@ -19,7 +19,7 @@ const SettingsTab = () => {
     updateSettings.mutate({ id, is_enabled, table });
   };
 
-  // Filter categories for weekend menu (exclude frozen food)
+  // Filter categories for weekend menu (School Tiffin and Office Food only)
   const weekendCategories = mainCategories?.filter(cat => 
     cat.name === 'School Tiffin' || cat.name === 'Office Food'
   ) || [];

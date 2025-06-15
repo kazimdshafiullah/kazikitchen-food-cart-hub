@@ -37,7 +37,7 @@ const WeekendMenuTab = () => {
   const { data: mealTypes } = useMealTypes();
   const createMenuItem = useCreateMenuItem();
 
-  // Filter out frozen food categories - only show School Tiffin and Office Food
+  // Filter to show exactly School Tiffin and Office Food categories
   const weekendCategories = mainCategories?.filter(cat => 
     cat.name === 'School Tiffin' || cat.name === 'Office Food'
   ) || [];
