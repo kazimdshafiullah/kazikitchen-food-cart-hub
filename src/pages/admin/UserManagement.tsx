@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,6 @@ import {
 import { Search, UserPlus, Key, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import { apiClient } from "@/utils/api"; // <-- Use custom backend API
 import { AddUserDialog } from "./UserDialogs/AddUserDialog";
 import { ResetPasswordDialog } from "./UserDialogs/ResetPasswordDialog";
 import { ChangeOwnPasswordDialog } from "./UserDialogs/ChangeOwnPasswordDialog";
@@ -32,6 +32,7 @@ export interface CustomUser {
   username: string;
   email: string;
   role: string;
+  password: string;
   created_at: string;
 }
 
@@ -62,22 +63,19 @@ const UserManagement = () => {
   const [ownNewPassword, setOwnNewPassword] = useState("");
   const [ownConfirmPassword, setOwnConfirmPassword] = useState("");
 
-  // Fetch users from your custom backend API
+  // Fetch users from localStorage
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  // Fetch users from custom backend API
   const fetchUsers = async () => {
-    // Example code: adapt to your actual API endpoint as necessary!
     try {
-      // Since your apiClient doesn't yet expose a GET users endpoint, this is just pseudocode:
-      // const result = await apiClient.getUsers();
-      // For now, let's use localStorage if you use that for local users
       const storedUsers = localStorage.getItem("custom_users");
       const users = storedUsers ? JSON.parse(storedUsers) : [];
+      console.log('Fetched users from localStorage:', users);
       setUsers(users);
     } catch (error) {
+      console.error('Error fetching users:', error);
       toast({
         title: "Error fetching users",
         description: "Could not fetch user list.",
@@ -93,8 +91,12 @@ const UserManagement = () => {
            user.role?.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
-  // CREATE user using the custom backend API
+  // CREATE user using localStorage (matching kitchen/rider login expectations)
   const handleAddUser = async () => {
+    console.log('=== ADD USER ATTEMPT ===');
+    console.log('New user data:', newUser);
+    console.log('Current profile:', profile);
+
     if (!newUser.username || !newUser.email || !newUser.role || !newUser.password) {
       toast({
         title: "Validation Error",
@@ -123,27 +125,50 @@ const UserManagement = () => {
       return;
     }
 
-    // Use custom backend API
     try {
-      const result = await apiClient.createUser({
-        username: newUser.username,
-        email: newUser.email,
-        password: newUser.password,
-        role: newUser.role
-      });
-      if (!result.success) {
+      // Get existing users from localStorage
+      const storedUsers = localStorage.getItem('custom_users');
+      const existingUsers = storedUsers ? JSON.parse(storedUsers) : [];
+      
+      console.log('Existing users:', existingUsers);
+      
+      // Check if username already exists
+      const userExists = existingUsers.find((u: CustomUser) => u.username === newUser.username);
+      if (userExists) {
         toast({
-          title: "User Creation Failed",
-          description: "Failed to create user",
+          title: "User Creation Failed", 
+          description: "Username already exists",
           variant: "destructive"
         });
         return;
       }
+
+      // Create new user object
+      const userToCreate: CustomUser = {
+        id: Date.now().toString(),
+        username: newUser.username,
+        email: newUser.email,
+        password: newUser.password, // In real app, this should be hashed
+        role: newUser.role,
+        created_at: new Date().toISOString()
+      };
+
+      console.log('Creating user:', userToCreate);
+
+      // Add to existing users
+      existingUsers.push(userToCreate);
+      
+      // Save back to localStorage
+      localStorage.setItem('custom_users', JSON.stringify(existingUsers));
+      
+      console.log('User saved to localStorage');
+
       toast({
         title: "User Created",
         description: `User "${newUser.username}" has been created successfully`
       });
 
+      // Reset form
       setNewUser({
         username: "",
         email: "",
@@ -152,8 +177,12 @@ const UserManagement = () => {
         confirmPassword: ""
       });
       setAddUserOpen(false);
-      setTimeout(() => { fetchUsers(); }, 500);
+      
+      // Refresh user list
+      fetchUsers();
+      
     } catch (error: any) {
+      console.error('User creation error:', error);
       toast({
         title: "User Creation Failed",
         description: error?.message || "Something went wrong",
@@ -162,7 +191,7 @@ const UserManagement = () => {
     }
   };
 
-  // RESET password via custom backend/local store
+  // RESET password in localStorage
   const handleResetPassword = async () => {
     if (!selectedUser || !newPassword || newPassword !== confirmNewPassword) {
       toast({
@@ -172,6 +201,7 @@ const UserManagement = () => {
       });
       return;
     }
+    
     // Only admin can reset others' passwords!
     if (!profile?.role || profile.role !== 'admin') {
       toast({
@@ -181,12 +211,12 @@ const UserManagement = () => {
       });
       return;
     }
-    // For local users: update in localStorage or use a dedicated API endpoint if you have one
+    
     try {
-      // Try to use your legacy helper if you still use localStorage for managing users:
       const storedUsers = localStorage.getItem("custom_users");
       const users = storedUsers ? JSON.parse(storedUsers) : [];
-      const idx = users.findIndex((u: any) => u.id === selectedUser.id);
+      const idx = users.findIndex((u: CustomUser) => u.id === selectedUser.id);
+      
       if (idx === -1) {
         toast({
           title: "User Not Found",
@@ -195,17 +225,24 @@ const UserManagement = () => {
         });
         return;
       }
+      
       users[idx].password = newPassword;
       localStorage.setItem("custom_users", JSON.stringify(users));
+      
       setNewPassword("");
       setConfirmNewPassword("");
       setResetPasswordOpen(false);
       setSelectedUser(null);
+      
       toast({
         title: "Password Reset",
         description: "Password has been reset successfully"
       });
+      
+      // Refresh user list
+      fetchUsers();
     } catch (error: any) {
+      console.error('Password reset error:', error);
       toast({
         title: "Password Reset Failed",
         description: error?.message || "Something went wrong",
@@ -317,6 +354,7 @@ const UserManagement = () => {
           </TableBody>
         </Table>
       </div>
+      
       {/* Add User Dialog */}
       <AddUserDialog
         open={addUserOpen}
@@ -325,6 +363,7 @@ const UserManagement = () => {
         setNewUser={setNewUser}
         handleAddUser={handleAddUser}
       />
+      
       {/* Reset Password Dialog */}
       <ResetPasswordDialog
         open={resetPasswordOpen}
@@ -336,6 +375,7 @@ const UserManagement = () => {
         setConfirmNewPassword={setConfirmNewPassword}
         handleResetPassword={handleResetPassword}
       />
+      
       {/* Change Own Password Dialog */}
       <ChangeOwnPasswordDialog
         open={changeOwnPasswordOpen}
