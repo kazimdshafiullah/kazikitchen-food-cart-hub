@@ -576,7 +576,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_master_account: {
+        Args: { _uid: string }
+        Returns: boolean
+      }
     }
     Enums: {
       food_plan_enum: "Regular" | "Diet" | "Premium"
