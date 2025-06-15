@@ -13,7 +13,6 @@ import { Card } from "@/components/ui/card";
 import { usePaymentSettings } from "@/hooks/usePaymentSettings";
 import { useDeliverySettings } from "@/hooks/useDeliverySettings";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CartProduct } from "@/types/product";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -50,33 +49,27 @@ const Checkout = () => {
     "ORD-1006", "ORD-1007", "ORD-1008", "ORD-1009", "ORD-1010"
   ];
 
-  // Check if cart contains frozen food items using the cart product is_frozen_food flag
+  // Check if cart contains frozen food items
   const hasFrozenFood = cart.some(item => {
-    const product = item.product as CartProduct;
-    return product.is_frozen_food === true;
+    return item.product.is_frozen_food === true;
   });
   
-  // Calculate delivery fee based on new logic
+  // Calculate delivery fee based on your requirements
   const calculateDeliveryFee = () => {
     if (!deliverySettings) return 0;
     
-    // Weekend menu always has free delivery
-    const isWeekendMenu = cart.some(item => item.product.category === 'weekend-menu');
-    if (isWeekendMenu && deliverySettings.weekend_menu_free_delivery) {
-      return 0;
-    }
-    
-    // Free delivery if order is above threshold
-    if (bdtSubtotal >= deliverySettings.free_delivery_threshold) {
-      return 0;
-    }
-    
     // Delivery charge only applies if cart has frozen food
-    if (hasFrozenFood) {
-      return deliverySettings.frozen_food_delivery_fee;
+    if (!hasFrozenFood) {
+      return 0;
     }
     
-    return 0;
+    // For frozen food above 500 BDT, delivery is free
+    if (bdtSubtotal >= 500) {
+      return 0;
+    }
+    
+    // Default delivery charge for frozen food
+    return deliverySettings.frozen_food_delivery_fee;
   };
 
   const deliveryFee = calculateDeliveryFee();
@@ -88,11 +81,10 @@ const Checkout = () => {
     console.log('Payment settings loading:', paymentLoading);
     console.log('Payment settings error:', paymentError);
     console.log('Payment settings data:', paymentSettings);
-    console.log('Payment settings structure:', JSON.stringify(paymentSettings, null, 2));
+    console.log('Has frozen food:', hasFrozenFood);
+    console.log('Delivery fee:', deliveryFee);
     console.log('==============================');
-  }, [paymentSettings, paymentLoading, paymentError]);
-
-  // ... keep existing code (formData state and functions)
+  }, [paymentSettings, paymentLoading, paymentError, hasFrozenFood, deliveryFee]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -126,7 +118,7 @@ const Checkout = () => {
       return;
     }
 
-    // Validate payment settings constraints
+    // Validate payment settings constraints only for cash on delivery
     if (paymentMethod === "cash" && paymentSettings) {
       if (totalAmount < paymentSettings.cod_min_order) {
         toast.error(`Minimum order amount for Cash on Delivery is ৳${paymentSettings.cod_min_order}`);
@@ -297,28 +289,29 @@ const Checkout = () => {
             <h3 className="text-lg font-semibold mb-4">Payment Method</h3>
             
             {/* Delivery Information */}
-            {deliveryFee > 0 && (
+            {hasFrozenFood && deliveryFee > 0 && (
               <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
                 <p className="text-amber-800 text-sm">
-                  <strong>Delivery Fee:</strong> ৳{deliveryFee} 
-                  {hasFrozenFood && " (Frozen food delivery charge)"}
+                  <strong>Delivery Fee:</strong> ৳{deliveryFee} (Frozen food delivery charge)
                 </p>
-                {deliverySettings && (
-                  <p className="text-amber-700 text-xs mt-1">
-                    Free delivery on orders above ৳{deliverySettings.free_delivery_threshold}
-                  </p>
-                )}
+                <p className="text-amber-700 text-xs mt-1">
+                  Free delivery on frozen food orders above ৳500
+                </p>
               </div>
             )}
 
-            {deliveryFee === 0 && (
+            {hasFrozenFood && deliveryFee === 0 && bdtSubtotal >= 500 && (
               <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
                 <p className="text-green-800 text-sm">
-                  <strong>Free Delivery!</strong>
-                  {cart.some(item => item.product.category === 'weekend-menu') 
-                    ? " (Weekend menu orders have free delivery)"
-                    : ` (Order above ৳${deliverySettings?.free_delivery_threshold} threshold)`
-                  }
+                  <strong>Free Delivery!</strong> (Frozen food order above ৳500)
+                </p>
+              </div>
+            )}
+
+            {!hasFrozenFood && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-blue-800 text-sm">
+                  <strong>Free Delivery!</strong> (No frozen food items)
                 </p>
               </div>
             )}
@@ -398,23 +391,20 @@ const Checkout = () => {
           
           <Card className="p-6">
             <div className="space-y-4">
-              {cart.map((item) => {
-                const product = item.product as CartProduct;
-                return (
-                  <div key={item.product.id} className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h4 className="font-medium">{item.product.name}</h4>
-                      <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
-                      {product.is_frozen_food && (
-                        <span className="inline-block text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full mt-1">
-                          Frozen Food
-                        </span>
-                      )}
-                    </div>
-                    <span className="font-medium">৳{(item.product.price * item.quantity * 110).toFixed(2)}</span>
+              {cart.map((item) => (
+                <div key={item.product.id} className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h4 className="font-medium">{item.product.name}</h4>
+                    <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                    {item.product.is_frozen_food && (
+                      <span className="inline-block text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full mt-1">
+                        Frozen Food
+                      </span>
+                    )}
                   </div>
-                );
-              })}
+                  <span className="font-medium">৳{(item.product.price * item.quantity * 110).toFixed(2)}</span>
+                </div>
+              ))}
               
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between">

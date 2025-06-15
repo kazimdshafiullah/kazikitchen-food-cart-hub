@@ -9,6 +9,7 @@ export type Product = {
   image: string;
   category: string;
   description: string;
+  is_frozen_food?: boolean;
 };
 
 type CartItem = {
