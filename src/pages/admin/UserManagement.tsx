@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Search, UserPlus, Key, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
 
 interface CustomUser {
   id: string;
@@ -65,6 +66,7 @@ const UserManagement = () => {
   const fetchUsers = () => {
     const storedUsers = localStorage.getItem('custom_users');
     const users = storedUsers ? JSON.parse(storedUsers) : [];
+    console.log('Loaded users:', users); // Debug log
     setUsers(users);
   };
   
@@ -76,12 +78,24 @@ const UserManagement = () => {
   
   const handleAddUser = async () => {
     if (!newUser.username || !newUser.email || !newUser.role || !newUser.password) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all fields",
+        variant: "destructive"
+      });
       return;
     }
     
     if (newUser.password !== newUser.confirmPassword) {
+      toast({
+        title: "Password Mismatch",
+        description: "Passwords do not match",
+        variant: "destructive"
+      });
       return;
     }
+    
+    console.log('Creating user with role:', newUser.role); // Debug log
     
     const success = await createUser({
       username: newUser.username,
@@ -105,6 +119,11 @@ const UserManagement = () => {
 
   const handleResetPassword = async () => {
     if (!selectedUser || !newPassword || newPassword !== confirmNewPassword) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all password fields correctly",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -119,6 +138,11 @@ const UserManagement = () => {
 
   const handleChangeOwnPassword = async () => {
     if (!currentPassword || !ownNewPassword || ownNewPassword !== ownConfirmPassword) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all password fields correctly",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -239,6 +263,7 @@ const UserManagement = () => {
                 id="username"
                 value={newUser.username}
                 onChange={(e) => setNewUser({...newUser, username: e.target.value})}
+                placeholder="Enter username"
               />
             </div>
             
@@ -249,6 +274,7 @@ const UserManagement = () => {
                 type="email"
                 value={newUser.email}
                 onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                placeholder="Enter email"
               />
             </div>
             
@@ -276,6 +302,7 @@ const UserManagement = () => {
                 type="password"
                 value={newUser.password}
                 onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                placeholder="Enter password"
               />
             </div>
             
@@ -286,6 +313,7 @@ const UserManagement = () => {
                 type="password"
                 value={newUser.confirmPassword}
                 onChange={(e) => setNewUser({...newUser, confirmPassword: e.target.value})}
+                placeholder="Confirm password"
               />
             </div>
           </div>
@@ -317,6 +345,7 @@ const UserManagement = () => {
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password"
               />
             </div>
             
@@ -327,6 +356,7 @@ const UserManagement = () => {
                 type="password"
                 value={confirmNewPassword}
                 onChange={(e) => setConfirmNewPassword(e.target.value)}
+                placeholder="Confirm new password"
               />
             </div>
           </div>
@@ -358,6 +388,7 @@ const UserManagement = () => {
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Enter current password"
               />
             </div>
             
@@ -368,6 +399,7 @@ const UserManagement = () => {
                 type="password"
                 value={ownNewPassword}
                 onChange={(e) => setOwnNewPassword(e.target.value)}
+                placeholder="Enter new password"
               />
             </div>
             
@@ -378,6 +410,7 @@ const UserManagement = () => {
                 type="password"
                 value={ownConfirmPassword}
                 onChange={(e) => setOwnConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
               />
             </div>
           </div>

@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { toast } from '@/hooks/use-toast';
 
@@ -128,13 +127,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const storedUsers = localStorage.getItem('custom_users');
       const users = storedUsers ? JSON.parse(storedUsers) : [];
       
+      console.log('Login attempt:', { username: credentials.username, role: credentials.role });
+      console.log('Available users:', users);
+      
       const user = users.find((u: any) => 
         u.username === credentials.username && 
         u.password === credentials.password && 
         u.role === credentials.role
       );
 
+      console.log('Found user:', user);
+
       if (!user) {
+        console.log('Login failed: No matching user found');
         toast({
           title: "Login Failed",
           description: "Invalid credentials",
@@ -151,14 +156,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         can_create_users: false
       };
 
+      console.log('Login successful, setting user profile:', userProfile);
+
       setUser(user);
       setProfile(userProfile);
       
       localStorage.setItem('auth_user', JSON.stringify(user));
       localStorage.setItem('auth_profile', JSON.stringify(userProfile));
 
+      toast({
+        title: "Login Successful",
+        description: `Welcome back, ${user.username}!`,
+        variant: "default"
+      });
+
       return true;
     } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: "Login Failed",
         description: "An unexpected error occurred",
@@ -202,15 +216,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         created_at: new Date().toISOString()
       };
 
+      console.log('Creating new user:', newUser);
+
       users.push(newUser);
       localStorage.setItem('custom_users', JSON.stringify(users));
 
       toast({
         title: "User Created",
-        description: "User has been created successfully"
+        description: `User "${userData.username}" has been created successfully`
       });
       return true;
     } catch (error) {
+      console.error('Create user error:', error);
       toast({
         title: "User Creation Failed",
         description: "An unexpected error occurred",
