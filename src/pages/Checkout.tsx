@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
@@ -49,7 +48,7 @@ const Checkout = () => {
     "ORD-1006", "ORD-1007", "ORD-1008", "ORD-1009", "ORD-1010"
   ];
 
-  // Check if cart contains frozen food items using the new is_frozen_food flag
+  // Check if cart contains frozen food items using the cart product is_frozen_food flag
   const hasFrozenFood = cart.some(item => {
     return item.product.is_frozen_food === true;
   });
@@ -89,6 +88,8 @@ const Checkout = () => {
     console.log('Payment settings structure:', JSON.stringify(paymentSettings, null, 2));
     console.log('==============================');
   }, [paymentSettings, paymentLoading, paymentError]);
+
+  // ... keep existing code (formData state and functions)
 
   const [formData, setFormData] = useState({
     name: "",

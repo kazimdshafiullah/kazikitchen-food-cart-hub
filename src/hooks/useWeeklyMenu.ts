@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/sonner";
@@ -267,6 +266,9 @@ export const useWeeklyMenuByDateRange = (
   });
 };
 
+// Add the missing useWeeklyMenuByDate export (alias for useWeeklyMenu)
+export const useWeeklyMenuByDate = useWeeklyMenu;
+
 export const useCreateWeeklyOrder = () => {
   const queryClient = useQueryClient();
 
@@ -318,26 +320,22 @@ export const useCreateWeeklyOrder = () => {
 
       console.log('Created weekly order items');
 
-      // Update stock for each item using SQL function instead of raw
+      // Update stock for each item directly using database update
       for (const item of orderData.items) {
-        const { error: stockError } = await supabase.rpc('decrement_stock', {
-          menu_item_id: item.weekly_menu_id,
-          quantity: item.quantity
-        });
+        const currentStock = await getCurrentStock(item.weekly_menu_id);
+        const newStock = Math.max(0, currentStock - item.quantity);
+        
+        const { error: stockError } = await supabase
+          .from('weekly_menu')
+          .update({ 
+            current_stock: newStock,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', item.weekly_menu_id);
 
         if (stockError) {
-          // Fallback to direct update if function doesn't exist
-          const { error: fallbackError } = await supabase
-            .from('weekly_menu')
-            .update({ 
-              current_stock: Math.max(0, await getCurrentStock(item.weekly_menu_id) - item.quantity)
-            })
-            .eq('id', item.weekly_menu_id);
-
-          if (fallbackError) {
-            console.error('Error updating stock:', fallbackError);
-            throw fallbackError;
-          }
+          console.error('Error updating stock:', stockError);
+          throw stockError;
         }
       }
 
