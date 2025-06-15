@@ -38,11 +38,6 @@ const RiderLogin = () => {
           </div>
           <CardTitle className="text-2xl font-bold">Rider Portal</CardTitle>
           <CardDescription>Access delivery operations</CardDescription>
-          <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-50 rounded">
-            <strong>Demo Credentials:</strong><br />
-            Username: <code>rider1</code><br />
-            Password: <code>rider123</code>
-          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">

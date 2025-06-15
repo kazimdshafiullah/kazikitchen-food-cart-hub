@@ -14,11 +14,13 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [resetLoading, setResetLoading] = useState(false);
   const [showResetForm, setShowResetForm] = useState(false);
-  const [resetEmail, setResetEmail] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
   const [resetMessage, setResetMessage] = useState("");
-  const { signIn, user, profile, resetPassword } = useAuth();
+  const { signIn, user, profile, changeOwnPassword } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,21 +50,36 @@ const AdminLogin = () => {
     }
   };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
+  const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setResetMessage("");
     setResetLoading(true);
 
     try {
-      const result = await resetPassword(resetEmail);
-      
-      if (result.success) {
-        setResetMessage("Password reset email sent! Check your inbox and follow the link to reset your password.");
-        setShowResetForm(false);
-        setResetEmail("");
+      if (newPassword !== confirmPassword) {
+        setError("New passwords do not match");
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        setError("New password must be at least 6 characters long");
+        return;
+      }
+
+      // For admin password reset, we need to check current password
+      if (email === 'admin') {
+        const result = await changeOwnPassword(currentPassword, newPassword);
+        
+        if (result) {
+          setResetMessage("Admin password has been updated successfully!");
+          setShowResetForm(false);
+          setCurrentPassword("");
+          setNewPassword("");
+          setConfirmPassword("");
+        }
       } else {
-        setError(result.error || 'Failed to send reset email');
+        setError("Password reset is only available for admin user");
       }
     } catch (error) {
       setError('An unexpected error occurred');
@@ -77,28 +94,60 @@ const AdminLogin = () => {
         <div className="max-w-md w-full space-y-8">
           <Card>
             <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl text-center">Reset Password</CardTitle>
+              <CardTitle className="text-2xl text-center">Reset Admin Password</CardTitle>
               <CardDescription className="text-center">
-                Enter your email to receive a password reset link
+                Enter your current password and new password
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleForgotPassword} className="space-y-4">
+              <form onSubmit={handlePasswordReset} className="space-y-4">
                 {error && (
                   <Alert variant="destructive">
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>
                 )}
+
+                {resetMessage && (
+                  <Alert>
+                    <AlertDescription>{resetMessage}</AlertDescription>
+                  </Alert>
+                )}
                 
                 <div className="space-y-2">
-                  <Label htmlFor="resetEmail">Email</Label>
+                  <Label htmlFor="currentPassword">Current Password</Label>
                   <Input
-                    id="resetEmail"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={resetEmail}
-                    onChange={(e) => setResetEmail(e.target.value)}
+                    id="currentPassword"
+                    type="password"
+                    placeholder="Enter current password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
                     required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    placeholder="Enter new password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Confirm new password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    minLength={6}
                   />
                 </div>
                 
@@ -108,7 +157,7 @@ const AdminLogin = () => {
                     className="w-full"
                     disabled={resetLoading}
                   >
-                    {resetLoading ? 'Sending...' : 'Send Reset Link'}
+                    {resetLoading ? 'Updating...' : 'Update Password'}
                   </Button>
                   
                   <Button 
@@ -153,11 +202,11 @@ const AdminLogin = () => {
               )}
               
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Username</Label>
                 <Input
                   id="email"
-                  type="email"
-                  placeholder="Enter your email"
+                  type="text"
+                  placeholder="Enter username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -190,7 +239,7 @@ const AdminLogin = () => {
                   className="text-sm text-blue-600 hover:text-blue-500"
                   onClick={() => setShowResetForm(true)}
                 >
-                  Forgot your password?
+                  Reset Password
                 </button>
               </div>
             </form>

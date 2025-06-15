@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -20,24 +21,22 @@ import {
 } from "@/components/ui/select";
 import { Search, UserPlus, Key, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
 
-interface UserProfile {
+interface CustomUser {
   id: string;
   username: string;
   email: string;
   role: string;
-  can_create_users: boolean;
   created_at: string;
 }
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [users, setUsers] = useState<CustomUser[]>([]);
   const [addUserOpen, setAddUserOpen] = useState(false);
   const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
   const [changeOwnPasswordOpen, setChangeOwnPasswordOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [selectedUser, setSelectedUser] = useState<CustomUser | null>(null);
   const { profile, createUser, updateUserPassword, changeOwnPassword } = useAuth();
   
   // New user form state
@@ -63,22 +62,10 @@ const UserManagement = () => {
     fetchUsers();
   }, []);
 
-  const fetchUsers = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching users:', error);
-        return;
-      }
-
-      setUsers(data || []);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-    }
+  const fetchUsers = () => {
+    const storedUsers = localStorage.getItem('custom_users');
+    const users = storedUsers ? JSON.parse(storedUsers) : [];
+    setUsers(users);
   };
   
   const filteredUsers = users.filter(user => {
@@ -144,7 +131,7 @@ const UserManagement = () => {
     }
   };
   
-  const openResetPasswordDialog = (user: UserProfile) => {
+  const openResetPasswordDialog = (user: CustomUser) => {
     setSelectedUser(user);
     setResetPasswordOpen(true);
   };
@@ -208,7 +195,6 @@ const UserManagement = () => {
               <TableHead>Username</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead>Master User</TableHead>
               <TableHead>Created</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -219,14 +205,12 @@ const UserManagement = () => {
                 <TableCell className="font-medium">{user.username}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{getRoleDisplayName(user.role)}</TableCell>
-                <TableCell>{user.can_create_users ? "Yes" : "No"}</TableCell>
                 <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => openResetPasswordDialog(user)}
-                    disabled={user.id === profile?.id}
                   >
                     <Key className="h-4 w-4 mr-1" />
                     Reset Password
@@ -278,10 +262,9 @@ const UserManagement = () => {
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="manager">Manager</SelectItem>
                   <SelectItem value="kitchen">Kitchen Staff</SelectItem>
                   <SelectItem value="rider">Delivery Rider</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
                 </SelectContent>
               </Select>
             </div>

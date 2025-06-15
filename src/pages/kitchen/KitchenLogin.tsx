@@ -38,11 +38,6 @@ const KitchenLogin = () => {
           </div>
           <CardTitle className="text-2xl font-bold">Kitchen Portal</CardTitle>
           <CardDescription>Access kitchen operations</CardDescription>
-          <div className="text-xs text-gray-500 mt-2 p-2 bg-gray-50 rounded">
-            <strong>Demo Credentials:</strong><br />
-            Username: <code>kitchen1</code><br />
-            Password: <code>kitchen123</code>
-          </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
