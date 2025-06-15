@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Upload } from "lucide-react";
 import { useMainCategories, useCreateMenuItem } from "@/hooks/useMenuManagement";
 import { toast } from "@/hooks/use-toast";
+import { initializeDatabase } from "@/utils/initializeDatabase";
 
 const FrozenFoodTab = () => {
   const [newItem, setNewItem] = useState({
@@ -17,8 +18,19 @@ const FrozenFoodTab = () => {
     stock_limit: "100",
   });
 
-  const { data: mainCategories, isLoading: categoriesLoading, error: categoriesError } = useMainCategories();
+  const { data: mainCategories, isLoading: categoriesLoading, error: categoriesError, refetch } = useMainCategories();
   const createMenuItem = useCreateMenuItem();
+
+  useEffect(() => {
+    const initDb = async () => {
+      await initializeDatabase();
+      refetch(); // Refetch categories after initialization
+    };
+    
+    if (!categoriesLoading && (!mainCategories || mainCategories.length === 0)) {
+      initDb();
+    }
+  }, [categoriesLoading, mainCategories, refetch]);
 
   console.log('Main categories data:', mainCategories);
   console.log('Categories loading:', categoriesLoading);
@@ -43,8 +55,13 @@ const FrozenFoodTab = () => {
       console.error('Frozen food category not found');
       toast({
         title: "Error",
-        description: "Frozen food category not found. Please check your main categories setup.",
+        description: "Frozen food category not found. Initializing database...",
         variant: "destructive",
+      });
+      
+      // Try to initialize database
+      initializeDatabase().then(() => {
+        refetch();
       });
       return;
     }
@@ -97,6 +114,12 @@ const FrozenFoodTab = () => {
         <CardContent className="p-6">
           <div className="text-center text-red-600">
             Error loading categories: {categoriesError.message}
+            <Button 
+              onClick={() => initializeDatabase().then(() => refetch())} 
+              className="mt-2 block mx-auto"
+            >
+              Initialize Database
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -108,7 +131,13 @@ const FrozenFoodTab = () => {
       <Card>
         <CardContent className="p-6">
           <div className="text-center text-yellow-600">
-            Frozen food category not found. Please ensure your main categories are set up correctly.
+            <p className="mb-4">Frozen food category not found. Click below to initialize the database with required categories.</p>
+            <Button 
+              onClick={() => initializeDatabase().then(() => refetch())}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Initialize Database
+            </Button>
           </div>
         </CardContent>
       </Card>

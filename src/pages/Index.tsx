@@ -8,6 +8,7 @@ import { useCategories } from "@/hooks/useCategories";
 import { useMainCategories, useSubCategories, useMealTypes } from "@/hooks/useWeeklyMenu";
 import { useMenuItems } from "@/hooks/useMenuManagement";
 import { Utensils, ShoppingBag, Clock, Users, Crown, Heart, Snowflake, ChefHat, Star } from "lucide-react";
+import { useMemo } from "react";
 
 const Index = () => {
   const { data: products = [] } = useProducts();
@@ -21,29 +22,62 @@ const Index = () => {
   
   // Get frozen food items from the new menu system
   const frozenFoodCategory = mainCategories.find(cat => cat.name === 'frozen_food');
-  const frozenMenuItems = menuItems.filter(item => 
-    item.main_category_id === frozenFoodCategory?.id && item.is_active
-  ).slice(0, 3);
+  const frozenMenuItems = useMemo(() => {
+    if (!frozenFoodCategory) return [];
+    return menuItems.filter(item => 
+      item.main_category_id === frozenFoodCategory.id && item.is_active
+    ).slice(0, 3);
+  }, [menuItems, frozenFoodCategory]);
 
-  // Combine both old and new items for featured display
-  const allFeaturedItems = [
-    ...featuredProducts.map(product => ({
-      id: product.id,
-      name: product.name,
-      description: product.description,
-      price: Number(product.price) * 110, // Convert to BDT
-      image_url: product.image_url,
-      type: 'product'
-    })),
-    ...frozenMenuItems.map(item => ({
-      id: item.id,
-      name: item.name,
-      description: item.description,
-      price: Number(item.price), // Already in BDT
-      image_url: item.image_url,
-      type: 'menu_item'
-    }))
-  ].slice(0, 4);
+  // Get weekend menu items (Office Food and School Tiffin)
+  const weekendMenuItems = useMemo(() => {
+    const officeFoodCategory = mainCategories.find(cat => cat.name === 'Office Food');
+    const schoolTiffinCategory = mainCategories.find(cat => cat.name === 'School Tiffin');
+    
+    const items = menuItems.filter(item => {
+      if (!item.is_active) return false;
+      
+      return (officeFoodCategory && item.main_category_id === officeFoodCategory.id) ||
+             (schoolTiffinCategory && item.main_category_id === schoolTiffinCategory.id);
+    }).slice(0, 3);
+    
+    return items;
+  }, [menuItems, mainCategories]);
+
+  // Combine all featured items from different sources
+  const allFeaturedItems = useMemo(() => {
+    const items = [
+      // Featured products from old system
+      ...featuredProducts.map(product => ({
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        price: Number(product.price) * 110, // Convert to BDT
+        image_url: product.image_url,
+        type: 'product'
+      })),
+      // Frozen menu items from new system
+      ...frozenMenuItems.map(item => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        price: Number(item.price), // Already in BDT
+        image_url: item.image_url,
+        type: 'frozen_menu_item'
+      })),
+      // Weekend menu items from new system
+      ...weekendMenuItems.map(item => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        price: Number(item.price), // Already in BDT
+        image_url: item.image_url,
+        type: 'weekend_menu_item'
+      }))
+    ];
+    
+    return items.slice(0, 4); // Show max 4 items
+  }, [featuredProducts, frozenMenuItems, weekendMenuItems]);
 
   return (
     <div className="min-h-screen">
@@ -85,7 +119,6 @@ const Index = () => {
           
           <div className="flex justify-center">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
-              {/* Frozen Food Card */}
               <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-orange-200">
                 <CardHeader className="text-center">
                   <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-orange-200 transition-colors">
@@ -105,7 +138,6 @@ const Index = () => {
                 </CardContent>
               </Card>
 
-              {/* Weekend Menu Card */}
               <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-amber-200">
                 <CardHeader className="text-center">
                   <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-amber-200 transition-colors">
@@ -195,7 +227,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Call to Action */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Ready to Order?</h2>
