@@ -22,6 +22,7 @@ import { Search, UserPlus, Key, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { createSupabaseUser } from "@/utils/createSupabaseUser";
 
 interface CustomUser {
   id: string;
@@ -98,7 +99,7 @@ const UserManagement = () => {
            user.role?.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
-  // CREATE user in Supabase Auth and set role/profile
+  // CREATE user using the Supabase Edge Function (server-side service role)
   const handleAddUser = async () => {
     if (!newUser.username || !newUser.email || !newUser.role || !newUser.password) {
       toast({
@@ -128,33 +129,22 @@ const UserManagement = () => {
       return;
     }
 
-    // Create user in Supabase Auth
-    const { data, error } = await supabase.auth.admin.createUser({
+    // Use edge function to create user securely
+    const result = await createSupabaseUser({
+      username: newUser.username,
       email: newUser.email,
       password: newUser.password,
-      user_metadata: {
-        username: newUser.username,
-        role: newUser.role
-      }
+      role: newUser.role
     });
 
-    if (error || !data?.user) {
+    if (!result.success) {
       toast({
         title: "User Creation Failed",
-        description: error?.message || "Failed to create user in Supabase Auth",
+        description: result.error || "Failed to create user",
         variant: "destructive"
       });
       return;
     }
-    // Set role metadata in profiles to ensure correctness
-    await supabase
-      .from("profiles")
-      .update({
-        username: newUser.username,
-        email: newUser.email,
-        role: newUser.role
-      })
-      .eq("id", data.user.id);
 
     toast({
       title: "User Created",
