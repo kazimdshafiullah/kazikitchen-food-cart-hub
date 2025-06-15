@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
@@ -82,122 +83,32 @@ const Checkout = () => {
   // Debug payment settings with more detailed logging
   useEffect(() => {
     console.log('=== CHECKOUT PAYMENT DEBUG ===');
-    console.log('Payment settings object:', paymentSettings);
-    console.log('Payment loading state:', paymentLoading);
-    console.log('Payment error:', paymentError);
-    console.log('Delivery settings:', deliverySettings);
-    console.log('Has frozen food:', hasFrozenFood);
-    console.log('Delivery fee:', deliveryFee);
-    
-    if (paymentSettings) {
-      console.log('Individual payment settings:');
-      console.log('- bKash enabled:', paymentSettings.bkash_enabled);
-      console.log('- SSL enabled:', paymentSettings.ssl_enabled);
-      console.log('- COD enabled:', paymentSettings.cod_enabled);
-      console.log('- Settings ID:', paymentSettings.id);
-    } else {
-      console.log('No payment settings found - attempting refetch...');
-      if (!paymentLoading && !paymentError) {
-        refetch();
-      }
-    }
-    console.log('=== END CHECKOUT PAYMENT DEBUG ===');
-  }, [paymentSettings, paymentLoading, paymentError, refetch, deliverySettings, hasFrozenFood, deliveryFee]);
+    console.log('Payment settings loading:', paymentLoading);
+    console.log('Payment settings error:', paymentError);
+    console.log('Payment settings data:', paymentSettings);
+    console.log('Payment settings structure:', JSON.stringify(paymentSettings, null, 2));
+    console.log('==============================');
+  }, [paymentSettings, paymentLoading, paymentError]);
 
-  // Get available payment methods based on admin settings
-  const getAvailablePaymentMethods = () => {
-    console.log('Getting available payment methods...');
-    
-    if (!paymentSettings) {
-      console.log('No payment settings available - returning empty array');
-      return [];
-    }
-    
-    const methods = [];
-    
-    // Check each payment method
-    if (paymentSettings.cod_enabled === true) {
-      console.log('Adding COD to available methods');
-      methods.push("cash");
-    } else {
-      console.log('COD not enabled:', paymentSettings.cod_enabled);
-    }
-    
-    if (paymentSettings.bkash_enabled === true) {
-      console.log('Adding bKash to available methods');
-      methods.push("bkash");
-    } else {
-      console.log('bKash not enabled:', paymentSettings.bkash_enabled);
-    }
-    
-    if (paymentSettings.ssl_enabled === true) {
-      console.log('Adding SSL to available methods');
-      methods.push("ssl");
-    } else {
-      console.log('SSL not enabled:', paymentSettings.ssl_enabled);
-    }
-    
-    console.log('Final available payment methods:', methods);
-    return methods;
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+  });
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const availablePaymentMethods = getAvailablePaymentMethods();
+  const generateOrderId = () => {
+    return availableOrderIds[Math.floor(Math.random() * availableOrderIds.length)];
+  };
 
-  // Auto-select first available payment method
-  useEffect(() => {
-    if (paymentMethod === "" && availablePaymentMethods.length > 0) {
-      console.log('Auto-selecting first payment method:', availablePaymentMethods[0]);
-      setPaymentMethod(availablePaymentMethods[0] as "cash" | "bkash" | "ssl");
-    }
-  }, [availablePaymentMethods, paymentMethod]);
-  
-  if (cart.length === 0 && !orderPlaced) {
-    return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <div className="max-w-md mx-auto">
-          <h1 className="text-2xl font-bold mb-4">Your cart is empty</h1>
-          <p className="text-gray-500 mb-8">You need to add items to your cart before checkout.</p>
-          <Button asChild>
-            <Link to="/">Start Shopping</Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-  
-  if (orderPlaced) {
-    return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <Card className="max-w-md mx-auto p-8">
-          <div className="text-green-600 mb-4">
-            <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold mb-4">Order Placed Successfully!</h1>
-          <p className="text-gray-600 mb-4">Order ID: {orderId}</p>
-          <p className="text-gray-500 mb-8">Thank you for your order! This is a demo order.</p>
-          <div className="flex flex-col gap-3">
-            <Button asChild className="w-full">
-              <Link to={`/invoice/${orderId}`}>
-                <FileText className="mr-2 h-4 w-4" />
-                View Invoice
-              </Link>
-            </Button>
-            <Button variant="outline" asChild className="w-full">
-              <Link to="/">Continue Shopping</Link>
-            </Button>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-  
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!paymentMethod) {
-      toast.error("Please select a payment method");
+  const handlePlaceOrder = () => {
+    // Validation
+    if (!formData.name || !formData.email || !formData.phone || !formData.address) {
+      toast.error("Please fill in all required fields");
       return;
     }
 
@@ -206,333 +117,322 @@ const Checkout = () => {
       return;
     }
 
-    // Check COD order limits if applicable
+    if (!paymentMethod) {
+      toast.error("Please select a payment method");
+      return;
+    }
+
+    // Validate payment settings constraints
     if (paymentMethod === "cash" && paymentSettings) {
-      if (paymentSettings.cod_min_order > 0 && totalAmount < paymentSettings.cod_min_order) {
-        toast.error(`Minimum order value for Cash on Delivery is ৳${paymentSettings.cod_min_order}`);
+      if (totalAmount < paymentSettings.cod_min_order) {
+        toast.error(`Minimum order amount for Cash on Delivery is ৳${paymentSettings.cod_min_order}`);
         return;
       }
-      if (paymentSettings.cod_max_order > 0 && totalAmount > paymentSettings.cod_max_order) {
-        toast.error(`Maximum order value for Cash on Delivery is ৳${paymentSettings.cod_max_order}`);
+      if (totalAmount > paymentSettings.cod_max_order) {
+        toast.error(`Maximum order amount for Cash on Delivery is ৳${paymentSettings.cod_max_order}`);
         return;
       }
     }
-    
-    // Use a random order ID from the available ones
-    const randomIndex = Math.floor(Math.random() * availableOrderIds.length);
-    const newOrderId = availableOrderIds[randomIndex];
+
+    // Generate order ID and simulate successful order
+    const newOrderId = generateOrderId();
     setOrderId(newOrderId);
-    
-    toast.success(`Order ${newOrderId} placed successfully! This is a demo order.`);
-    clearCart();
     setOrderPlaced(true);
+    
+    // Clear cart after successful order
+    setTimeout(() => {
+      clearCart();
+      toast.success(`Order ${newOrderId} placed successfully!`);
+    }, 1000);
   };
-  
+
+  // Show loading state if payment settings are still loading
+  if (paymentLoading || deliveryLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="space-y-6 max-w-2xl mx-auto">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-64 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if payment settings failed to load
+  if (paymentError && !paymentSettings) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-semibold text-red-600">Payment Settings Error</h2>
+          <p className="text-gray-600">Unable to load payment settings. Please try again.</p>
+          <Button onClick={() => refetch()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (cart.length === 0 && !orderPlaced) {
+    return (
+      <div className="container mx-auto px-4 py-12 text-center">
+        <h2 className="text-2xl font-bold mb-4">Your cart is empty</h2>
+        <p className="mb-4">Add some delicious items to your cart before checking out!</p>
+        <Button asChild>
+          <Link to="/">Continue Shopping</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  if (orderPlaced) {
+    return (
+      <div className="container mx-auto px-4 py-12 text-center">
+        <div className="max-w-md mx-auto bg-green-50 p-8 rounded-lg">
+          <div className="text-green-600 mb-4">
+            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-green-800 mb-2">Order Placed Successfully!</h2>
+          <p className="text-green-700 mb-4">Order ID: {orderId}</p>
+          <p className="text-gray-600 mb-6">Thank you for your order. We'll contact you soon with delivery details.</p>
+          <div className="space-y-3">
+            <Button asChild className="w-full">
+              <Link to="/">Continue Shopping</Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full">
+              <Link to={`/order-status/${orderId}`}>
+                <FileText className="w-4 h-4 mr-2" />
+                Track Order
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <Button 
         variant="outline" 
         size="sm" 
         className="mb-6"
-        asChild
+        onClick={() => navigate(-1)}
       >
-        <Link to="/cart">
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          Back to Cart
-        </Link>
+        <ChevronLeft className="h-4 w-4 mr-1" />
+        Back
       </Button>
-      
-      <h1 className="text-3xl font-bold mb-8">Checkout</h1>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Checkout Form */}
-        <div className="lg:col-span-2">
-          <form onSubmit={handleSubmit}>
-            {/* Customer Information */}
-            <div className="bg-white rounded-lg shadow p-6 mb-6">
-              <h2 className="text-xl font-bold mb-4">Customer Information</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div>
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input id="firstName" required />
-                </div>
-                <div>
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input id="lastName" required />
-                </div>
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" required />
-                </div>
-                <div>
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input id="phone" type="tel" required />
-                </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Order Form */}
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold">Checkout</h2>
+          
+          {/* Customer Information */}
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Customer Information</h3>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name">Full Name *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  placeholder="Enter your full name"
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  placeholder="Enter your email"
+                />
+              </div>
+              <div>
+                <Label htmlFor="phone">Phone Number *</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  placeholder="Enter your phone number"
+                />
+              </div>
+              <div>
+                <Label htmlFor="address">Delivery Address *</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => handleInputChange("address", e.target.value)}
+                  placeholder="Enter your complete address"
+                />
+              </div>
+              <div>
+                <Label htmlFor="location">Delivery Location *</Label>
+                <Select value={deliveryLocation} onValueChange={setDeliveryLocation}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select delivery area" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {deliveryLocations.map((location) => (
+                      <SelectItem key={location} value={location}>
+                        {location}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-            
-            {/* Delivery Address */}
-            <div className="bg-white rounded-lg shadow p-6 mb-6">
-              <h2 className="text-xl font-bold mb-4">Delivery Address</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="deliveryLocation">Delivery Area</Label>
-                  <Select value={deliveryLocation} onValueChange={setDeliveryLocation} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select delivery area" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {deliveryLocations.map((location) => (
-                        <SelectItem key={location} value={location}>
-                          {location}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="address">Street Address</Label>
-                  <Input id="address" required />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="city">City</Label>
-                    <Input id="city" required />
-                  </div>
-                  <div>
-                    <Label htmlFor="state">State/Division</Label>
-                    <Input id="state" required />
-                  </div>
-                  <div>
-                    <Label htmlFor="zipCode">Postal Code</Label>
-                    <Input id="zipCode" required />
-                  </div>
-                </div>
-              </div>
-            </div>
+          </Card>
+
+          {/* Payment Method */}
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold mb-4">Payment Method</h3>
             
             {/* Delivery Information */}
-            {deliverySettings && (
-              <div className="bg-white rounded-lg shadow p-6 mb-6">
-                <h2 className="text-xl font-bold mb-4">Delivery Information</h2>
-                
-                <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Contains Frozen Food:</span>
-                    <span className="text-sm">{hasFrozenFood ? 'Yes' : 'No'}</span>
-                  </div>
-                  
-                  {hasFrozenFood && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Delivery Fee:</span>
-                      <span className="text-sm">
-                        {deliveryFee === 0 ? 'FREE' : `৳${deliveryFee.toFixed(2)}`}
-                      </span>
-                    </div>
-                  )}
-                  
-                  {deliveryFee === 0 && bdtSubtotal >= deliverySettings.free_delivery_threshold && (
-                    <div className="text-sm text-green-600 font-medium">
-                      ✓ Free delivery on orders above ৳{deliverySettings.free_delivery_threshold}
-                    </div>
-                  )}
-                  
-                  {cart.some(item => item.product.category === 'weekend-menu') && deliverySettings.weekend_menu_free_delivery && (
-                    <div className="text-sm text-green-600 font-medium">
-                      ✓ Free delivery for weekend menu items
-                    </div>
-                  )}
-                  
-                  {!hasFrozenFood && (
-                    <div className="text-sm text-green-600 font-medium">
-                      ✓ No delivery charge (no frozen items in cart)
-                    </div>
-                  )}
-                </div>
+            {deliveryFee > 0 && (
+              <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                <p className="text-amber-800 text-sm">
+                  <strong>Delivery Fee:</strong> ৳{deliveryFee} 
+                  {hasFrozenFood && " (Frozen food delivery charge)"}
+                </p>
+                {deliverySettings && (
+                  <p className="text-amber-700 text-xs mt-1">
+                    Free delivery on orders above ৳{deliverySettings.free_delivery_threshold}
+                  </p>
+                )}
               </div>
             )}
-            
-            {/* Payment Method */}
-            <div className="bg-white rounded-lg shadow p-6 mb-6">
-              <h2 className="text-xl font-bold mb-4">Payment Method</h2>
-              
-              {paymentLoading || deliveryLoading ? (
-                <div className="space-y-2">
-                  <Skeleton className="h-8 w-full" />
-                  <Skeleton className="h-8 w-full" />
-                  <Skeleton className="h-8 w-full" />
-                </div>
-              ) : paymentError ? (
-                <div className="text-center py-8">
-                  <p className="text-red-500 mb-2">Error loading payment settings</p>
-                  <p className="text-sm text-gray-400">{paymentError}</p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => refetch()} 
-                    className="mt-2"
-                  >
-                    Retry Loading
-                  </Button>
-                </div>
-              ) : !paymentSettings ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 mb-2">Payment settings not found</p>
-                  <p className="text-sm text-gray-400">Please contact support or try again later</p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => refetch()} 
-                    className="mt-2"
-                  >
-                    Retry Loading
-                  </Button>
-                </div>
-              ) : availablePaymentMethods.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 mb-2">No payment methods are currently available</p>
-                  <p className="text-sm text-gray-400">Please contact support or try again later</p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => refetch()} 
-                    className="mt-2"
-                  >
-                    Refresh Payment Options
-                  </Button>
-                </div>
-              ) : (
-                <RadioGroup
-                  value={paymentMethod}
-                  onValueChange={(value) => setPaymentMethod(value as "cash" | "bkash" | "ssl")}
-                >
-                  {availablePaymentMethods.includes("cash") && (
-                    <div className="flex items-center space-x-2 mb-2">
-                      <RadioGroupItem value="cash" id="cash" />
-                      <Label htmlFor="cash" className="cursor-pointer">Cash on Delivery</Label>
-                      {paymentSettings && (paymentSettings.cod_min_order > 0 || paymentSettings.cod_max_order > 0) && (
-                        <span className="text-xs text-gray-500 ml-2">
-                          {paymentSettings.cod_min_order > 0 && `Min: ৳${paymentSettings.cod_min_order}`}
-                          {paymentSettings.cod_min_order > 0 && paymentSettings.cod_max_order > 0 && " | "}
-                          {paymentSettings.cod_max_order > 0 && `Max: ৳${paymentSettings.cod_max_order}`}
-                        </span>
+
+            {deliveryFee === 0 && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                <p className="text-green-800 text-sm">
+                  <strong>Free Delivery!</strong>
+                  {cart.some(item => item.product.category === 'weekend-menu') 
+                    ? " (Weekend menu orders have free delivery)"
+                    : ` (Order above ৳${deliverySettings?.free_delivery_threshold} threshold)`
+                  }
+                </p>
+              </div>
+            )}
+
+            <RadioGroup value={paymentMethod} onValueChange={(value: "cash" | "bkash" | "ssl") => setPaymentMethod(value)}>
+              {/* Cash on Delivery */}
+              {paymentSettings?.cod_enabled && (
+                <div className="flex items-center space-x-2 p-3 border rounded-md">
+                  <RadioGroupItem value="cash" id="cash" />
+                  <Label htmlFor="cash" className="flex-1 cursor-pointer">
+                    <div>
+                      <span className="font-medium">Cash on Delivery</span>
+                      {paymentSettings.cod_min_order && paymentSettings.cod_max_order && (
+                        <p className="text-sm text-gray-500">
+                          Available for orders between ৳{paymentSettings.cod_min_order} - ৳{paymentSettings.cod_max_order}
+                        </p>
                       )}
                     </div>
-                  )}
-                  {availablePaymentMethods.includes("bkash") && (
-                    <div className="flex items-center space-x-2 mb-2">
-                      <RadioGroupItem value="bkash" id="bkash" />
-                      <Label htmlFor="bkash" className="cursor-pointer">bKash (Mobile Banking)</Label>
-                    </div>
-                  )}
-                  {availablePaymentMethods.includes("ssl") && (
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="ssl" id="ssl" />
-                      <Label htmlFor="ssl" className="cursor-pointer">SSL Commerz (Credit/Debit Card)</Label>
-                    </div>
-                  )}
-                </RadioGroup>
-              )}
-              
-              {paymentMethod === "bkash" && availablePaymentMethods.includes("bkash") && (
-                <div className="mt-4 p-4 bg-pink-50 rounded-md">
-                  <p className="text-sm text-gray-500 mb-2">
-                    You will be redirected to bKash to complete the payment.
-                  </p>
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <Label htmlFor="bkashNumber">bKash Account Number</Label>
-                      <Input id="bkashNumber" placeholder="01XXXXXXXXX" />
-                    </div>
-                  </div>
+                  </Label>
                 </div>
               )}
-              
-              {paymentMethod === "ssl" && availablePaymentMethods.includes("ssl") && (
-                <div className="mt-4 p-4 bg-blue-50 rounded-md">
-                  <p className="text-sm text-gray-500 mb-2">
-                    You will be redirected to SSL Commerz to complete the payment.
-                  </p>
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <Label htmlFor="cardNumber">Card Number</Label>
-                      <Input id="cardNumber" placeholder="1234 5678 9012 3456" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="expiry">Expiry Date</Label>
-                        <Input id="expiry" placeholder="MM/YY" />
-                      </div>
-                      <div>
-                        <Label htmlFor="cvv">CVV</Label>
-                        <Input id="cvv" placeholder="123" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <Button
-              type="submit"
-              className="w-full lg:w-auto bg-kazi-orange hover:bg-opacity-90"
-              disabled={paymentLoading || deliveryLoading || availablePaymentMethods.length === 0}
-            >
-              {paymentLoading || deliveryLoading ? "Loading..." : "Place Order"}
-            </Button>
-          </form>
-        </div>
-        
-        {/* Order Summary */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow p-6 sticky top-24">
-            <h2 className="text-xl font-bold mb-4">Order Summary</h2>
-            
-            <div className="max-h-64 overflow-y-auto mb-4">
-              {cart.map(item => (
-                <div key={item.product.id} className="flex py-2 border-b">
-                  <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0 mr-3">
-                    <img 
-                      src={item.product.image} 
-                      alt={item.product.name} 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between">
-                      <h3 className="font-medium text-sm">
-                        {item.product.name} <span className="text-gray-500">x{item.quantity}</span>
-                        {item.product.is_frozen_food && <span className="text-blue-500 ml-1">❄️</span>}
-                      </h3>
-                      <span className="text-sm font-medium">
-                        ৳{(item.product.price * item.quantity * 110).toFixed(2)}
+
+              {/* bKash */}
+              {paymentSettings?.bkash_enabled && (
+                <div className="flex items-center space-x-2 p-3 border rounded-md">
+                  <RadioGroupItem value="bkash" id="bkash" />
+                  <Label htmlFor="bkash" className="flex-1 cursor-pointer">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">bKash</span>
+                      <span className="text-sm text-gray-500">
+                        {paymentSettings.bkash_live_mode ? "Live" : "Sandbox"}
                       </span>
                     </div>
+                    <p className="text-sm text-gray-500">Pay with bKash mobile wallet</p>
+                  </Label>
+                </div>
+              )}
+
+              {/* SSL Commerz */}
+              {paymentSettings?.ssl_enabled && (
+                <div className="flex items-center space-x-2 p-3 border rounded-md">
+                  <RadioGroupItem value="ssl" id="ssl" />
+                  <Label htmlFor="ssl" className="flex-1 cursor-pointer">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">SSL Commerz</span>
+                      <span className="text-sm text-gray-500">
+                        {paymentSettings.ssl_live_mode ? "Live" : "Sandbox"}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-500">Pay with card, mobile banking, or net banking</p>
+                  </Label>
+                </div>
+              )}
+            </RadioGroup>
+
+            {/* Payment Constraints Warning */}
+            {paymentMethod === "cash" && paymentSettings && (
+              <div className="mt-4">
+                {totalAmount < paymentSettings.cod_min_order && (
+                  <p className="text-red-600 text-sm">
+                    Minimum order amount for Cash on Delivery is ৳{paymentSettings.cod_min_order}
+                  </p>
+                )}
+                {totalAmount > paymentSettings.cod_max_order && (
+                  <p className="text-red-600 text-sm">
+                    Maximum order amount for Cash on Delivery is ৳{paymentSettings.cod_max_order}
+                  </p>
+                )}
+              </div>
+            )}
+          </Card>
+        </div>
+
+        {/* Order Summary */}
+        <div className="space-y-6">
+          <h3 className="text-lg font-semibold">Order Summary</h3>
+          
+          <Card className="p-6">
+            <div className="space-y-4">
+              {cart.map((item) => (
+                <div key={item.product.id} className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h4 className="font-medium">{item.product.name}</h4>
+                    <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                    {item.product.is_frozen_food && (
+                      <span className="inline-block text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full mt-1">
+                        Frozen Food
+                      </span>
+                    )}
                   </div>
+                  <span className="font-medium">৳{(item.product.price * item.quantity * 110).toFixed(2)}</span>
                 </div>
               ))}
-            </div>
-            
-            <div className="space-y-3 mb-4">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Subtotal</span>
-                <span className="font-medium">৳{bdtSubtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Delivery</span>
-                <span className={`font-medium ${deliveryFee === 0 ? 'text-green-600' : ''}`}>
-                  {deliveryFee === 0 ? 'FREE' : `৳${deliveryFee.toFixed(2)}`}
-                </span>
-              </div>
-              <div className="pt-3 border-t border-gray-200 flex justify-between">
-                <span className="font-semibold">Total</span>
-                <span className="font-bold text-kazi-red">৳{totalAmount.toFixed(2)}</span>
+              
+              <div className="border-t pt-4 space-y-2">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>৳{bdtSubtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Delivery Fee</span>
+                  <span>৳{deliveryFee.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between font-bold text-lg border-t pt-2">
+                  <span>Total</span>
+                  <span className="text-kazi-red">৳{totalAmount.toFixed(2)}</span>
+                </div>
               </div>
             </div>
-            
-            <div className="text-sm text-gray-500">
-              By placing your order, you agree to KaziKitchen's terms and conditions.
-            </div>
-          </div>
+          </Card>
+
+          <Button 
+            onClick={handlePlaceOrder} 
+            className="w-full bg-kazi-green hover:bg-kazi-light-green text-white"
+            size="lg"
+          >
+            Place Order - ৳{totalAmount.toFixed(2)}
+          </Button>
         </div>
       </div>
     </div>

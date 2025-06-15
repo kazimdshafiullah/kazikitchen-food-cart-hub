@@ -37,6 +37,31 @@ export interface WeeklyMenuWithRelations extends WeeklyMenuItem {
   };
 }
 
+export interface MainCategory {
+  id: string;
+  name: string;
+  description: string | null;
+  order_cutoff_time: string;
+  advance_days: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SubCategory {
+  id: string;
+  main_category_id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+}
+
+export interface MealType {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+}
+
 export interface WeeklyOrderData {
   customer_name: string;
   customer_email: string;
@@ -92,6 +117,58 @@ export const useWeeklyMenu = (date?: string) => {
   });
 };
 
+export const useMainCategories = () => {
+  return useQuery({
+    queryKey: ['main-categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('main_categories')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      return data as MainCategory[];
+    },
+  });
+};
+
+export const useSubCategories = (mainCategoryId?: string) => {
+  return useQuery({
+    queryKey: ['sub-categories', mainCategoryId],
+    queryFn: async () => {
+      let query = supabase
+        .from('sub_categories')
+        .select('*')
+        .order('name');
+
+      if (mainCategoryId) {
+        query = query.eq('main_category_id', mainCategoryId);
+      }
+
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      return data as SubCategory[];
+    },
+    enabled: !!mainCategoryId,
+  });
+};
+
+export const useMealTypes = () => {
+  return useQuery({
+    queryKey: ['meal-types'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('meal_types')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      return data as MealType[];
+    },
+  });
+};
+
 export const useWeeklyMenuByCategory = (mainCategoryId: string, subCategoryId: string, mealTypeId: string, date?: string) => {
   return useQuery({
     queryKey: ['weekly-menu', 'category', mainCategoryId, subCategoryId, mealTypeId, date],
@@ -130,6 +207,63 @@ export const useWeeklyMenuByCategory = (mainCategoryId: string, subCategoryId: s
       if (error) throw error;
       return data as WeeklyMenuWithRelations[];
     },
+  });
+};
+
+export const useWeeklyMenuByDateRange = (
+  mainCategoryId?: string, 
+  subCategoryId?: string, 
+  mealTypeId?: string, 
+  startDate?: string, 
+  endDate?: string
+) => {
+  return useQuery({
+    queryKey: ['weekly-menu', 'date-range', mainCategoryId, subCategoryId, mealTypeId, startDate, endDate],
+    queryFn: async () => {
+      let query = supabase
+        .from('weekly_menu')
+        .select(`
+          *,
+          main_categories (
+            name,
+            description,
+            order_cutoff_time,
+            advance_days
+          ),
+          sub_categories (
+            name,
+            description
+          ),
+          meal_types (
+            name,
+            description
+          )
+        `)
+        .eq('is_active', true)
+        .order('specific_date', { ascending: true });
+
+      if (mainCategoryId) {
+        query = query.eq('main_category_id', mainCategoryId);
+      }
+      if (subCategoryId) {
+        query = query.eq('sub_category_id', subCategoryId);
+      }
+      if (mealTypeId) {
+        query = query.eq('meal_type_id', mealTypeId);
+      }
+      if (startDate) {
+        query = query.gte('specific_date', startDate);
+      }
+      if (endDate) {
+        query = query.lte('specific_date', endDate);
+      }
+
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      return data as WeeklyMenuWithRelations[];
+    },
+    enabled: !!(mainCategoryId && subCategoryId && mealTypeId),
   });
 };
 
@@ -184,18 +318,26 @@ export const useCreateWeeklyOrder = () => {
 
       console.log('Created weekly order items');
 
-      // Update stock for each item
+      // Update stock for each item using SQL function instead of raw
       for (const item of orderData.items) {
-        const { error: stockError } = await supabase
-          .from('weekly_menu')
-          .update({ 
-            current_stock: supabase.raw(`current_stock - ${item.quantity}`)
-          })
-          .eq('id', item.weekly_menu_id);
+        const { error: stockError } = await supabase.rpc('decrement_stock', {
+          menu_item_id: item.weekly_menu_id,
+          quantity: item.quantity
+        });
 
         if (stockError) {
-          console.error('Error updating stock:', stockError);
-          throw stockError;
+          // Fallback to direct update if function doesn't exist
+          const { error: fallbackError } = await supabase
+            .from('weekly_menu')
+            .update({ 
+              current_stock: Math.max(0, await getCurrentStock(item.weekly_menu_id) - item.quantity)
+            })
+            .eq('id', item.weekly_menu_id);
+
+          if (fallbackError) {
+            console.error('Error updating stock:', fallbackError);
+            throw fallbackError;
+          }
         }
       }
 
@@ -214,5 +356,95 @@ export const useCreateWeeklyOrder = () => {
   });
 };
 
-// Remove the useLocationPricing hook as the table was dropped
-// This functionality is now handled by the delivery_settings table
+// Helper function to get current stock
+const getCurrentStock = async (menuItemId: string): Promise<number> => {
+  const { data, error } = await supabase
+    .from('weekly_menu')
+    .select('current_stock')
+    .eq('id', menuItemId)
+    .single();
+  
+  if (error || !data) return 0;
+  return data.current_stock;
+};
+
+// Utility functions
+export const getDayName = (dayOfWeek: number): string => {
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  return days[dayOfWeek] || '';
+};
+
+export const getAvailableOrderingDates = (mainCategory: MainCategory, subCategory: SubCategory) => {
+  const dates = [];
+  const today = new Date();
+  
+  for (let i = 0; i < 14; i++) {
+    const checkDate = new Date(today);
+    checkDate.setDate(today.getDate() + i);
+    const dayOfWeek = checkDate.getDay();
+    
+    // Only include Sunday (0) to Thursday (4), skip Friday (5) and Saturday (6)
+    if (dayOfWeek >= 0 && dayOfWeek <= 4) {
+      const canOrder = canOrderForDate(checkDate, mainCategory);
+      
+      dates.push({
+        date: checkDate,
+        dateString: checkDate.toISOString().split('T')[0],
+        dayName: getDayName(dayOfWeek),
+        canOrder,
+        isToday: i === 0,
+        isTomorrow: i === 1
+      });
+    }
+  }
+  
+  return dates;
+};
+
+const canOrderForDate = (targetDate: Date, mainCategory: MainCategory): boolean => {
+  const now = new Date();
+  const cutoffTime = mainCategory.order_cutoff_time;
+  const advanceDays = mainCategory.advance_days;
+  
+  // Calculate the cutoff datetime
+  const cutoffDate = new Date(targetDate);
+  cutoffDate.setDate(targetDate.getDate() - advanceDays);
+  
+  const [hours, minutes] = cutoffTime.split(':').map(Number);
+  cutoffDate.setHours(hours, minutes, 0, 0);
+  
+  return now <= cutoffDate;
+};
+
+export const getFoodPlans = (): string[] => {
+  return ['Regular', 'Diet', 'Premium'];
+};
+
+export const getAvailableLocations = (): string[] => {
+  return [
+    'Dhanmondi',
+    'Farmgate', 
+    'Panthapath',
+    'Karwanbazar',
+    'New Market',
+    'Banglamotor',
+    'Shahbag',
+    'Science Lab',
+    'Elephant Road',
+    'Mirpur Road',
+    'Zigatola',
+    'Lalmatia'
+  ];
+};
+
+// Mock location pricing hook since the table was removed
+export const useLocationPricing = () => {
+  return {
+    data: getAvailableLocations().map(location => ({
+      location,
+      base_delivery_fee: 0 // Free delivery with new system
+    })),
+    loading: false,
+    error: null
+  };
+};

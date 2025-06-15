@@ -133,7 +133,7 @@ const WeeklyOrderForm = ({
       sub_category_id: subCategory.id,
       meal_type_id: mealType.id,
       total_amount: calculateTotal(),
-      order_items: selectedItems.map(item => ({
+      items: selectedItems.map(item => ({
         weekly_menu_id: item.id,
         quantity: quantities[item.id],
         price: Number(item.price),
@@ -300,7 +300,7 @@ const WeeklyOrderForm = ({
                               <SelectItem key={location} value={location}>
                                 <div className="flex items-center justify-between w-full">
                                   <span>{location}</span>
-                                  {pricing && (
+                                  {pricing && pricing.base_delivery_fee > 0 && (
                                     <span className="ml-2 text-sm text-gray-500">
                                       +৳{pricing.base_delivery_fee}
                                     </span>
