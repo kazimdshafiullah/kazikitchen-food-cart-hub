@@ -1,10 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload } from "lucide-react";
+import { Upload, Loader2 } from "lucide-react";
 import { useMainCategories, useCreateMenuItem } from "@/hooks/useMenuManagement";
 import { toast } from "@/hooks/use-toast";
 import { initializeDatabase } from "@/utils/initializeDatabase";
@@ -18,18 +19,25 @@ const FrozenFoodTab = () => {
     stock_limit: "100",
   });
 
+  const [isInitializing, setIsInitializing] = useState(false);
+
   const { data: mainCategories, isLoading: categoriesLoading, error: categoriesError, refetch } = useMainCategories();
   const createMenuItem = useCreateMenuItem();
 
   useEffect(() => {
     const initDb = async () => {
-      await initializeDatabase();
-      refetch(); // Refetch categories after initialization
+      if (!categoriesLoading && (!mainCategories || mainCategories.length === 0)) {
+        console.log('Auto-initializing database...');
+        try {
+          await initializeDatabase();
+          await refetch();
+        } catch (error) {
+          console.error('Auto-initialization failed:', error);
+        }
+      }
     };
     
-    if (!categoriesLoading && (!mainCategories || mainCategories.length === 0)) {
-      initDb();
-    }
+    initDb();
   }, [categoriesLoading, mainCategories, refetch]);
 
   console.log('Main categories data:', mainCategories);
@@ -38,6 +46,28 @@ const FrozenFoodTab = () => {
 
   const frozenFoodCategory = mainCategories?.find(cat => cat.name === 'frozen_food');
   console.log('Frozen food category found:', frozenFoodCategory);
+
+  const handleInitializeDatabase = async () => {
+    setIsInitializing(true);
+    try {
+      console.log('Manual database initialization started...');
+      await initializeDatabase();
+      await refetch();
+      toast({
+        title: "Success",
+        description: "Database initialized successfully!",
+      });
+    } catch (error: any) {
+      console.error('Manual initialization failed:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to initialize database",
+        variant: "destructive",
+      });
+    } finally {
+      setIsInitializing(false);
+    }
+  };
 
   const handleCreateItem = () => {
     console.log('Handle create item called with:', newItem);
@@ -55,13 +85,8 @@ const FrozenFoodTab = () => {
       console.error('Frozen food category not found');
       toast({
         title: "Error",
-        description: "Frozen food category not found. Initializing database...",
+        description: "Frozen food category not found. Please initialize the database first.",
         variant: "destructive",
-      });
-      
-      // Try to initialize database
-      initializeDatabase().then(() => {
-        refetch();
       });
       return;
     }
@@ -102,7 +127,10 @@ const FrozenFoodTab = () => {
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="text-center">Loading categories...</div>
+          <div className="flex items-center justify-center space-x-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Loading categories...</span>
+          </div>
         </CardContent>
       </Card>
     );
@@ -113,12 +141,20 @@ const FrozenFoodTab = () => {
       <Card>
         <CardContent className="p-6">
           <div className="text-center text-red-600">
-            Error loading categories: {categoriesError.message}
+            <p className="mb-4">Error loading categories: {categoriesError.message}</p>
             <Button 
-              onClick={() => initializeDatabase().then(() => refetch())} 
-              className="mt-2 block mx-auto"
+              onClick={handleInitializeDatabase}
+              disabled={isInitializing}
+              className="bg-blue-600 hover:bg-blue-700"
             >
-              Initialize Database
+              {isInitializing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Initializing...
+                </>
+              ) : (
+                'Initialize Database'
+              )}
             </Button>
           </div>
         </CardContent>
@@ -133,10 +169,18 @@ const FrozenFoodTab = () => {
           <div className="text-center text-yellow-600">
             <p className="mb-4">Frozen food category not found. Click below to initialize the database with required categories.</p>
             <Button 
-              onClick={() => initializeDatabase().then(() => refetch())}
+              onClick={handleInitializeDatabase}
+              disabled={isInitializing}
               className="bg-blue-600 hover:bg-blue-700"
             >
-              Initialize Database
+              {isInitializing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Initializing Database...
+                </>
+              ) : (
+                'Initialize Database'
+              )}
             </Button>
           </div>
         </CardContent>
