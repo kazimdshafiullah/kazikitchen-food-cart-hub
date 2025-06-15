@@ -8,17 +8,50 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { CreditCard, DollarSign, ChevronsUpDown, ShieldAlert, Smartphone } from "lucide-react";
 import { usePaymentSettings, useUpdatePaymentSettings } from "@/hooks/usePaymentSettings";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useState, useEffect } from "react";
 
 const PaymentMethodTab = () => {
-  const { settings, loading } = usePaymentSettings();
+  const { settings, loading, error } = usePaymentSettings();
   const { updateSettings, updating } = useUpdatePaymentSettings();
+  
+  const [localSettings, setLocalSettings] = useState({
+    bkash_enabled: true,
+    ssl_enabled: true,
+    cod_enabled: true,
+    bkash_live_mode: false,
+    ssl_live_mode: false,
+    cod_min_order: 250,
+    cod_max_order: 5000
+  });
+
+  // Update local settings when Supabase settings are loaded
+  useEffect(() => {
+    if (settings) {
+      console.log('Loading settings from Supabase:', settings);
+      setLocalSettings({
+        bkash_enabled: settings.bkash_enabled,
+        ssl_enabled: settings.ssl_enabled,
+        cod_enabled: settings.cod_enabled,
+        bkash_live_mode: settings.bkash_live_mode,
+        ssl_live_mode: settings.ssl_live_mode,
+        cod_min_order: settings.cod_min_order,
+        cod_max_order: settings.cod_max_order
+      });
+    }
+  }, [settings]);
 
   const handleToggleChange = async (field: string, value: boolean) => {
     console.log('Toggle change initiated:', field, value, 'Current settings:', settings);
-    if (!settings) {
-      console.log('No settings available, cannot update');
+    if (!settings?.id) {
+      console.error('No settings ID available for update');
       return;
     }
+    
+    // Update local state immediately for UI responsiveness
+    setLocalSettings(prev => ({
+      ...prev,
+      [field]: value
+    }));
     
     try {
       await updateSettings({
@@ -28,25 +61,50 @@ const PaymentMethodTab = () => {
       console.log('Toggle update completed successfully');
     } catch (error) {
       console.error('Toggle update failed:', error);
+      // Revert local state on error
+      setLocalSettings(prev => ({
+        ...prev,
+        [field]: !value
+      }));
     }
   };
 
   const handleInputChange = async (field: string, value: string) => {
     console.log('Input change initiated:', field, value);
-    if (!settings) {
-      console.log('No settings available, cannot update');
+    if (!settings?.id) {
+      console.error('No settings ID available for update');
       return;
     }
+    
+    const numericValue = parseFloat(value) || 0;
+    
+    // Update local state immediately
+    setLocalSettings(prev => ({
+      ...prev,
+      [field]: numericValue
+    }));
     
     try {
       await updateSettings({
         id: settings.id,
-        [field]: parseFloat(value) || 0
+        [field]: numericValue
       });
       console.log('Input update completed successfully');
     } catch (error) {
       console.error('Input update failed:', error);
     }
+  };
+
+  const handleSaveSettings = async () => {
+    if (!settings?.id) {
+      console.error('No settings ID available for update');
+      return;
+    }
+
+    await updateSettings({
+      id: settings.id,
+      ...localSettings
+    });
   };
 
   if (loading) {
@@ -59,6 +117,15 @@ const PaymentMethodTab = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-500 mb-2">Error loading payment settings</p>
+        <p className="text-sm text-gray-400">{error}</p>
+      </div>
+    );
+  }
+
   if (!settings) {
     return (
       <div className="text-center py-8">
@@ -67,7 +134,7 @@ const PaymentMethodTab = () => {
     );
   }
 
-  console.log('Rendering PaymentMethodTab with settings:', settings);
+  console.log('Rendering PaymentMethodTab with settings:', settings, 'local:', localSettings);
 
   return (
     <div className="space-y-6">
@@ -85,9 +152,9 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
             <Switch 
               id="bkash-enabled" 
-              checked={settings.bkash_enabled === true}
+              checked={localSettings.bkash_enabled === true}
               onCheckedChange={(checked) => {
-                console.log('bKash toggle clicked - current:', settings.bkash_enabled, 'new:', checked);
+                console.log('bKash toggle clicked - current:', localSettings.bkash_enabled, 'new:', checked);
                 handleToggleChange('bkash_enabled', checked);
               }}
               disabled={updating}
@@ -120,9 +187,9 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 pt-2">
             <Switch 
               id="bkash-live" 
-              checked={settings.bkash_live_mode === true}
+              checked={localSettings.bkash_live_mode === true}
               onCheckedChange={(checked) => {
-                console.log('bKash live mode toggle clicked - current:', settings.bkash_live_mode, 'new:', checked);
+                console.log('bKash live mode toggle clicked - current:', localSettings.bkash_live_mode, 'new:', checked);
                 handleToggleChange('bkash_live_mode', checked);
               }}
               disabled={updating}
@@ -151,9 +218,9 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg">
             <Switch 
               id="ssl-enabled" 
-              checked={settings.ssl_enabled === true}
+              checked={localSettings.ssl_enabled === true}
               onCheckedChange={(checked) => {
-                console.log('SSL toggle clicked - current:', settings.ssl_enabled, 'new:', checked);
+                console.log('SSL toggle clicked - current:', localSettings.ssl_enabled, 'new:', checked);
                 handleToggleChange('ssl_enabled', checked);
               }}
               disabled={updating}
@@ -176,9 +243,9 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 pt-2">
             <Switch 
               id="ssl-live" 
-              checked={settings.ssl_live_mode === true}
+              checked={localSettings.ssl_live_mode === true}
               onCheckedChange={(checked) => {
-                console.log('SSL live mode toggle clicked - current:', settings.ssl_live_mode, 'new:', checked);
+                console.log('SSL live mode toggle clicked - current:', localSettings.ssl_live_mode, 'new:', checked);
                 handleToggleChange('ssl_live_mode', checked);
               }}
               disabled={updating}
@@ -207,9 +274,9 @@ const PaymentMethodTab = () => {
           <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg">
             <Switch 
               id="cod-enabled" 
-              checked={settings.cod_enabled === true}
+              checked={localSettings.cod_enabled === true}
               onCheckedChange={(checked) => {
-                console.log('COD toggle clicked - current:', settings.cod_enabled, 'new:', checked);
+                console.log('COD toggle clicked - current:', localSettings.cod_enabled, 'new:', checked);
                 handleToggleChange('cod_enabled', checked);
               }}
               disabled={updating}
@@ -223,8 +290,14 @@ const PaymentMethodTab = () => {
             <label className="text-sm font-medium">Minimum Order Value (BDT)</label>
             <Input 
               type="number" 
-              value={settings.cod_min_order || ''}
-              onChange={(e) => handleInputChange('cod_min_order', e.target.value)}
+              value={localSettings.cod_min_order || ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                setLocalSettings(prev => ({
+                  ...prev,
+                  cod_min_order: parseFloat(value) || 0
+                }));
+              }}
               onBlur={(e) => handleInputChange('cod_min_order', e.target.value)}
               disabled={updating}
             />
@@ -237,8 +310,14 @@ const PaymentMethodTab = () => {
             <label className="text-sm font-medium">Maximum Order Value (BDT)</label>
             <Input 
               type="number" 
-              value={settings.cod_max_order || ''}
-              onChange={(e) => handleInputChange('cod_max_order', e.target.value)}
+              value={localSettings.cod_max_order || ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                setLocalSettings(prev => ({
+                  ...prev,
+                  cod_max_order: parseFloat(value) || 0
+                }));
+              }}
               onBlur={(e) => handleInputChange('cod_max_order', e.target.value)}
               disabled={updating}
             />
@@ -248,8 +327,11 @@ const PaymentMethodTab = () => {
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button onClick={() => toast.success("Settings saved!")}>
-            Save Settings
+          <Button 
+            onClick={handleSaveSettings}
+            disabled={updating}
+          >
+            {updating ? "Saving..." : "Save Settings"}
           </Button>
         </CardFooter>
       </Card>
