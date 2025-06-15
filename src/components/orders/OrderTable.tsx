@@ -89,7 +89,7 @@ const OrderTable: React.FC<OrderTableProps> = ({
                 <TableCell>
                   <div className="flex items-center gap-1">
                     <MapPin className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">{order.deliveryLocation}</span>
+                    <span className="text-sm font-medium">{order.deliveryLocation}</span>
                   </div>
                 </TableCell>
                 <TableCell>
