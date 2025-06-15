@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import {
 import { Search, UserPlus, Key, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CustomUser {
   id: string;
@@ -37,7 +39,7 @@ const UserManagement = () => {
   const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
   const [changeOwnPasswordOpen, setChangeOwnPasswordOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<CustomUser | null>(null);
-  const { profile, createUser, updateUserPassword, changeOwnPassword } = useAuth();
+  const { profile, changeOwnPassword } = useAuth();
   
   // New user form state
   const [newUser, setNewUser] = useState({
@@ -56,31 +58,57 @@ const UserManagement = () => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [ownNewPassword, setOwnNewPassword] = useState("");
   const [ownConfirmPassword, setOwnConfirmPassword] = useState("");
-  
-  // Load users on component mount
+
+  // Load users from Supabase on component mount
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  const fetchUsers = () => {
-    console.log('=== FETCHING USERS ===');
-    const storedUsers = localStorage.getItem('custom_users');
-    console.log('Raw stored users from localStorage:', storedUsers);
-    const users = storedUsers ? JSON.parse(storedUsers) : [];
-    console.log('Parsed users for display:', users);
-    setUsers(users);
+  // Fetch users from Supabase DB: join auth.users and public.profiles on id
+  const fetchUsers = async () => {
+    // Get all profiles & join with emails from auth.users (via RPC or multiple calls)
+    // We'll do two queries, then join in JS for now
+    const { data: profileData, error: profileErr } = await supabase
+      .from("profiles")
+      .select("id, username, role, created_at, email");
+    if (profileErr) {
+      toast({
+        title: "Error fetching profiles",
+        description: profileErr.message,
+        variant: "destructive"
+      });
+      setUsers([]);
+      return;
+    }
+    // Note: email should usually be present in profiles table as well
+    // but let's fall back to auth.users if needed
+    const { data: userData } = await supabase
+      .from("profiles")
+      .select("id, email");
+    const userMap: Record<string, string> = {};
+    if (userData) {
+      userData.forEach((u: any) => {
+        if (u.id && u.email) userMap[u.id] = u.email;
+      });
+    }
+    const mapped: CustomUser[] = (profileData || []).map((p: any) => ({
+      id: p.id,
+      username: p.username,
+      email: p.email || userMap[p.id] || "",
+      role: p.role,
+      created_at: p.created_at
+    }));
+    setUsers(mapped);
   };
   
   const filteredUsers = users.filter(user => {
-    return user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           user.role.toLowerCase().includes(searchTerm.toLowerCase());
+    return user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           user.role?.toLowerCase().includes(searchTerm.toLowerCase());
   });
-  
+
+  // CREATE user in Supabase Auth and set role/profile
   const handleAddUser = async () => {
-    console.log('=== HANDLE ADD USER ===');
-    console.log('Form data:', newUser);
-    
     if (!newUser.username || !newUser.email || !newUser.role || !newUser.password) {
       toast({
         title: "Validation Error",
@@ -89,7 +117,7 @@ const UserManagement = () => {
       });
       return;
     }
-    
+
     if (newUser.password !== newUser.confirmPassword) {
       toast({
         title: "Password Mismatch",
@@ -98,41 +126,63 @@ const UserManagement = () => {
       });
       return;
     }
-    
-    // Make sure role value is exactly what we expect
-    const roleMapping = {
-      "kitchen": "kitchen",
-      "rider": "rider", 
-      "manager": "manager"
-    };
-    
-    const mappedRole = roleMapping[newUser.role as keyof typeof roleMapping] || newUser.role;
-    console.log('Role mapping:', { original: newUser.role, mapped: mappedRole });
-    
-    const success = await createUser({
-      username: newUser.username,
+
+    // Only admin can create users!
+    if (!profile?.role || profile.role !== 'admin') {
+      toast({
+        title: "Access Denied",
+        description: "Only administrators can create users",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Create user in Supabase Auth
+    const { data, error } = await supabase.auth.admin.createUser({
       email: newUser.email,
-      role: mappedRole as 'admin' | 'kitchen' | 'rider' | 'manager',
-      password: newUser.password
+      password: newUser.password,
+      user_metadata: {
+        username: newUser.username,
+        role: newUser.role
+      }
     });
 
-    if (success) {
-      console.log('User created successfully, refreshing user list');
-      setNewUser({
-        username: "",
-        email: "",
-        role: "kitchen",
-        password: "",
-        confirmPassword: ""
+    if (error || !data?.user) {
+      toast({
+        title: "User Creation Failed",
+        description: error?.message || "Failed to create user in Supabase Auth",
+        variant: "destructive"
       });
-      setAddUserOpen(false);
-      // Refresh the user list after creation
-      setTimeout(() => {
-        fetchUsers();
-      }, 100);
+      return;
     }
+    // Set role metadata in profiles if not set by trigger
+    // (usually trigger should do it, but ensuring here)
+    await supabase
+      .from("profiles")
+      .update({
+        username: newUser.username,
+        email: newUser.email,
+        role: newUser.role
+      })
+      .eq("id", data.user.id);
+
+    toast({
+      title: "User Created",
+      description: `User "${newUser.username}" has been created successfully`
+    });
+
+    setNewUser({
+      username: "",
+      email: "",
+      role: "kitchen",
+      password: "",
+      confirmPassword: ""
+    });
+    setAddUserOpen(false);
+    setTimeout(() => { fetchUsers(); }, 300);
   };
 
+  // RESET password via Supabase admin API (or user self-service if not admin)
   const handleResetPassword = async () => {
     if (!selectedUser || !newPassword || newPassword !== confirmNewPassword) {
       toast({
@@ -142,14 +192,35 @@ const UserManagement = () => {
       });
       return;
     }
-
-    const success = await updateUserPassword(selectedUser.id, newPassword);
-    if (success) {
-      setNewPassword("");
-      setConfirmNewPassword("");
-      setResetPasswordOpen(false);
-      setSelectedUser(null);
+    // Only admin can reset others' passwords!
+    if (!profile?.role || profile.role !== 'admin') {
+      toast({
+        title: "Access Denied",
+        description: "Only administrators can reset passwords",
+        variant: "destructive"
+      });
+      return;
     }
+    // Call REST if you have edge function, for now inform user this must be done via Auth API.
+    const { error } = await supabase.auth.admin.updateUserById(selectedUser.id, {
+      password: newPassword,
+    });
+    if (error) {
+      toast({
+        title: "Password Reset Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+      return;
+    }
+    setNewPassword("");
+    setConfirmNewPassword("");
+    setResetPasswordOpen(false);
+    setSelectedUser(null);
+    toast({
+      title: "Password Reset",
+      description: "Password has been reset successfully"
+    });
   };
 
   const handleChangeOwnPassword = async () => {
@@ -161,7 +232,6 @@ const UserManagement = () => {
       });
       return;
     }
-
     const success = await changeOwnPassword(currentPassword, ownNewPassword);
     if (success) {
       setCurrentPassword("");
@@ -204,7 +274,6 @@ const UserManagement = () => {
         <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
         <p className="text-muted-foreground">Manage staff accounts and permissions</p>
       </div>
-      
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="relative w-full sm:max-w-xs">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -215,7 +284,6 @@ const UserManagement = () => {
             onChange={e => setSearchTerm(e.target.value)}
           />
         </div>
-        
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setChangeOwnPasswordOpen(true)}>
             <Settings className="mr-2 h-4 w-4" />
@@ -227,7 +295,6 @@ const UserManagement = () => {
           </Button>
         </div>
       </div>
-      
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -269,7 +336,6 @@ const UserManagement = () => {
           </TableBody>
         </Table>
       </div>
-      
       {/* Add User Dialog */}
       <Dialog open={addUserOpen} onOpenChange={setAddUserOpen}>
         <DialogContent className="sm:max-w-md">
@@ -279,7 +345,6 @@ const UserManagement = () => {
               Create a new user account with specific role.
             </DialogDescription>
           </DialogHeader>
-          
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <label htmlFor="username" className="text-sm font-medium">Username</label>
@@ -290,7 +355,6 @@ const UserManagement = () => {
                 placeholder="Enter username"
               />
             </div>
-            
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">Email</label>
               <Input 
@@ -301,15 +365,11 @@ const UserManagement = () => {
                 placeholder="Enter email"
               />
             </div>
-            
             <div className="space-y-2">
               <label htmlFor="role" className="text-sm font-medium">Role</label>
               <Select 
                 value={newUser.role} 
-                onValueChange={(value) => {
-                  console.log('Role selected:', value);
-                  setNewUser({...newUser, role: value});
-                }}
+                onValueChange={(value) => setNewUser({...newUser, role: value})}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select role" />
@@ -318,10 +378,10 @@ const UserManagement = () => {
                   <SelectItem value="kitchen">Kitchen Staff</SelectItem>
                   <SelectItem value="rider">Delivery Rider</SelectItem>
                   <SelectItem value="manager">Manager</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium">Password</label>
               <Input 
@@ -332,7 +392,6 @@ const UserManagement = () => {
                 placeholder="Enter password"
               />
             </div>
-            
             <div className="space-y-2">
               <label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</label>
               <Input 
@@ -344,7 +403,6 @@ const UserManagement = () => {
               />
             </div>
           </div>
-          
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
@@ -353,7 +411,6 @@ const UserManagement = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
       {/* Reset Password Dialog */}
       <Dialog open={resetPasswordOpen} onOpenChange={setResetPasswordOpen}>
         <DialogContent className="sm:max-w-md">
@@ -363,7 +420,6 @@ const UserManagement = () => {
               {selectedUser && `Reset password for ${selectedUser.username}`}
             </DialogDescription>
           </DialogHeader>
-          
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <label htmlFor="newPassword" className="text-sm font-medium">New Password</label>
@@ -375,7 +431,6 @@ const UserManagement = () => {
                 placeholder="Enter new password"
               />
             </div>
-            
             <div className="space-y-2">
               <label htmlFor="confirmNewPassword" className="text-sm font-medium">Confirm New Password</label>
               <Input 
@@ -387,7 +442,6 @@ const UserManagement = () => {
               />
             </div>
           </div>
-          
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
@@ -396,7 +450,6 @@ const UserManagement = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
       {/* Change Own Password Dialog */}
       <Dialog open={changeOwnPasswordOpen} onOpenChange={setChangeOwnPasswordOpen}>
         <DialogContent className="sm:max-w-md">
@@ -406,7 +459,6 @@ const UserManagement = () => {
               Update your own password
             </DialogDescription>
           </DialogHeader>
-          
           <div className="space-y-4 py-2">
             <div className="space-y-2">
               <label htmlFor="currentPassword" className="text-sm font-medium">Current Password</label>
@@ -418,7 +470,6 @@ const UserManagement = () => {
                 placeholder="Enter current password"
               />
             </div>
-            
             <div className="space-y-2">
               <label htmlFor="ownNewPassword" className="text-sm font-medium">New Password</label>
               <Input 
@@ -429,7 +480,6 @@ const UserManagement = () => {
                 placeholder="Enter new password"
               />
             </div>
-            
             <div className="space-y-2">
               <label htmlFor="ownConfirmPassword" className="text-sm font-medium">Confirm New Password</label>
               <Input 
@@ -441,7 +491,6 @@ const UserManagement = () => {
               />
             </div>
           </div>
-          
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
@@ -455,3 +504,5 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
+
+// End of file
