@@ -89,7 +89,7 @@ const App = () => (
             <Route path="customer-dashboard" element={<CustomerDashboard />} />
           </Route>
 
-          {/* Admin routes - both login and dashboard wrapped with AuthProvider */}
+          {/* Admin routes - wrapped with AuthProvider */}
           <Route path="/admin/*" element={
             <AuthProvider>
               <Routes>
@@ -122,18 +122,32 @@ const App = () => (
             </AuthProvider>
           } />
 
-          {/* Kitchen routes */}
-          <Route path="/kitchen/login" element={<KitchenLogin />} />
-          <Route path="/kitchen" element={<KitchenLayout />}>
-            <Route index element={<KitchenDashboard />} />
-          </Route>
+          {/* Kitchen routes - wrapped with AuthProvider */}
+          <Route path="/kitchen/*" element={
+            <AuthProvider>
+              <Routes>
+                <Route path="login" element={<KitchenLogin />} />
+                <Route path="/" element={<KitchenLayout />}>
+                  <Route index element={<KitchenDashboard />} />
+                  <Route path="dashboard" element={<KitchenDashboard />} />
+                </Route>
+              </Routes>
+            </AuthProvider>
+          } />
 
-          {/* Rider routes */}
-          <Route path="/rider/login" element={<RiderLogin />} />
-          <Route path="/rider" element={<RiderLayout />}>
-            <Route index element={<RiderDashboard />} />
-            <Route path="map" element={<RiderMap />} />
-          </Route>
+          {/* Rider routes - wrapped with AuthProvider */}
+          <Route path="/rider/*" element={
+            <AuthProvider>
+              <Routes>
+                <Route path="login" element={<RiderLogin />} />
+                <Route path="/" element={<RiderLayout />}>
+                  <Route index element={<RiderDashboard />} />
+                  <Route path="dashboard" element={<RiderDashboard />} />
+                  <Route path="map" element={<RiderMap />} />
+                </Route>
+              </Routes>
+            </AuthProvider>
+          } />
 
           {/* 404 route */}
           <Route path="*" element={<NotFound />} />
