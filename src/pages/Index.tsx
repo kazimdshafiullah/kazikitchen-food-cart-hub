@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import { useMainCategories, useSubCategories, useMealTypes } from "@/hooks/useWeeklyMenu";
+import { useMenuItems } from "@/hooks/useMenuManagement";
 import { Utensils, ShoppingBag, Clock, Users, Crown, Heart, Snowflake, ChefHat, Star } from "lucide-react";
 
 const Index = () => {
@@ -13,9 +14,36 @@ const Index = () => {
   const { data: categories = [] } = useCategories();
   const { data: mainCategories = [] } = useMainCategories();
   const { data: mealTypes = [] } = useMealTypes();
+  const { data: menuItems = [] } = useMenuItems();
 
   const featuredProducts = products.filter(product => product.featured).slice(0, 4);
   const frozenProducts = products.filter(product => product.is_frozen_food).slice(0, 3);
+  
+  // Get frozen food items from the new menu system
+  const frozenFoodCategory = mainCategories.find(cat => cat.name === 'frozen_food');
+  const frozenMenuItems = menuItems.filter(item => 
+    item.main_category_id === frozenFoodCategory?.id && item.is_active
+  ).slice(0, 3);
+
+  // Combine both old and new items for featured display
+  const allFeaturedItems = [
+    ...featuredProducts.map(product => ({
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: Number(product.price) * 110, // Convert to BDT
+      image_url: product.image_url,
+      type: 'product'
+    })),
+    ...frozenMenuItems.map(item => ({
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      price: Number(item.price), // Already in BDT
+      image_url: item.image_url,
+      type: 'menu_item'
+    }))
+  ].slice(0, 4);
 
   return (
     <div className="min-h-screen">
@@ -105,7 +133,7 @@ const Index = () => {
       </section>
 
       {/* Featured Products */}
-      {featuredProducts.length > 0 && (
+      {allFeaturedItems.length > 0 && (
         <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
@@ -114,23 +142,23 @@ const Index = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredProducts.map((product) => (
-                <Card key={product.id} className="hover:shadow-lg transition-shadow overflow-hidden">
+              {allFeaturedItems.map((item) => (
+                <Card key={`${item.type}-${item.id}`} className="hover:shadow-lg transition-shadow overflow-hidden">
                   <div className="aspect-square overflow-hidden">
                     <img
-                      src={product.image_url || "/placeholder.svg"}
-                      alt={product.name}
+                      src={item.image_url || "/placeholder.svg"}
+                      alt={item.name}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
                   </div>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold text-lg">{product.name}</h3>
+                      <h3 className="font-semibold text-lg">{item.name}</h3>
                       <Star className="w-4 h-4 text-yellow-500 fill-current" />
                     </div>
-                    <p className="text-gray-600 text-sm mb-3">{product.description}</p>
+                    <p className="text-gray-600 text-sm mb-3">{item.description}</p>
                     <div className="flex justify-between items-center">
-                      <span className="text-orange-600 font-bold text-lg">৳{Number(product.price) * 110}</span>
+                      <span className="text-orange-600 font-bold text-lg">৳{item.price.toFixed(2)}</span>
                       <Button size="sm" className="bg-orange-500 hover:bg-orange-600">
                         Add to Cart
                       </Button>
@@ -148,11 +176,11 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
-              <div className="text-3xl font-bold mb-2">100+</div>
+              <div className="text-3xl font-bold mb-2">{(products.length + menuItems.length)}+</div>
               <div className="text-orange-200">Menu Items</div>
             </div>
             <div>
-              <div className="text-3xl font-bold mb-2">50+</div>
+              <div className="text-3xl font-bold mb-2">{frozenMenuItems.length + frozenProducts.length}+</div>
               <div className="text-orange-200">Frozen Products</div>
             </div>
             <div>
@@ -160,7 +188,7 @@ const Index = () => {
               <div className="text-orange-200">Happy Customers</div>
             </div>
             <div>
-              <div className="text-3xl font-bold mb-2">3</div>
+              <div className="text-3xl font-bold mb-2">{mealTypes.length}</div>
               <div className="text-orange-200">Meal Plans</div>
             </div>
           </div>
