@@ -130,7 +130,7 @@ const UserManagement = () => {
       if (!result.success) {
         toast({
           title: "User Creation Failed",
-          description: result.error || "Failed to create user",
+          description: "Failed to create user",
           variant: "destructive"
         });
         return;
