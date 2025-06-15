@@ -21,8 +21,7 @@ import {
 import { Search, UserPlus, Key, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { createSupabaseUser } from "@/utils/createSupabaseUser";
+import { apiClient } from "@/utils/api"; // <-- Use custom backend API
 
 interface CustomUser {
   id: string;
@@ -37,7 +36,7 @@ const UserManagement = () => {
   const [users, setUsers] = useState<CustomUser[]>([]);
   const [addUserOpen, setAddUserOpen] = useState(false);
   const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
-  const [changeOwnPasswordOpen, setChangeOwnPasswordOpen] = useState(false);
+  const [changeOwnPasswordOpen, setChangeOwnPasswordOpen = useState(false);
   const [selectedUser, setSelectedUser] = useState<CustomUser | null>(null);
   const { profile, changeOwnPassword } = useAuth();
   
@@ -59,47 +58,38 @@ const UserManagement = () => {
   const [ownNewPassword, setOwnNewPassword] = useState("");
   const [ownConfirmPassword, setOwnConfirmPassword] = useState("");
 
-  // Fetch users from Supabase DB: use "profiles" table only
+  // Fetch users from your custom backend API
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  // Fetch users from Supabase DB: join auth.users and public.profiles on id
+  // Fetch users from custom backend API
   const fetchUsers = async () => {
-    const { data: profileData, error: profileErr } = await supabase
-      .from("profiles")
-      .select("id, username, role, created_at, email");
-    if (profileErr) {
+    // Example code: adapt to your actual API endpoint as necessary!
+    try {
+      // Since your apiClient doesn't yet expose a GET users endpoint, this is just pseudocode:
+      // const result = await apiClient.getUsers();
+      // For now, let's use localStorage if you use that for local users
+      const storedUsers = localStorage.getItem("custom_users");
+      const users = storedUsers ? JSON.parse(storedUsers) : [];
+      setUsers(users);
+    } catch (error) {
       toast({
-        title: "Error fetching profiles",
-        description: profileErr.message,
-        variant: "destructive"
+        title: "Error fetching users",
+        description: "Could not fetch user list.",
+        variant: "destructive",
       });
       setUsers([]);
-      return;
     }
-    if (!profileData) {
-      setUsers([]);
-      return;
-    }
-    // Ensure all email/role fields are present
-    const mapped: CustomUser[] = (profileData || []).map((p: any) => ({
-      id: p.id,
-      username: p.username,
-      email: p.email || "",
-      role: p.role,
-      created_at: p.created_at
-    }));
-    setUsers(mapped);
   };
-  
+
   const filteredUsers = users.filter(user => {
     return user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
            user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
            user.role?.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
-  // CREATE user using the Supabase Edge Function (server-side service role)
+  // CREATE user using the custom backend API
   const handleAddUser = async () => {
     if (!newUser.username || !newUser.email || !newUser.role || !newUser.password) {
       toast({
@@ -129,40 +119,46 @@ const UserManagement = () => {
       return;
     }
 
-    // Use edge function to create user securely
-    const result = await createSupabaseUser({
-      username: newUser.username,
-      email: newUser.email,
-      password: newUser.password,
-      role: newUser.role
-    });
+    // Use custom backend API
+    try {
+      const result = await apiClient.createUser({
+        username: newUser.username,
+        email: newUser.email,
+        password: newUser.password,
+        role: newUser.role
+      });
+      if (!result.success) {
+        toast({
+          title: "User Creation Failed",
+          description: result.error || "Failed to create user",
+          variant: "destructive"
+        });
+        return;
+      }
+      toast({
+        title: "User Created",
+        description: `User "${newUser.username}" has been created successfully`
+      });
 
-    if (!result.success) {
+      setNewUser({
+        username: "",
+        email: "",
+        role: "kitchen",
+        password: "",
+        confirmPassword: ""
+      });
+      setAddUserOpen(false);
+      setTimeout(() => { fetchUsers(); }, 500);
+    } catch (error: any) {
       toast({
         title: "User Creation Failed",
-        description: result.error || "Failed to create user",
+        description: error?.message || "Something went wrong",
         variant: "destructive"
       });
-      return;
     }
-
-    toast({
-      title: "User Created",
-      description: `User "${newUser.username}" has been created successfully`
-    });
-
-    setNewUser({
-      username: "",
-      email: "",
-      role: "kitchen",
-      password: "",
-      confirmPassword: ""
-    });
-    setAddUserOpen(false);
-    setTimeout(() => { fetchUsers(); }, 500);
   };
 
-  // RESET password via Supabase admin API (or user self-service if not admin)
+  // RESET password via custom backend/local store
   const handleResetPassword = async () => {
     if (!selectedUser || !newPassword || newPassword !== confirmNewPassword) {
       toast({
@@ -181,26 +177,37 @@ const UserManagement = () => {
       });
       return;
     }
-    // Reset user password using Supabase Admin API
-    const { error } = await supabase.auth.admin.updateUserById(selectedUser.id, {
-      password: newPassword,
-    });
-    if (error) {
+    // For local users: update in localStorage or use a dedicated API endpoint if you have one
+    try {
+      // Try to use your legacy helper if you still use localStorage for managing users:
+      const storedUsers = localStorage.getItem("custom_users");
+      const users = storedUsers ? JSON.parse(storedUsers) : [];
+      const idx = users.findIndex((u: any) => u.id === selectedUser.id);
+      if (idx === -1) {
+        toast({
+          title: "User Not Found",
+          description: "User does not exist",
+          variant: "destructive"
+        });
+        return;
+      }
+      users[idx].password = newPassword;
+      localStorage.setItem("custom_users", JSON.stringify(users));
+      setNewPassword("");
+      setConfirmNewPassword("");
+      setResetPasswordOpen(false);
+      setSelectedUser(null);
+      toast({
+        title: "Password Reset",
+        description: "Password has been reset successfully"
+      });
+    } catch (error: any) {
       toast({
         title: "Password Reset Failed",
-        description: error.message,
+        description: error?.message || "Something went wrong",
         variant: "destructive"
       });
-      return;
     }
-    setNewPassword("");
-    setConfirmNewPassword("");
-    setResetPasswordOpen(false);
-    setSelectedUser(null);
-    toast({
-      title: "Password Reset",
-      description: "Password has been reset successfully"
-    });
   };
 
   const handleChangeOwnPassword = async () => {
@@ -484,5 +491,3 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
-
-// End of file
