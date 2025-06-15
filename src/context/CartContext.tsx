@@ -30,6 +30,8 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  console.log('CartProvider mounted');
+  
   const [cart, setCart] = useState<CartItem[]>([]);
   const [subtotal, setSubtotal] = useState<number>(0);
   const [itemCount, setItemCount] = useState<number>(0);
@@ -48,6 +50,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const addToCart = (product: Product, quantity: number = 1) => {
     console.log('Adding to cart:', product, 'quantity:', quantity);
+    
+    // Ensure the product has the is_frozen_food property
+    const cartProduct: Product = {
+      ...product,
+      is_frozen_food: product.is_frozen_food || false
+    };
+    
     setCart(prevCart => {
       const existingItemIndex = prevCart.findIndex(item => item.product.id === product.id);
       
@@ -63,7 +72,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         // If item doesn't exist in cart, add new item
         toast.success(`Added ${product.name} to cart`);
-        return [...prevCart, { product, quantity }];
+        return [...prevCart, { product: cartProduct, quantity }];
       }
     });
   };
@@ -98,6 +107,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toast.info("Cart cleared");
   };
   
+  console.log('CartProvider rendering with cart:', cart);
+  
   return (
     <CartContext.Provider value={{ 
       cart, 
@@ -116,6 +127,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useCart = () => {
   const context = useContext(CartContext);
   if (context === undefined) {
+    console.error("useCart must be used within a CartProvider - Context is undefined");
     throw new Error("useCart must be used within a CartProvider");
   }
   return context;

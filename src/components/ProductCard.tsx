@@ -19,7 +19,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Convert the database product to cart format
+    
+    // Convert the database product to cart format with proper typing
     const cartProduct = {
       id: product.id,
       name: product.name,
@@ -27,8 +28,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
       image: product.image_url || "/placeholder.svg",
       category: "food", // Default category for cart
       description: product.description || "",
-      is_frozen_food: product.is_frozen_food || false
+      is_frozen_food: Boolean(product.is_frozen_food) // Ensure it's a boolean
     };
+    
+    console.log("Adding product to cart:", cartProduct);
     addToCart(cartProduct, 1);
     toast.success(`Added ${product.name} to cart`);
   };

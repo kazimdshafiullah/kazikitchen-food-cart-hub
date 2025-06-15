@@ -24,6 +24,9 @@ const Checkout = () => {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState<string>("");
   
+  console.log('Checkout - Cart:', cart);
+  console.log('Checkout - Subtotal USD:', subtotal);
+  
   // Convert USD to BDT (approximate rate: 1 USD = 110 BDT)
   const bdtSubtotal = subtotal * 110;
   
@@ -51,8 +54,9 @@ const Checkout = () => {
 
   // Check if cart contains frozen food items
   const hasFrozenFood = cart.some(item => {
-    console.log('Checking item for frozen food:', item.product.name, 'is_frozen_food:', item.product.is_frozen_food);
-    return item.product.is_frozen_food === true;
+    const isFrozen = Boolean(item.product.is_frozen_food);
+    console.log('Checking item for frozen food:', item.product.name, 'is_frozen_food:', item.product.is_frozen_food, 'result:', isFrozen);
+    return isFrozen;
   });
   
   console.log('Has frozen food in cart:', hasFrozenFood);
