@@ -21,25 +21,48 @@ const ResetPassword = () => {
   useEffect(() => {
     const checkRecoverySession = async () => {
       try {
+        console.log('=== Reset Password Debug Info ===');
         console.log('Full URL:', window.location.href);
         console.log('Hash:', window.location.hash);
+        console.log('Search params:', window.location.search);
         
-        // Parse the URL hash for authentication parameters
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
-        const type = hashParams.get('type');
+        // Parse both hash and search parameters
+        let accessToken = null;
+        let refreshToken = null;
+        let type = null;
 
-        console.log('Hash params found:', {
-          type,
-          hasAccessToken: !!accessToken,
-          hasRefreshToken: !!refreshToken,
-          accessTokenLength: accessToken?.length,
-          refreshTokenLength: refreshToken?.length
-        });
+        // Check hash parameters first (new format)
+        if (window.location.hash) {
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          accessToken = hashParams.get('access_token');
+          refreshToken = hashParams.get('refresh_token');
+          type = hashParams.get('type');
+          console.log('Hash params found:', {
+            type,
+            hasAccessToken: !!accessToken,
+            hasRefreshToken: !!refreshToken
+          });
+        }
+
+        // Check search parameters if hash didn't work (fallback)
+        if (!accessToken && window.location.search) {
+          const searchParams = new URLSearchParams(window.location.search);
+          accessToken = searchParams.get('access_token');
+          refreshToken = searchParams.get('refresh_token');
+          type = searchParams.get('type');
+          console.log('Search params found:', {
+            type,
+            hasAccessToken: !!accessToken,
+            hasRefreshToken: !!refreshToken
+          });
+        }
+
+        // Check current session first
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        console.log('Current session:', currentSession ? 'exists' : 'none');
 
         if (type === 'recovery' && accessToken && refreshToken) {
-          console.log('Setting session with tokens...');
+          console.log('Setting session with recovery tokens...');
           
           const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
@@ -59,14 +82,27 @@ const ResetPassword = () => {
 
           console.log('Session set successfully, user:', data.user?.email);
           setIsValidSession(true);
+        } else if (currentSession && currentSession.user) {
+          console.log('Using existing session for user:', currentSession.user.email);
+          setIsValidSession(true);
         } else {
-          console.log('Invalid or missing recovery parameters');
+          console.log('No valid recovery parameters or session found');
+          console.log('Missing:', {
+            type: !type ? 'type parameter' : null,
+            accessToken: !accessToken ? 'access_token' : null,
+            refreshToken: !refreshToken ? 'refresh_token' : null
+          });
+          
           toast({
             title: "Invalid Reset Link",
-            description: "The reset link is invalid or has expired. Please request a new one.",
+            description: "The reset link is invalid, expired, or missing required parameters. Please request a new password reset.",
             variant: "destructive"
           });
-          navigate("/admin/login");
+          
+          // Give user a moment to see the error before redirecting
+          setTimeout(() => {
+            navigate("/admin/login");
+          }, 3000);
           return;
         }
       } catch (error) {
@@ -149,6 +185,9 @@ const ResetPassword = () => {
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
               <div>Validating reset link...</div>
+              <div className="text-sm text-gray-500 mt-2">
+                If this takes too long, check the browser console for details.
+              </div>
             </div>
           </CardContent>
         </Card>
