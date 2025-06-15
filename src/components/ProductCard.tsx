@@ -26,7 +26,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
       price: Number(product.price),
       image: product.image_url || "/placeholder.svg",
       category: "food", // Default category for cart
-      description: product.description || ""
+      description: product.description || "",
+      is_frozen_food: false // Will be updated when database is properly synced
     };
     addToCart(cartProduct, 1);
     toast.success(`Added ${product.name} to cart`);

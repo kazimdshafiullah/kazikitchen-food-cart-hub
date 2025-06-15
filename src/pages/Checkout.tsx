@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
@@ -49,8 +48,11 @@ const Checkout = () => {
     "ORD-1006", "ORD-1007", "ORD-1008", "ORD-1009", "ORD-1010"
   ];
 
-  // Check if cart contains frozen food items
-  const hasFrozenFood = cart.some(item => item.product.is_frozen_food);
+  // Check if cart contains frozen food items (for now assume no items are frozen until database is updated)
+  const hasFrozenFood = cart.some(item => {
+    // For now, assume frozen food category items are frozen
+    return item.product.category === 'frozen-food';
+  });
   
   // Calculate delivery fee based on new logic
   const calculateDeliveryFee = () => {
@@ -500,7 +502,7 @@ const Checkout = () => {
                     <div className="flex justify-between">
                       <h3 className="font-medium text-sm">
                         {item.product.name} <span className="text-gray-500">x{item.quantity}</span>
-                        {item.product.is_frozen_food && <span className="text-blue-500 ml-1">❄️</span>}
+                        {item.product.category === 'frozen-food' && <span className="text-blue-500 ml-1">❄️</span>}
                       </h3>
                       <span className="text-sm font-medium">
                         ৳{(item.product.price * item.quantity * 110).toFixed(2)}

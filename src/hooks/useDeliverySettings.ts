@@ -24,7 +24,7 @@ export const useDeliverySettings = () => {
       setError(null);
       
       const { data, error } = await supabase
-        .from('delivery_settings')
+        .from('delivery_settings' as any)
         .select('*')
         .limit(1);
 
@@ -39,7 +39,7 @@ export const useDeliverySettings = () => {
         console.log('No delivery settings found, creating default settings...');
         
         const { data: newData, error: insertError } = await supabase
-          .from('delivery_settings')
+          .from('delivery_settings' as any)
           .insert({
             free_delivery_threshold: 500,
             frozen_food_delivery_fee: 70,
@@ -54,10 +54,10 @@ export const useDeliverySettings = () => {
         }
 
         console.log('Created default settings:', newData);
-        setSettings(newData);
+        setSettings(newData as DeliverySettings);
       } else {
         console.log('Found existing settings:', data[0]);
-        setSettings(data[0]);
+        setSettings(data[0] as DeliverySettings);
       }
       
       setError(null);
@@ -122,7 +122,7 @@ export const useUpdateDeliverySettings = () => {
       setUpdating(true);
       
       const { data, error } = await supabase
-        .from('delivery_settings')
+        .from('delivery_settings' as any)
         .update(updates)
         .eq('id', updates.id)
         .select()
