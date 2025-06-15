@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
@@ -12,6 +13,7 @@ import { Card } from "@/components/ui/card";
 import { usePaymentSettings } from "@/hooks/usePaymentSettings";
 import { useDeliverySettings } from "@/hooks/useDeliverySettings";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CartProduct } from "@/types/product";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -50,7 +52,8 @@ const Checkout = () => {
 
   // Check if cart contains frozen food items using the cart product is_frozen_food flag
   const hasFrozenFood = cart.some(item => {
-    return item.product.is_frozen_food === true;
+    const product = item.product as CartProduct;
+    return product.is_frozen_food === true;
   });
   
   // Calculate delivery fee based on new logic
@@ -395,20 +398,23 @@ const Checkout = () => {
           
           <Card className="p-6">
             <div className="space-y-4">
-              {cart.map((item) => (
-                <div key={item.product.id} className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h4 className="font-medium">{item.product.name}</h4>
-                    <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
-                    {item.product.is_frozen_food && (
-                      <span className="inline-block text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full mt-1">
-                        Frozen Food
-                      </span>
-                    )}
+              {cart.map((item) => {
+                const product = item.product as CartProduct;
+                return (
+                  <div key={item.product.id} className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h4 className="font-medium">{item.product.name}</h4>
+                      <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                      {product.is_frozen_food && (
+                        <span className="inline-block text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full mt-1">
+                          Frozen Food
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-medium">৳{(item.product.price * item.quantity * 110).toFixed(2)}</span>
                   </div>
-                  <span className="font-medium">৳{(item.product.price * item.quantity * 110).toFixed(2)}</span>
-                </div>
-              ))}
+                );
+              })}
               
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between">
