@@ -15,12 +15,12 @@ import {
   useMainCategories, 
   useSubCategories, 
   useMealTypes, 
-  useMealPlans, 
   useCreateMenuItem 
 } from "@/hooks/useMenuManagement";
 
 const WeekendMenuTab = () => {
   const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedMainCategory, setSelectedMainCategory] = useState("");
   const [newItem, setNewItem] = useState({
     name: "",
     description: "",
@@ -28,23 +28,23 @@ const WeekendMenuTab = () => {
     image_url: "",
     sub_category_id: "",
     meal_type_id: "",
-    meal_plan_id: "",
     specific_date: "",
     stock_limit: "100",
   });
 
   const { data: mainCategories } = useMainCategories();
-  const weekendMenuCategory = mainCategories?.find(cat => cat.name === 'weekend_menu');
-  
-  const { data: subCategories } = useSubCategories(weekendMenuCategory?.id);
-  const { data: mealTypes } = useMealTypes(newItem.sub_category_id || undefined);
-  const { data: mealPlans } = useMealPlans();
+  const { data: subCategories } = useSubCategories(selectedMainCategory);
+  const { data: mealTypes } = useMealTypes();
   const createMenuItem = useCreateMenuItem();
 
+  // Filter out frozen food categories - only show School Tiffin and Office Food
+  const weekendCategories = mainCategories?.filter(cat => 
+    cat.name === 'School Tiffin' || cat.name === 'Office Food'
+  ) || [];
+
   const handleCreateItem = () => {
-    if (!newItem.name || !newItem.price || !newItem.sub_category_id || 
-        !newItem.meal_type_id || !newItem.meal_plan_id || !newItem.specific_date || 
-        !weekendMenuCategory) {
+    if (!newItem.name || !newItem.price || !selectedMainCategory || 
+        !newItem.sub_category_id || !newItem.meal_type_id || !newItem.specific_date) {
       return;
     }
 
@@ -53,10 +53,9 @@ const WeekendMenuTab = () => {
       description: newItem.description || null,
       price: parseFloat(newItem.price),
       image_url: newItem.image_url || null,
-      main_category_id: weekendMenuCategory.id,
+      main_category_id: selectedMainCategory,
       sub_category_id: newItem.sub_category_id,
       meal_type_id: newItem.meal_type_id,
-      meal_plan_id: newItem.meal_plan_id,
       specific_date: newItem.specific_date,
       stock_limit: parseInt(newItem.stock_limit) || 100,
       is_active: true,
@@ -70,11 +69,11 @@ const WeekendMenuTab = () => {
       image_url: "",
       sub_category_id: "",
       meal_type_id: "",
-      meal_plan_id: "",
       specific_date: "",
       stock_limit: "100",
     });
     setSelectedDate(undefined);
+    setSelectedMainCategory("");
   };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,55 +101,63 @@ const WeekendMenuTab = () => {
     return dayOfWeek === 5 || dayOfWeek === 6; // Disable Friday and Saturday
   };
 
+  const handleMainCategoryChange = (categoryId: string) => {
+    setSelectedMainCategory(categoryId);
+    setNewItem(prev => ({ 
+      ...prev, 
+      sub_category_id: "",
+      meal_type_id: ""
+    }));
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Add Weekend Menu Item</CardTitle>
         <CardDescription>
-          Create menu items for Office Food (Breakfast/Lunch) or School Tiffin (Breakfast) with meal plans
+          Create menu items for School Tiffin (Breakfast) or Office Food (Breakfast/Lunch) with meal plans (Regular, Diet, Premium)
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <Label htmlFor="sub-category">Category *</Label>
+          <Label htmlFor="main-category">Main Category *</Label>
           <Select
-            value={newItem.sub_category_id}
-            onValueChange={(value) => {
-              setNewItem(prev => ({ 
-                ...prev, 
-                sub_category_id: value, 
-                meal_type_id: "",
-                meal_plan_id: ""
-              }));
-            }}
+            value={selectedMainCategory}
+            onValueChange={handleMainCategoryChange}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
-              {subCategories?.filter(cat => cat.is_enabled).map((category) => (
+              {weekendCategories.map((category) => (
                 <SelectItem key={category.id} value={category.id}>
-                  {category.name === 'office_food' ? 'Office Food' : 'School Tiffin'}
+                  {category.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        {newItem.sub_category_id && (
+        {selectedMainCategory && (
           <div>
-            <Label htmlFor="meal-type">Meal Type *</Label>
+            <Label htmlFor="sub-category">Sub Category *</Label>
             <Select
-              value={newItem.meal_type_id}
-              onValueChange={(value) => setNewItem(prev => ({ ...prev, meal_type_id: value }))}
+              value={newItem.sub_category_id}
+              onValueChange={(value) => {
+                setNewItem(prev => ({ 
+                  ...prev, 
+                  sub_category_id: value, 
+                  meal_type_id: ""
+                }));
+              }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select meal type" />
+                <SelectValue placeholder="Select sub category" />
               </SelectTrigger>
               <SelectContent>
-                {mealTypes?.filter(type => type.is_enabled).map((mealType) => (
-                  <SelectItem key={mealType.id} value={mealType.id}>
-                    {mealType.name.charAt(0).toUpperCase() + mealType.name.slice(1)}
+                {subCategories?.filter(cat => cat.is_enabled).map((subCategory) => (
+                  <SelectItem key={subCategory.id} value={subCategory.id}>
+                    {subCategory.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -158,20 +165,20 @@ const WeekendMenuTab = () => {
           </div>
         )}
 
-        {newItem.meal_type_id && (
+        {newItem.sub_category_id && (
           <div>
             <Label htmlFor="meal-plan">Meal Plan *</Label>
             <Select
-              value={newItem.meal_plan_id}
-              onValueChange={(value) => setNewItem(prev => ({ ...prev, meal_plan_id: value }))}
+              value={newItem.meal_type_id}
+              onValueChange={(value) => setNewItem(prev => ({ ...prev, meal_type_id: value }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select meal plan" />
               </SelectTrigger>
               <SelectContent>
-                {mealPlans?.filter(plan => plan.is_enabled).map((mealPlan) => (
-                  <SelectItem key={mealPlan.id} value={mealPlan.id}>
-                    {mealPlan.name.charAt(0).toUpperCase() + mealPlan.name.slice(1)}
+                {mealTypes?.filter(type => type.is_enabled).map((mealType) => (
+                  <SelectItem key={mealType.id} value={mealType.id}>
+                    {mealType.name}
                   </SelectItem>
                 ))}
               </SelectContent>

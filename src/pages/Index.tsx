@@ -1,149 +1,150 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Star, ChefHat, Calendar } from "lucide-react";
+import { Link } from "react-router-dom";
+import Hero from "@/components/Hero";
+import CategoryCard from "@/components/CategoryCard";
+import TopBanner from "@/components/TopBanner";
+import WeekendMenuSection from "@/components/WeekendMenuSection";
+import WeeklyMenuSection from "@/components/WeeklyMenuSection";
+import Footer from "@/components/Footer";
+import { useProducts } from "@/hooks/useProducts";
+import { useCategories } from "@/hooks/useCategories";
+import { Utensils, ShoppingBag, Clock, Settings } from "lucide-react";
 
 const Index = () => {
+  const { data: products = [] } = useProducts();
+  const { data: categories = [] } = useCategories();
+
+  const featuredProducts = products.filter(product => product.featured);
+  const popularProducts = products.filter(product => product.popular);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-50">
-      {/* Hero Section */}
-      <section className="relative py-20 px-4">
-        <div className="container mx-auto text-center">
-          <div className="mb-8">
-            <img 
-              src="/lovable-uploads/b2259b6e-c2d4-4685-a56f-95379cddaf8f.png" 
-              alt="Kazi Kitchen Logo" 
-              className="mx-auto h-56 w-auto mb-6"
-            />
+    <div className="min-h-screen">
+      <TopBanner />
+      
+      {/* Admin Quick Access */}
+      <div className="bg-amber-50 border-b border-amber-200">
+        <div className="container mx-auto px-4 py-2">
+          <div className="flex justify-end">
+            <Link to="/admin/menu-management">
+              <Button variant="ghost" size="sm" className="text-amber-700 hover:text-amber-900 hover:bg-amber-100">
+                <Settings className="w-4 h-4 mr-2" />
+                Admin Menu Management
+              </Button>
+            </Link>
           </div>
-          <h1 className="text-5xl font-bold text-amber-800 mb-4">
-            <span className="text-amber-800">Kazi Kitchen</span>
-          </h1>
-          <h2 className="text-4xl font-bold text-amber-800 mb-4">
-            Your Food Solution
+        </div>
+      </div>
+
+      <Hero />
+      
+      {/* Quick Action Cards */}
+      <section className="py-16 bg-gradient-to-br from-orange-50 to-yellow-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-4 text-amber-800">
+            What would you like to order today?
           </h2>
-          <p className="text-xl text-amber-700 mb-8 max-w-2xl mx-auto">
-            "IN ONE PLACE" - From frozen delights to weekly meal plans, we've got everything you need for delicious, convenient dining.
+          <p className="text-center text-amber-600 mb-12 max-w-2xl mx-auto">
+            Choose from our carefully curated menu options designed to satisfy your taste buds and fit your lifestyle.
           </p>
-          <div className="flex flex-wrap justify-center gap-4 mb-12">
-            <Badge variant="secondary" className="bg-amber-100 text-amber-800 px-4 py-2">
-              <Clock className="w-4 h-4 mr-2" />
-              Fast Delivery
-            </Badge>
-            <Badge variant="secondary" className="bg-amber-100 text-amber-800 px-4 py-2">
-              <Users className="w-4 h-4 mr-2" />
-              Family Combos
-            </Badge>
-            <Badge variant="secondary" className="bg-amber-100 text-amber-800 px-4 py-2">
-              <Star className="w-4 h-4 mr-2" />
-              Premium Quality
-            </Badge>
-            <Badge variant="secondary" className="bg-amber-100 text-amber-800 px-4 py-2">
-              <ChefHat className="w-4 h-4 mr-2" />
-              Fresh Daily
-            </Badge>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            {/* Frozen Food Card */}
+            <Link to="/frozen-food" className="group">
+              <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 text-center group-hover:scale-105">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ShoppingBag className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">Frozen Food</h3>
+                <p className="text-gray-600 text-sm">
+                  Premium frozen meals ready to heat and enjoy
+                </p>
+              </div>
+            </Link>
+
+            {/* Weekend Menu Card */}
+            <Link to="/weekend-menu" className="group">
+              <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 text-center group-hover:scale-105">
+                <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Utensils className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">Weekend Menu</h3>
+                <p className="text-gray-600 text-sm">
+                  Fresh daily meals for offices and school tiffin
+                </p>
+              </div>
+            </Link>
+
+            {/* Weekly Orders Card */}
+            <Link to="/weekly-orders" className="group">
+              <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 text-center group-hover:scale-105">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Clock className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">Weekly Orders</h3>
+                <p className="text-gray-600 text-sm">
+                  Plan your week with our subscription meals
+                </p>
+              </div>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Main Navigation Cards */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center text-amber-800 mb-12">Choose Your Dining Experience</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            
-            {/* Frozen Food */}
-            <Card className="group hover:shadow-2xl transition-all duration-300 border-2 border-amber-200 hover:border-amber-400">
-              <CardHeader className="text-center">
-                <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                    <div className="w-4 h-4 bg-blue-400 rounded-full"></div>
+      {/* Weekend Menu Section */}
+      <WeekendMenuSection />
+      
+      {/* Weekly Menu Section */}
+      <WeeklyMenuSection />
+
+      {/* Categories Section */}
+      {categories.length > 0 && (
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-center mb-12 text-amber-800">Browse Categories</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+              {categories.map((category) => (
+                <CategoryCard
+                  key={category.id}
+                  category={category}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Featured Products */}
+      {featuredProducts.length > 0 && (
+        <section className="py-16 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-center mb-12 text-amber-800">Featured Items</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredProducts.slice(0, 4).map((product) => (
+                <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                  <img
+                    src={product.image_url || "/placeholder.svg"}
+                    alt={product.name}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="p-4">
+                    <h3 className="font-semibold text-lg mb-2">{product.name}</h3>
+                    <p className="text-gray-600 text-sm mb-2">{product.description}</p>
+                    <div className="flex justify-between items-center">
+                      <span className="text-amber-600 font-bold">৳{product.price}</span>
+                      <Button size="sm" className="bg-amber-500 hover:bg-amber-600">
+                        Add to Cart
+                      </Button>
+                    </div>
                   </div>
                 </div>
-                <CardTitle className="text-2xl text-amber-800">Frozen Food</CardTitle>
-                <CardDescription className="text-amber-600">
-                  Ready-to-cook frozen delights and combo offers
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-center">
-                <p className="text-amber-700 mb-6">Convenient frozen meals perfect for quick preparation</p>
-                <Button asChild className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600">
-                  <Link to="/frozen-food">Order Frozen Food</Link>
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Weekend Order Menu */}
-            <Card className="group hover:shadow-2xl transition-all duration-300 border-2 border-amber-200 hover:border-amber-400">
-              <CardHeader className="text-center">
-                <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Calendar className="w-8 h-8 text-white" />
-                </div>
-                <CardTitle className="text-2xl text-amber-800">Weekend Order Menu</CardTitle>
-                <CardDescription className="text-amber-600">
-                  School Tiffin & Office Food weekly plans
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-center">
-                <p className="text-amber-700 mb-6">Weekly meal subscriptions for schools and offices</p>
-                <Button asChild className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600">
-                  <Link to="/weekend-menu">Plan Your Week</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-16 px-4 bg-white">
-        <div className="container mx-auto text-center">
-          <h2 className="text-3xl font-bold text-amber-800 mb-12">Why Choose Kazi Kitchen?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-8 h-8 text-amber-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-amber-800 mb-2">Fast Delivery</h3>
-              <p className="text-amber-600">Quick and reliable delivery to your doorstep</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Star className="w-8 h-8 text-amber-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-amber-800 mb-2">Quality Food</h3>
-              <p className="text-amber-600">Fresh ingredients and authentic flavors</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-amber-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-amber-800 mb-2">Family Combos</h3>
-              <p className="text-amber-600">Special deals for families and groups</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <ChefHat className="w-8 h-8 text-amber-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-amber-800 mb-2">Expert Chefs</h3>
-              <p className="text-amber-600">Prepared by experienced culinary experts</p>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* CTA Section */}
-      <section className="py-16 px-4 bg-gradient-to-r from-amber-500 to-orange-500">
-        <div className="container mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Ready to Order?</h2>
-          <p className="text-xl text-amber-100 mb-8">Start your culinary journey with Kazi Kitchen today!</p>
-          <Button asChild size="lg" className="bg-white text-amber-600 hover:bg-amber-50">
-            <Link to="/weekend-menu">Explore Menu</Link>
-          </Button>
-        </div>
-      </section>
+      <Footer />
     </div>
   );
 };
