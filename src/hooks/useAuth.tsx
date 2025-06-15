@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -134,10 +135,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const resetPassword = async (email: string) => {
     try {
-      // Use the correct redirect URL for your deployed app
+      // Use the correct redirect URL for admin password reset
       const redirectTo = window.location.hostname === 'localhost' 
-        ? 'http://localhost:3000/reset-password'
-        : 'https://preview--kazikitchen-food-cart-hub.lovable.app/reset-password';
+        ? 'http://localhost:3000/admin/login'
+        : 'https://preview--kazikitchen-food-cart-hub.lovable.app/admin/login';
 
       console.log('Sending reset password email with redirect:', redirectTo);
 
