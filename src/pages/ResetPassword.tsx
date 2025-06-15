@@ -58,15 +58,31 @@ const ResetPassword = () => {
         }
 
         // Check current session first
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        console.log('Current session:', currentSession ? 'exists' : 'none');
+        console.log('Checking current session...');
+        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+        console.log('Current session result:', { 
+          hasSession: !!currentSession, 
+          error: sessionError,
+          userId: currentSession?.user?.id 
+        });
 
         if (type === 'recovery' && accessToken && refreshToken) {
           console.log('Setting session with recovery tokens...');
+          console.log('Token lengths:', {
+            accessToken: accessToken.length,
+            refreshToken: refreshToken.length
+          });
           
           const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
+          });
+
+          console.log('setSession result:', {
+            hasData: !!data,
+            hasUser: !!data?.user,
+            hasSession: !!data?.session,
+            error: error
           });
 
           if (error) {
@@ -114,6 +130,7 @@ const ResetPassword = () => {
         });
         navigate("/admin/login");
       } finally {
+        console.log('Setting isValidating to false');
         setIsValidating(false);
       }
     };
@@ -263,6 +280,62 @@ const ResetPassword = () => {
       </Card>
     </div>
   );
+
+  async function handleResetPassword(e: React.FormEvent) {
+    e.preventDefault();
+    
+    if (password !== confirmPassword) {
+      toast({
+        title: "Password Mismatch",
+        description: "Passwords do not match. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const result = await updatePassword(password);
+
+      if (result.success) {
+        toast({
+          title: "Password Reset Successful",
+          description: "Your password has been updated successfully. You can now log in with your new password."
+        });
+
+        // Sign out and redirect after a short delay
+        setTimeout(async () => {
+          await signOut();
+          navigate("/admin/login");
+        }, 2000);
+      } else {
+        toast({
+          title: "Password Reset Failed",
+          description: result.error || "Failed to update password",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      toast({
+        title: "Password Reset Failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
 };
 
 export default ResetPassword;
