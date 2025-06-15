@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -140,13 +139,8 @@ const ViewMenuTab = () => {
                           </div>
                         )}
                         {item.meal_types && (
-                          <div className="text-xs text-gray-500">
-                            {item.meal_types.name.charAt(0).toUpperCase() + item.meal_types.name.slice(1)}
-                          </div>
-                        )}
-                        {item.meal_plans && (
                           <Badge variant="outline" className="text-xs">
-                            {item.meal_plans.name.charAt(0).toUpperCase() + item.meal_plans.name.slice(1)}
+                            {item.meal_types.name}
                           </Badge>
                         )}
                       </div>

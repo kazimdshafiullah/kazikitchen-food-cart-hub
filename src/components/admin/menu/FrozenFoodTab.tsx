@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +34,6 @@ const FrozenFoodTab = () => {
       main_category_id: frozenFoodCategory.id,
       sub_category_id: null,
       meal_type_id: null,
-      meal_plan_id: null,
       specific_date: null,
       stock_limit: parseInt(newItem.stock_limit) || 100,
       is_active: true,

@@ -106,7 +106,9 @@ const Index = () => {
               {categories.map((category) => (
                 <CategoryCard
                   key={category.id}
-                  category={category}
+                  id={category.id}
+                  name={category.name}
+                  image={category.image_url || "/placeholder.svg"}
                 />
               ))}
             </div>
