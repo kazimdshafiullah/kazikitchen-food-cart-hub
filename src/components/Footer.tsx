@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { useStoreSettings } from "@/hooks/useStoreSettings";
@@ -20,18 +19,18 @@ const Footer = () => {
   }
 
   return (
-    <footer className="bg-amber-900 text-white py-8 mt-auto">
+    <footer className="bg-amber-900 text-white py-10 mt-auto">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <Link to="/" className="flex items-center mb-4">
+            <Link to="/" className="flex items-center mb-6">
               <img 
                 src="/lovable-uploads/b2259b6e-c2d4-4685-a56f-95379cddaf8f.png" 
                 alt="Kazi Kitchen Logo" 
-                className="h-12 w-auto mr-3"
+                className="h-16 w-auto mr-4"
               />
             </Link>
-            <p className="mt-2 text-sm text-amber-200">
+            <p className="mt-3 text-sm text-amber-200 leading-relaxed">
               {storeSettings.description || "Delicious food delivered to your doorstep. We make food with passion."}
             </p>
           </div>
