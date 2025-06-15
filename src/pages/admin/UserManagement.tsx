@@ -27,7 +27,7 @@ import { ResetPasswordDialog } from "./UserDialogs/ResetPasswordDialog";
 import { ChangeOwnPasswordDialog } from "./UserDialogs/ChangeOwnPasswordDialog";
 import { getRoleDisplayName } from "./userRoleUtils";
 
-interface CustomUser {
+export interface CustomUser {
   id: string;
   username: string;
   email: string;
