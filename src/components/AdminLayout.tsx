@@ -138,7 +138,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Expenses">
-                    <Link to="/admin/expenses" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                    <Link to="/admin/expense-management" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <DollarSign className="mr-2" /> 
                       <span>Expenses</span>
                     </Link>
@@ -170,7 +170,7 @@ const AdminLayout = () => {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild tooltip="Users">
-                    <Link to="/admin/users" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                    <Link to="/admin/user-management" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                       <UserPlus className="mr-2" /> 
                       <span>Users</span>
                     </Link>
