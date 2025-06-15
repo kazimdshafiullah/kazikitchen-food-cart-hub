@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -64,9 +63,11 @@ const UserManagement = () => {
   }, []);
 
   const fetchUsers = () => {
+    console.log('=== FETCHING USERS ===');
     const storedUsers = localStorage.getItem('custom_users');
+    console.log('Raw stored users from localStorage:', storedUsers);
     const users = storedUsers ? JSON.parse(storedUsers) : [];
-    console.log('Loaded users:', users); // Debug log
+    console.log('Parsed users for display:', users);
     setUsers(users);
   };
   
@@ -77,6 +78,9 @@ const UserManagement = () => {
   });
   
   const handleAddUser = async () => {
+    console.log('=== HANDLE ADD USER ===');
+    console.log('Form data:', newUser);
+    
     if (!newUser.username || !newUser.email || !newUser.role || !newUser.password) {
       toast({
         title: "Validation Error",
@@ -95,16 +99,25 @@ const UserManagement = () => {
       return;
     }
     
-    console.log('Creating user with role:', newUser.role); // Debug log
+    // Make sure role value is exactly what we expect
+    const roleMapping = {
+      "kitchen": "kitchen",
+      "rider": "rider", 
+      "manager": "manager"
+    };
+    
+    const mappedRole = roleMapping[newUser.role as keyof typeof roleMapping] || newUser.role;
+    console.log('Role mapping:', { original: newUser.role, mapped: mappedRole });
     
     const success = await createUser({
       username: newUser.username,
       email: newUser.email,
-      role: newUser.role as 'admin' | 'kitchen' | 'rider' | 'manager',
+      role: mappedRole as 'admin' | 'kitchen' | 'rider' | 'manager',
       password: newUser.password
     });
 
     if (success) {
+      console.log('User created successfully, refreshing user list');
       setNewUser({
         username: "",
         email: "",
@@ -113,7 +126,10 @@ const UserManagement = () => {
         confirmPassword: ""
       });
       setAddUserOpen(false);
-      fetchUsers();
+      // Refresh the user list after creation
+      setTimeout(() => {
+        fetchUsers();
+      }, 100);
     }
   };
 
@@ -224,24 +240,32 @@ const UserManagement = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredUsers.map(user => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.username}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{getRoleDisplayName(user.role)}</TableCell>
-                <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => openResetPasswordDialog(user)}
-                  >
-                    <Key className="h-4 w-4 mr-1" />
-                    Reset Password
-                  </Button>
+            {filteredUsers.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                  No users found. Create your first user to get started.
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              filteredUsers.map(user => (
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium">{user.username}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{getRoleDisplayName(user.role)}</TableCell>
+                  <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openResetPasswordDialog(user)}
+                    >
+                      <Key className="h-4 w-4 mr-1" />
+                      Reset Password
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
@@ -282,7 +306,10 @@ const UserManagement = () => {
               <label htmlFor="role" className="text-sm font-medium">Role</label>
               <Select 
                 value={newUser.role} 
-                onValueChange={(value) => setNewUser({...newUser, role: value})}
+                onValueChange={(value) => {
+                  console.log('Role selected:', value);
+                  setNewUser({...newUser, role: value});
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select role" />
