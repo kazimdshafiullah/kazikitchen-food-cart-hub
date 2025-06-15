@@ -36,7 +36,7 @@ const UserManagement = () => {
   const [users, setUsers] = useState<CustomUser[]>([]);
   const [addUserOpen, setAddUserOpen] = useState(false);
   const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
-  const [changeOwnPasswordOpen, setChangeOwnPasswordOpen = useState(false);
+  const [changeOwnPasswordOpen, setChangeOwnPasswordOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<CustomUser | null>(null);
   const { profile, changeOwnPassword } = useAuth();
   
