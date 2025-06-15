@@ -19,171 +19,80 @@ const ResetPassword = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkRecoverySession = async () => {
-      console.log('=== Starting Recovery Session Check ===');
+    const validateRecoverySession = async () => {
+      console.log('=== Starting Recovery Session Validation ===');
       
       try {
-        console.log('Full URL:', window.location.href);
-        console.log('Hash:', window.location.hash);
-        console.log('Search params:', window.location.search);
-        
-        // Parse both hash and search parameters
-        let accessToken = null;
-        let refreshToken = null;
-        let type = null;
+        // Parse URL parameters
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        const type = hashParams.get('type');
 
-        // Check hash parameters first (new format)
-        if (window.location.hash) {
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-          accessToken = hashParams.get('access_token');
-          refreshToken = hashParams.get('refresh_token');
-          type = hashParams.get('type');
-          console.log('Hash params found:', {
-            type,
-            hasAccessToken: !!accessToken,
-            hasRefreshToken: !!refreshToken
-          });
-        }
-
-        // Check search parameters if hash didn't work (fallback)
-        if (!accessToken && window.location.search) {
-          const searchParams = new URLSearchParams(window.location.search);
-          accessToken = searchParams.get('access_token');
-          refreshToken = searchParams.get('refresh_token');
-          type = searchParams.get('type');
-          console.log('Search params found:', {
-            type,
-            hasAccessToken: !!accessToken,
-            hasRefreshToken: !!refreshToken
-          });
-        }
-
-        // Check current session first
-        console.log('Checking current session...');
-        const sessionCheckStart = Date.now();
-        
-        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
-        
-        console.log('Session check completed in:', Date.now() - sessionCheckStart, 'ms');
-        console.log('Current session result:', { 
-          hasSession: !!currentSession, 
-          error: sessionError,
-          userId: currentSession?.user?.id,
-          userEmail: currentSession?.user?.email
+        console.log('URL Analysis:', {
+          type,
+          hasAccessToken: !!accessToken,
+          hasRefreshToken: !!refreshToken,
+          tokenPreview: accessToken ? accessToken.substring(0, 20) + '...' : 'none'
         });
 
         if (type === 'recovery' && accessToken && refreshToken) {
           console.log('Setting session with recovery tokens...');
-          console.log('Token preview:', {
-            accessToken: accessToken.substring(0, 50) + '...',
-            refreshToken: refreshToken.substring(0, 20) + '...'
-          });
-          
-          const setSessionStart = Date.now();
           
           const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
           });
 
-          console.log('setSession completed in:', Date.now() - setSessionStart, 'ms');
-          console.log('setSession result:', {
-            success: !error,
-            hasData: !!data,
-            hasUser: !!data?.user,
-            hasSession: !!data?.session,
-            userEmail: data?.user?.email,
-            error: error?.message
-          });
-
           if (error) {
-            console.error('Session set error details:', {
-              message: error.message,
-              name: error.name,
-              status: error.status
-            });
-            
+            console.error('Session validation failed:', error);
             toast({
               title: "Invalid Reset Link",
-              description: `Session error: ${error.message}`,
+              description: "The reset link is invalid or has expired. Please request a new password reset.",
               variant: "destructive"
             });
-            
-            console.log('Redirecting to login due to session error');
             navigate("/admin/login");
             return;
           }
 
-          console.log('Session set successfully for user:', data.user?.email);
-          setIsValidSession(true);
-        } else if (currentSession && currentSession.user) {
-          console.log('Using existing session for user:', currentSession.user.email);
-          setIsValidSession(true);
+          if (data.session && data.user) {
+            console.log('Session validated successfully for:', data.user.email);
+            setIsValidSession(true);
+          } else {
+            console.error('No session or user returned from setSession');
+            toast({
+              title: "Session Error",
+              description: "Unable to establish session. Please try the reset link again.",
+              variant: "destructive"
+            });
+            navigate("/admin/login");
+            return;
+          }
         } else {
-          console.log('No valid recovery parameters or session found');
-          console.log('Missing components:', {
-            type: !type ? 'type parameter missing' : 'type: ' + type,
-            accessToken: !accessToken ? 'access_token missing' : 'access_token present',
-            refreshToken: !refreshToken ? 'refresh_token missing' : 'refresh_token present',
-            currentSession: !currentSession ? 'no current session' : 'current session exists'
-          });
-          
+          console.log('Invalid or missing recovery parameters');
           toast({
             title: "Invalid Reset Link",
-            description: "The reset link is invalid, expired, or missing required parameters. Please request a new password reset.",
+            description: "The reset link is invalid or missing required parameters.",
             variant: "destructive"
           });
-          
-          console.log('Scheduling redirect to login in 3 seconds');
-          setTimeout(() => {
-            console.log('Executing redirect to login');
-            navigate("/admin/login");
-          }, 3000);
+          navigate("/admin/login");
           return;
         }
       } catch (error) {
-        console.error("Critical error in recovery session check:", {
-          message: error.message,
-          stack: error.stack,
-          name: error.name
-        });
-        
+        console.error('Recovery session validation error:', error);
         toast({
           title: "Error",
           description: "An error occurred while processing the reset link.",
           variant: "destructive"
         });
-        
-        console.log('Redirecting to login due to critical error');
         navigate("/admin/login");
       } finally {
-        console.log('=== Recovery Session Check Complete ===');
-        console.log('Setting isValidating to false');
+        console.log('=== Recovery Session Validation Complete ===');
         setIsValidating(false);
       }
     };
 
-    // Add a timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      console.log('Session validation timeout reached (10 seconds)');
-      if (isValidating) {
-        console.log('Force completing validation due to timeout');
-        setIsValidating(false);
-        toast({
-          title: "Timeout",
-          description: "Session validation timed out. Please try the reset link again.",
-          variant: "destructive"
-        });
-        navigate("/admin/login");
-      }
-    }, 10000);
-
-    checkRecoverySession();
-
-    return () => {
-      console.log('Cleaning up timeout');
-      clearTimeout(timeoutId);
-    };
+    validateRecoverySession();
   }, [navigate]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -251,10 +160,7 @@ const ResetPassword = () => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
               <div>Validating reset link...</div>
               <div className="text-sm text-gray-500 mt-2">
-                Check the browser console (F12) for detailed progress.
-              </div>
-              <div className="text-xs text-gray-400 mt-1">
-                This should complete within 10 seconds.
+                This should complete quickly.
               </div>
             </div>
           </CardContent>
