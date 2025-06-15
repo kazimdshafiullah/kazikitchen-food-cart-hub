@@ -3,88 +3,93 @@ import { Order } from "@/types/order";
 
 export const mockOrders: Order[] = [
   {
-    id: "ORD-1001",
+    id: "ORD-001",
     customerName: "John Doe",
-    customerEmail: "john@example.com",
+    customerEmail: "john.doe@example.com", 
     customerPhone: "+8801234567890",
-    deliveryAddress: "House 12, Road 5, Block A",
+    deliveryAddress: "123 Main St, Dhanmondi, Dhaka",
     deliveryLocation: "Dhanmondi",
     totalAmount: 850,
     status: "pending",
-    kitchenStatus: "pending",
-    riderStatus: "assigned",
-    orderDate: "2025-01-15",
+    kitchenStatus: "pending", 
+    riderStatus: "not_assigned",
+    orderDate: "2024-01-15",
     items: [
-      { name: "Chicken Biryani", quantity: 2, price: 350 },
-      { name: "Beef Curry", quantity: 1, price: 250 }
+      { name: "Chicken Biryani", quantity: 2, price: 400 },
+      { name: "Beef Curry", quantity: 1, price: 350 },
+      { name: "Rice", quantity: 1, price: 100 }
     ]
   },
   {
-    id: "ORD-1002",
+    id: "ORD-002", 
     customerName: "Sarah Ahmed",
-    customerEmail: "sarah@example.com",
-    customerPhone: "+8801234567891",
-    deliveryAddress: "Apartment 4B, Green Tower",
-    deliveryLocation: "Elephant Road",
-    totalAmount: 650,
+    customerEmail: "sarah.ahmed@example.com",
+    customerPhone: "+8801234567891", 
+    deliveryAddress: "456 Ring Road, Farmgate, Dhaka",
+    deliveryLocation: "Farmgate",
+    totalAmount: 1200,
     status: "confirmed",
+    kitchenStatus: "cooking",
+    riderStatus: "not_assigned", 
+    orderDate: "2024-01-15",
+    items: [
+      { name: "Fish Curry", quantity: 1, price: 450 },
+      { name: "Mutton Biryani", quantity: 1, price: 550 },
+      { name: "Salad", quantity: 2, price: 100 }
+    ]
+  },
+  {
+    id: "ORD-003",
+    customerName: "Mike Rahman", 
+    customerEmail: "mike.rahman@example.com",
+    customerPhone: "+8801234567892",
+    deliveryAddress: "789 Green Road, Panthapath, Dhaka", 
+    deliveryLocation: "Panthapath",
+    totalAmount: 650,
+    status: "processing",
+    kitchenStatus: "ready",
+    riderStatus: "assigned",
+    orderDate: "2024-01-14", 
+    items: [
+      { name: "Vegetable Curry", quantity: 2, price: 250 },
+      { name: "Chicken Fry", quantity: 1, price: 300 },
+      { name: "Rice", quantity: 1, price: 100 }
+    ]
+  },
+  {
+    id: "ORD-004",
+    customerName: "Lisa Khan",
+    customerEmail: "lisa.khan@example.com",
+    customerPhone: "+8801234567893",
+    deliveryAddress: "321 University Road, Karwanbazar, Dhaka",
+    deliveryLocation: "Karwanbazar", 
+    totalAmount: 950,
+    status: "out-for-delivery",
+    kitchenStatus: "completed",
+    riderStatus: "delivering",
+    orderDate: "2024-01-14",
+    items: [
+      { name: "Prawn Curry", quantity: 1, price: 500 },
+      { name: "Chicken Biryani", quantity: 1, price: 400 },
+      { name: "Drinks", quantity: 1, price: 50 }
+    ]
+  },
+  {
+    id: "ORD-005", 
+    customerName: "David Islam",
+    customerEmail: "david.islam@example.com",
+    customerPhone: "+8801234567894",
+    deliveryAddress: "654 Elephant Road, New Market, Dhaka",
+    deliveryLocation: "New Market",
+    totalAmount: 750,
+    status: "delivered", 
     kitchenStatus: "completed",
     riderStatus: "delivered",
-    orderDate: "2025-01-15",
+    orderDate: "2024-01-13",
     items: [
-      { name: "Fish Curry", quantity: 1, price: 300 },
-      { name: "Rice", quantity: 2, price: 150 }
-    ]
-  },
-  {
-    id: "ORD-1003",
-    customerName: "Mike Rahman",
-    customerEmail: "mike@example.com",
-    customerPhone: "+8801234567892",
-    deliveryAddress: "Shop 25, Level 3",
-    deliveryLocation: "Mirpur Road",
-    totalAmount: 720,
-    status: "processing",
-    kitchenStatus: "cooking",
-    riderStatus: "delivering",
-    orderDate: "2025-01-14",
-    items: [
-      { name: "Mutton Curry", quantity: 1, price: 450 },
-      { name: "Vegetable Curry", quantity: 1, price: 270 }
-    ]
-  },
-  {
-    id: "ORD-1004",
-    customerName: "Lisa Khan",
-    customerEmail: "lisa@example.com",
-    customerPhone: "+8801234567893",
-    deliveryAddress: "House 8, Lane 2",
-    deliveryLocation: "Zigatola",
-    totalAmount: 920,
-    status: "delivered",
-    kitchenStatus: "ready",
-    riderStatus: "picked_up",
-    orderDate: "2025-01-14",
-    items: [
-      { name: "Special Biryani", quantity: 1, price: 500 },
-      { name: "Chicken Roast", quantity: 1, price: 420 }
-    ]
-  },
-  {
-    id: "ORD-1005",
-    customerName: "Ahmed Hassan",
-    customerEmail: "ahmed@example.com",
-    customerPhone: "+8801234567894",
-    deliveryAddress: "Office Building, Floor 5",
-    deliveryLocation: "Lalmatia",
-    totalAmount: 580,
-    status: "cancelled",
-    kitchenStatus: "pending",
-    riderStatus: "assigned",
-    orderDate: "2025-01-13",
-    items: [
-      { name: "Dal Curry", quantity: 2, price: 200 },
-      { name: "Chicken Curry", quantity: 1, price: 380 }
+      { name: "Beef Biryani", quantity: 1, price: 450 },
+      { name: "Chicken Curry", quantity: 1, price: 250 },
+      { name: "Rice", quantity: 1, price: 50 }
     ]
   }
 ];
