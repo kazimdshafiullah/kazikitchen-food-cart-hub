@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,7 @@ import {
   getDayName,
   getAvailableOrderingDates
 } from "@/hooks/useWeeklyMenu";
+import { useMenuItems } from "@/hooks/useMenuManagement";
 
 const WeekendMenu = () => {
   const [activeTab, setActiveTab] = useState("school-tiffin");
@@ -22,6 +22,7 @@ const WeekendMenu = () => {
 
   const { data: mainCategories } = useMainCategories();
   const { data: mealTypes } = useMealTypes();
+  const { data: menuItems } = useMenuItems();
 
   // Get School Tiffin and Office Food categories
   const schoolTiffinCategory = mainCategories?.find(cat => cat.name === 'School Tiffin');
@@ -36,11 +37,28 @@ const WeekendMenu = () => {
   // Get current subcategory for School Tiffin (always Breakfast)
   const schoolBreakfastSubCategory = schoolTiffinSubCategories?.find(sub => sub.name === 'Breakfast');
 
+  // Get current subcategory for Office Food
+  const officeFoodSubCategory = officeFoodSubCategories?.find(sub => 
+    sub.name.toLowerCase() === activeSubCategory.toLowerCase()
+  );
+
   // Get available dates for School Tiffin
   const availableDates = useMemo(() => {
     if (!schoolTiffinCategory || !schoolBreakfastSubCategory) return [];
     return getAvailableOrderingDates(schoolTiffinCategory, schoolBreakfastSubCategory);
   }, [schoolTiffinCategory, schoolBreakfastSubCategory]);
+
+  // Get Office Food menu items from database
+  const officeFoodMenuItems = useMemo(() => {
+    if (!officeFoodCategory || !menuItems || !currentMealType || !officeFoodSubCategory) return [];
+    
+    return menuItems.filter(item => 
+      item.main_category_id === officeFoodCategory.id &&
+      item.meal_type_id === currentMealType.id &&
+      item.sub_category_id === officeFoodSubCategory.id &&
+      item.is_active
+    );
+  }, [officeFoodCategory, menuItems, currentMealType, officeFoodSubCategory]);
 
   const getMealTypeIcon = (mealType: string) => {
     switch (mealType) {
@@ -158,6 +176,49 @@ const WeekendMenu = () => {
               ) : (
                 <span>Order Closed</span>
               )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const OfficeFoodMenuCard = ({ item }: { item: any }) => {
+    return (
+      <Card className="group transition-all duration-300 border border-amber-200 hover:border-amber-400 hover:shadow-lg">
+        <CardHeader className="p-0">
+          <div className="relative overflow-hidden rounded-t-lg">
+            {item.image_url ? (
+              <img
+                src={item.image_url}
+                alt={item.name}
+                className="w-full h-48 object-cover"
+              />
+            ) : (
+              <div className="w-full h-48 bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">
+                <div className="text-6xl">🍽️</div>
+              </div>
+            )}
+            <Badge className={`absolute top-2 right-2 ${getMealTypeColor(activeMealType)} text-white flex items-center gap-1`}>
+              {getMealTypeIcon(activeMealType)}
+              {activeMealType}
+            </Badge>
+            <Badge className="absolute bottom-2 right-2 bg-green-500 text-white">
+              Available
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="p-4">
+          <CardTitle className="text-lg text-amber-800 mb-2">{item.name}</CardTitle>
+          <p className="text-amber-600 text-sm mb-3">{item.description || "Delicious office food item"}</p>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-xl font-bold text-amber-800">৳{Number(item.price).toFixed(2)}</span>
+            <Button 
+              size="sm"
+              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+            >
+              Order Now
             </Button>
           </div>
         </CardContent>
@@ -294,6 +355,29 @@ const WeekendMenu = () => {
               
               <p className="text-amber-500 mt-4">Office Food menu integration coming soon...</p>
             </div>
+
+            {/* Office Food Menu Items */}
+            {officeFoodMenuItems.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {officeFoodMenuItems.map((item) => (
+                  <OfficeFoodMenuCard key={item.id} item={item} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-amber-600">
+                  {officeFoodCategory && currentMealType && officeFoodSubCategory 
+                    ? `No ${activeMealType} ${activeSubCategory} items available yet.`
+                    : "Loading Office Food menu items..."
+                  }
+                </p>
+                {officeFoodCategory && currentMealType && officeFoodSubCategory && (
+                  <p className="text-amber-500 text-sm mt-2">
+                    Add items in the admin panel under Menu Management → Office Food
+                  </p>
+                )}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
 
