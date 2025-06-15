@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -18,19 +19,37 @@ const ResetPassword = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if we have a valid recovery session
     const checkRecoverySession = async () => {
       try {
-        // Check URL parameters for recovery token
-        const urlParams = new URLSearchParams(window.location.hash.substring(1));
-        const accessToken = urlParams.get('access_token');
-        const refreshToken = urlParams.get('refresh_token');
-        const type = urlParams.get('type');
+        // Parse the URL hash for authentication parameters
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        const type = hashParams.get('type');
 
-        console.log('Checking recovery session:', { type, hasAccessToken: !!accessToken });
+        console.log('URL hash params:', { type, hasAccessToken: !!accessToken, hasRefreshToken: !!refreshToken });
 
-        if (type === 'recovery' && accessToken) {
-          console.log('Valid recovery session found');
+        if (type === 'recovery' && accessToken && refreshToken) {
+          console.log('Valid recovery session found, setting session...');
+          
+          // Set the session with the tokens from the URL
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+
+          if (error) {
+            console.error('Error setting session:', error);
+            toast({
+              title: "Invalid Reset Link",
+              description: "The reset link is invalid or has expired. Please request a new one.",
+              variant: "destructive"
+            });
+            navigate("/admin/login");
+            return;
+          }
+
+          console.log('Session set successfully:', data);
           setIsValidSession(true);
         } else {
           console.log('No valid recovery session found');
