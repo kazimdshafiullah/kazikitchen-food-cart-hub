@@ -15,7 +15,6 @@ import OrderTracking from "./pages/OrderTracking";
 import ProductDetail from "./pages/ProductDetail";
 import WeekendOrder from "./pages/WeekendOrder";
 import FrozenFoodOrder from "./pages/FrozenFoodOrder";
-import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 // Customer pages
@@ -93,7 +92,6 @@ const App = () => (
             <AuthProvider>
               <Routes>
                 <Route path="login" element={<AdminLogin />} />
-                <Route path="reset-password" element={<ResetPassword />} />
                 <Route path="/" element={<AdminLayout />}>
                   <Route index element={<Dashboard />} />
                   <Route path="dashboard" element={<Dashboard />} />
