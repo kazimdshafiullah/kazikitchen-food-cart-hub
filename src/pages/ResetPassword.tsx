@@ -21,38 +21,46 @@ const ResetPassword = () => {
   useEffect(() => {
     const checkRecoverySession = async () => {
       try {
+        console.log('Full URL:', window.location.href);
+        console.log('Hash:', window.location.hash);
+        
         // Parse the URL hash for authentication parameters
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
         const type = hashParams.get('type');
 
-        console.log('URL hash params:', { type, hasAccessToken: !!accessToken, hasRefreshToken: !!refreshToken });
+        console.log('Hash params found:', {
+          type,
+          hasAccessToken: !!accessToken,
+          hasRefreshToken: !!refreshToken,
+          accessTokenLength: accessToken?.length,
+          refreshTokenLength: refreshToken?.length
+        });
 
         if (type === 'recovery' && accessToken && refreshToken) {
-          console.log('Valid recovery session found, setting session...');
+          console.log('Setting session with tokens...');
           
-          // Set the session with the tokens from the URL
           const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
           });
 
           if (error) {
-            console.error('Error setting session:', error);
+            console.error('Session set error:', error);
             toast({
               title: "Invalid Reset Link",
-              description: "The reset link is invalid or has expired. Please request a new one.",
+              description: `Session error: ${error.message}`,
               variant: "destructive"
             });
             navigate("/admin/login");
             return;
           }
 
-          console.log('Session set successfully:', data);
+          console.log('Session set successfully, user:', data.user?.email);
           setIsValidSession(true);
         } else {
-          console.log('No valid recovery session found');
+          console.log('Invalid or missing recovery parameters');
           toast({
             title: "Invalid Reset Link",
             description: "The reset link is invalid or has expired. Please request a new one.",
@@ -62,7 +70,7 @@ const ResetPassword = () => {
           return;
         }
       } catch (error) {
-        console.error("Error checking recovery session:", error);
+        console.error("Error in recovery session check:", error);
         toast({
           title: "Error",
           description: "An error occurred while processing the reset link.",
