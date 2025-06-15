@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -59,15 +58,13 @@ const UserManagement = () => {
   const [ownNewPassword, setOwnNewPassword] = useState("");
   const [ownConfirmPassword, setOwnConfirmPassword] = useState("");
 
-  // Load users from Supabase on component mount
+  // Fetch users from Supabase DB: use "profiles" table only
   useEffect(() => {
     fetchUsers();
   }, []);
 
   // Fetch users from Supabase DB: join auth.users and public.profiles on id
   const fetchUsers = async () => {
-    // Get all profiles & join with emails from auth.users (via RPC or multiple calls)
-    // We'll do two queries, then join in JS for now
     const { data: profileData, error: profileErr } = await supabase
       .from("profiles")
       .select("id, username, role, created_at, email");
@@ -80,21 +77,15 @@ const UserManagement = () => {
       setUsers([]);
       return;
     }
-    // Note: email should usually be present in profiles table as well
-    // but let's fall back to auth.users if needed
-    const { data: userData } = await supabase
-      .from("profiles")
-      .select("id, email");
-    const userMap: Record<string, string> = {};
-    if (userData) {
-      userData.forEach((u: any) => {
-        if (u.id && u.email) userMap[u.id] = u.email;
-      });
+    if (!profileData) {
+      setUsers([]);
+      return;
     }
+    // Ensure all email/role fields are present
     const mapped: CustomUser[] = (profileData || []).map((p: any) => ({
       id: p.id,
       username: p.username,
-      email: p.email || userMap[p.id] || "",
+      email: p.email || "",
       role: p.role,
       created_at: p.created_at
     }));
@@ -155,8 +146,7 @@ const UserManagement = () => {
       });
       return;
     }
-    // Set role metadata in profiles if not set by trigger
-    // (usually trigger should do it, but ensuring here)
+    // Set role metadata in profiles to ensure correctness
     await supabase
       .from("profiles")
       .update({
@@ -179,7 +169,7 @@ const UserManagement = () => {
       confirmPassword: ""
     });
     setAddUserOpen(false);
-    setTimeout(() => { fetchUsers(); }, 300);
+    setTimeout(() => { fetchUsers(); }, 500);
   };
 
   // RESET password via Supabase admin API (or user self-service if not admin)
@@ -201,7 +191,7 @@ const UserManagement = () => {
       });
       return;
     }
-    // Call REST if you have edge function, for now inform user this must be done via Auth API.
+    // Reset user password using Supabase Admin API
     const { error } = await supabase.auth.admin.updateUserById(selectedUser.id, {
       password: newPassword,
     });
