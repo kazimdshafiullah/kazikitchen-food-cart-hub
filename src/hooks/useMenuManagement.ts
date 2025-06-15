@@ -121,8 +121,44 @@ export const useMenuItems = () => {
   return useQuery({
     queryKey: ['menu-items'],
     queryFn: async () => {
-      console.log('menu_items table not found, returning empty array');
-      return [] as MenuItemWithRelations[];
+      const { data, error } = await supabase
+        .from('menu_items')
+        .select(`
+          *,
+          main_categories (
+            id,
+            name,
+            description,
+            advance_days,
+            order_cutoff_time,
+            is_enabled,
+            created_at,
+            updated_at
+          ),
+          sub_categories (
+            id,
+            name,
+            main_category_id,
+            description,
+            is_enabled,
+            created_at
+          ),
+          meal_types (
+            id,
+            name,
+            description,
+            is_enabled,
+            created_at
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching menu items:', error);
+        throw error;
+      }
+      
+      return data as MenuItemWithRelations[];
     },
   });
 };
@@ -133,7 +169,28 @@ export const useCreateMenuItem = () => {
 
   return useMutation({
     mutationFn: async (itemData: Omit<MenuItem, 'id' | 'created_at' | 'updated_at'>) => {
-      throw new Error('Menu items table not available yet. Please ensure the database migration has been run.');
+      const { data, error } = await supabase
+        .from('menu_items')
+        .insert({
+          name: itemData.name,
+          description: itemData.description,
+          price: itemData.price,
+          image_url: itemData.image_url,
+          main_category_id: itemData.main_category_id,
+          sub_category_id: itemData.sub_category_id,
+          meal_type_id: itemData.meal_type_id,
+          specific_date: itemData.specific_date,
+          stock_limit: itemData.stock_limit,
+          is_active: itemData.is_active,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['menu-items'] });
@@ -147,6 +204,38 @@ export const useCreateMenuItem = () => {
       toast({
         title: "Error",
         description: error.message || "Failed to create menu item",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useDeleteMenuItem = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (itemId: string) => {
+      const { error } = await supabase
+        .from('menu_items')
+        .delete()
+        .eq('id', itemId);
+
+      if (error) {
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menu-items'] });
+      toast({
+        title: "Success",
+        description: "Menu item deleted successfully",
+      });
+    },
+    onError: (error) => {
+      console.error('Error deleting menu item:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete menu item",
         variant: "destructive",
       });
     },

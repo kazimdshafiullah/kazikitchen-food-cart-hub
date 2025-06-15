@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Edit2, Trash2, ImageIcon } from "lucide-react";
-import { useMenuItems, useMainCategories, useSubCategories } from "@/hooks/useMenuManagement";
+import { useMenuItems, useMainCategories, useSubCategories, useDeleteMenuItem } from "@/hooks/useMenuManagement";
 import { format } from "date-fns";
 
 const ViewMenuTab = () => {
@@ -17,6 +18,7 @@ const ViewMenuTab = () => {
   const { data: menuItems } = useMenuItems();
   const { data: mainCategories } = useMainCategories();
   const { data: subCategories } = useSubCategories();
+  const deleteMenuItem = useDeleteMenuItem();
 
   // Filter menu items based on search and selections
   const filteredItems = menuItems?.filter(item => {
@@ -39,6 +41,12 @@ const ViewMenuTab = () => {
       case 'office_food': return 'Office Food';
       case 'school_tiffin': return 'School Tiffin';
       default: return categoryName;
+    }
+  };
+
+  const handleDelete = (itemId: string) => {
+    if (confirm("Are you sure you want to delete this menu item?")) {
+      deleteMenuItem.mutate(itemId);
     }
   };
 
@@ -164,7 +172,12 @@ const ViewMenuTab = () => {
                         <Button variant="ghost" size="sm">
                           <Edit2 className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDelete(item.id)}
+                          disabled={deleteMenuItem.isPending}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
