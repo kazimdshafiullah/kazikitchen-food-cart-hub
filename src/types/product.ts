@@ -6,5 +6,5 @@ export interface CartProduct {
   image: string;
   category: string;
   description: string;
-  is_frozen_food?: boolean;
+  is_frozen_food: boolean;
 }

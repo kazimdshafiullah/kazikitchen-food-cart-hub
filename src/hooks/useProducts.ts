@@ -12,7 +12,7 @@ export type Product = {
   featured: boolean | null;
   popular: boolean | null;
   in_stock: boolean | null;
-  is_frozen_food: boolean | null;
+  is_frozen_food: boolean;
   created_at: string;
   updated_at: string;
 };
