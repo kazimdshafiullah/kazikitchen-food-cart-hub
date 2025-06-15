@@ -14,7 +14,11 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn, user, profile } = useAuth();
+  const [resetLoading, setResetLoading] = useState(false);
+  const [showResetForm, setShowResetForm] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetMessage, setResetMessage] = useState("");
+  const { signIn, user, profile, resetPassword } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,6 +48,86 @@ const AdminLogin = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setResetMessage("");
+    setResetLoading(true);
+
+    try {
+      const result = await resetPassword(resetEmail);
+      
+      if (result.success) {
+        setResetMessage("Password reset email sent! Check your inbox and follow the link to reset your password.");
+        setShowResetForm(false);
+        setResetEmail("");
+      } else {
+        setError(result.error || 'Failed to send reset email');
+      }
+    } catch (error) {
+      setError('An unexpected error occurred');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  if (showResetForm) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <Card>
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-2xl text-center">Reset Password</CardTitle>
+              <CardDescription className="text-center">
+                Enter your email to receive a password reset link
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+                
+                <div className="space-y-2">
+                  <Label htmlFor="resetEmail">Email</Label>
+                  <Input
+                    id="resetEmail"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Button 
+                    type="submit" 
+                    className="w-full"
+                    disabled={resetLoading}
+                  >
+                    {resetLoading ? 'Sending...' : 'Send Reset Link'}
+                  </Button>
+                  
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setShowResetForm(false)}
+                  >
+                    Back to Login
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -59,6 +143,12 @@ const AdminLogin = () => {
               {error && (
                 <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {resetMessage && (
+                <Alert>
+                  <AlertDescription>{resetMessage}</AlertDescription>
                 </Alert>
               )}
               
@@ -93,6 +183,16 @@ const AdminLogin = () => {
               >
                 {loading ? 'Signing in...' : 'Sign In'}
               </Button>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  className="text-sm text-blue-600 hover:text-blue-500"
+                  onClick={() => setShowResetForm(true)}
+                >
+                  Forgot your password?
+                </button>
+              </div>
             </form>
           </CardContent>
         </Card>
