@@ -90,7 +90,7 @@ const FrozenFood = () => {
   const [activeTab, setActiveTab] = useState("all-items");
 
   const ItemCard = ({ item, isCombo = false }: { item: any, isCombo?: boolean }) => (
-    <Card className="group hover:shadow-lg transition-all duration-300 border border-amber-200 hover:border-amber-400">
+    <Card className="group hover:shadow-lg transition-all duration-300 border border-orange-200 hover:border-orange-400">
       <CardHeader className="p-0">
         <div className="relative overflow-hidden rounded-t-lg">
           <img
@@ -110,13 +110,13 @@ const FrozenFood = () => {
         </div>
       </CardHeader>
       <CardContent className="p-4">
-        <CardTitle className="text-lg text-amber-800 mb-2">{item.name}</CardTitle>
-        <p className="text-amber-600 text-sm mb-3">{item.description}</p>
+        <CardTitle className="text-lg text-orange-800 mb-2">{item.name}</CardTitle>
+        <p className="text-orange-600 text-sm mb-3">{item.description}</p>
         
         {isCombo && item.items && (
           <div className="mb-3">
-            <p className="text-xs font-medium text-amber-700 mb-1">Includes:</p>
-            <ul className="text-xs text-amber-600">
+            <p className="text-xs font-medium text-orange-700 mb-1">Includes:</p>
+            <ul className="text-xs text-orange-600">
               {item.items.map((subItem: string, index: number) => (
                 <li key={index}>• {subItem}</li>
               ))}
@@ -126,7 +126,7 @@ const FrozenFood = () => {
         
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-amber-800">৳{item.price}</span>
+            <span className="text-xl font-bold text-orange-800">৳{item.price}</span>
             {isCombo && item.originalPrice && (
               <span className="text-sm text-gray-400 line-through">৳{item.originalPrice}</span>
             )}
@@ -134,7 +134,7 @@ const FrozenFood = () => {
           <Button 
             asChild
             size="sm"
-            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
           >
             <Link to={`/product/${item.id}`}>
               <ShoppingCart className="w-4 h-4 mr-1" />
@@ -151,8 +151,8 @@ const FrozenFood = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-amber-800 mb-4">Frozen Food Collection</h1>
-          <p className="text-xl text-amber-700 max-w-2xl mx-auto">
+          <h1 className="text-4xl font-bold text-orange-800 mb-4">Frozen Food Collection</h1>
+          <p className="text-xl text-orange-700 max-w-2xl mx-auto">
             Ready-to-cook frozen delights prepared with authentic flavors and premium ingredients
           </p>
         </div>
@@ -160,10 +160,10 @@ const FrozenFood = () => {
         {/* Navigation Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-8">
-            <TabsTrigger value="all-items" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
+            <TabsTrigger value="all-items" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
               All Items
             </TabsTrigger>
-            <TabsTrigger value="combo" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
+            <TabsTrigger value="combo" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
               Combo Offers
             </TabsTrigger>
           </TabsList>
@@ -187,7 +187,7 @@ const FrozenFood = () => {
 
         {/* Back to Home */}
         <div className="text-center mt-12">
-          <Button asChild variant="outline" className="border-amber-400 text-amber-700 hover:bg-amber-50">
+          <Button asChild variant="outline" className="border-orange-400 text-orange-700 hover:bg-orange-50">
             <Link to="/">← Back to Home</Link>
           </Button>
         </div>

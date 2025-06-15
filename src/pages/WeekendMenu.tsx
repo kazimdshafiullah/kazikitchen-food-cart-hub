@@ -53,7 +53,7 @@ const WeekendMenu = () => {
 
   const getMealTypeColor = (mealType: string) => {
     switch (mealType) {
-      case 'Regular': return 'bg-blue-500';
+      case 'Regular': return 'bg-orange-500';
       case 'Diet': return 'bg-green-500';
       case 'Premium': return 'bg-purple-500';
       default: return 'bg-gray-500';
@@ -112,7 +112,7 @@ const WeekendMenu = () => {
     const isAvailable = dateInfo.canOrder;
     
     return (
-      <Card className={`group transition-all duration-300 border ${isAvailable ? 'border-amber-200 hover:border-amber-400 hover:shadow-lg' : 'border-gray-200 opacity-75'}`}>
+      <Card className={`group transition-all duration-300 border ${isAvailable ? 'border-orange-200 hover:border-orange-400 hover:shadow-lg' : 'border-gray-200 opacity-75'}`}>
         <CardHeader className="p-0">
           <div className="relative overflow-hidden rounded-t-lg">
             <div className="w-full h-48 bg-gradient-to-br from-orange-100 to-yellow-100 flex items-center justify-center">
@@ -137,18 +137,18 @@ const WeekendMenu = () => {
           </div>
         </CardHeader>
         <CardContent className="p-4">
-          <CardTitle className="text-lg text-amber-800 mb-2">{item.item}</CardTitle>
-          <p className="text-amber-600 text-sm mb-3">{item.description}</p>
-          <p className="text-xs text-amber-500 mb-3">
+          <CardTitle className="text-lg text-orange-800 mb-2">{item.item}</CardTitle>
+          <p className="text-orange-600 text-sm mb-3">{item.description}</p>
+          <p className="text-xs text-orange-500 mb-3">
             {dateInfo.date.toLocaleDateString('en-BD')}
           </p>
           
           <div className="flex items-center justify-between">
-            <span className="text-xl font-bold text-amber-800">৳{item.price}</span>
+            <span className="text-xl font-bold text-orange-800">৳{item.price}</span>
             <Button 
               asChild
               size="sm"
-              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
               disabled={!isAvailable}
             >
               {isAvailable ? (
@@ -186,16 +186,16 @@ const WeekendMenu = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-amber-800 mb-4">Weekend Order Menu</h1>
-          <p className="text-xl text-amber-700 max-w-2xl mx-auto">
+          <h1 className="text-4xl font-bold text-orange-800 mb-4">Weekend Order Menu</h1>
+          <p className="text-xl text-orange-700 max-w-2xl mx-auto">
             Plan your daily meals with our School Tiffin and Office Food services
           </p>
-          <div className="mt-4 p-4 bg-amber-100 rounded-lg">
-            <p className="text-amber-800 font-medium">
+          <div className="mt-4 p-4 bg-orange-100 rounded-lg">
+            <p className="text-orange-800 font-medium">
               <Clock className="inline w-4 h-4 mr-2" />
               School Tiffin: Order by 10:00 PM the day before | Office Food Breakfast: Order by 10:00 PM the day before | Office Food Lunch: Order by 9:30 AM same day
             </p>
-            <p className="text-amber-700 text-sm mt-2">
+            <p className="text-orange-700 text-sm mt-2">
               Available days: Sunday to Thursday (Weekends excluded)
             </p>
           </div>
@@ -204,18 +204,18 @@ const WeekendMenu = () => {
         {/* Navigation Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-8">
-            <TabsTrigger value="school-tiffin" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
+            <TabsTrigger value="school-tiffin" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
               School Tiffin
             </TabsTrigger>
-            <TabsTrigger value="office-food" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
+            <TabsTrigger value="office-food" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">
               Office Food
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="school-tiffin">
             <div className="mb-6 text-center">
-              <h2 className="text-2xl font-bold text-amber-800 mb-2">School Tiffin Menu</h2>
-              <p className="text-amber-600">Fresh daily tiffin for students - Order by 10 PM the day before</p>
+              <h2 className="text-2xl font-bold text-orange-800 mb-2">School Tiffin Menu</h2>
+              <p className="text-orange-600">Fresh daily tiffin for students - Order by 10 PM the day before</p>
               
               {/* Meal Type Selection */}
               <div className="mt-4 flex justify-center gap-4">
@@ -227,7 +227,7 @@ const WeekendMenu = () => {
                     className={`flex items-center gap-2 ${
                       activeMealType === mealType.name 
                         ? `${getMealTypeColor(mealType.name)} text-white` 
-                        : `border-amber-300 text-amber-700 hover:bg-amber-50`
+                        : `border-orange-300 text-orange-700 hover:bg-orange-50`
                     }`}
                   >
                     {getMealTypeIcon(mealType.name)}
@@ -299,7 +299,7 @@ const WeekendMenu = () => {
 
         {/* Back to Home */}
         <div className="text-center mt-12">
-          <Button asChild variant="outline" className="border-amber-400 text-amber-700 hover:bg-amber-50">
+          <Button asChild variant="outline" className="border-orange-400 text-orange-700 hover:bg-orange-50">
             <Link to="/">← Back to Home</Link>
           </Button>
         </div>

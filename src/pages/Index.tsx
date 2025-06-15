@@ -36,7 +36,7 @@ const Index = () => {
                   Explore Frozen Food
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-orange-600">
+              <Button asChild size="lg" className="bg-orange-800 text-white hover:bg-orange-900 border-2 border-orange-800">
                 <Link to="/weekend-menu">
                   <ChefHat className="mr-2 h-5 w-5" />
                   Weekend Menu
@@ -55,128 +55,58 @@ const Index = () => {
             <p className="text-lg text-gray-600">Choose from our carefully curated food options</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {/* Frozen Food Card */}
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-blue-200">
-              <CardHeader className="text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-200 transition-colors">
-                  <Snowflake className="w-8 h-8 text-blue-600" />
-                </div>
-                <CardTitle className="text-xl">Frozen Food</CardTitle>
-                <CardDescription>Premium frozen meals ready to heat and enjoy</CardDescription>
-              </CardHeader>
-              <CardContent className="text-center">
-                <p className="text-sm text-gray-600 mb-4">Ready-to-cook frozen items with fresh ingredients</p>
-                <Button asChild className="w-full bg-blue-600 hover:bg-blue-700">
-                  <Link to="/frozen-food">
-                    <ShoppingBag className="mr-2 h-4 w-4" />
-                    Shop Now
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Weekend Menu Cards */}
-            {mainCategories.map((category) => (
-              <Card key={category.id} className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-orange-200">
+          <div className="flex justify-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
+              {/* Frozen Food Card */}
+              <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-orange-200">
                 <CardHeader className="text-center">
                   <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-orange-200 transition-colors">
-                    {category.name === 'School Tiffin' ? (
-                      <Users className="w-8 h-8 text-orange-600" />
-                    ) : (
-                      <Utensils className="w-8 h-8 text-orange-600" />
-                    )}
+                    <Snowflake className="w-8 h-8 text-orange-600" />
                   </div>
-                  <CardTitle className="text-xl">{category.name}</CardTitle>
-                  <CardDescription>{category.description}</CardDescription>
+                  <CardTitle className="text-xl">Frozen Food</CardTitle>
+                  <CardDescription>Premium frozen meals ready to heat and enjoy</CardDescription>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p className="text-sm text-gray-600 mb-4">Ready-to-cook frozen items with fresh ingredients</p>
+                  <Button asChild className="w-full bg-orange-600 hover:bg-orange-700">
+                    <Link to="/frozen-food">
+                      <ShoppingBag className="mr-2 h-4 w-4" />
+                      Shop Now
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Weekend Menu Card */}
+              <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-amber-200">
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-amber-200 transition-colors">
+                    <ChefHat className="w-8 h-8 text-amber-600" />
+                  </div>
+                  <CardTitle className="text-xl">Weekend Menu</CardTitle>
+                  <CardDescription>School Tiffin & Office Food daily delivery</CardDescription>
                 </CardHeader>
                 <CardContent className="text-center">
                   <div className="flex items-center justify-center gap-2 mb-4">
                     <Clock className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-600">
-                      Order by {category.order_cutoff_time.slice(0, 5)}
-                    </span>
+                    <span className="text-sm text-gray-600">Order by 10:00 PM</span>
                   </div>
-                  <Button asChild className="w-full bg-orange-600 hover:bg-orange-700">
+                  <Button asChild className="w-full bg-amber-600 hover:bg-amber-700">
                     <Link to="/weekend-menu">
-                      <ChefHat className="mr-2 h-4 w-4" />
+                      <Utensils className="mr-2 h-4 w-4" />
                       Order Now
                     </Link>
                   </Button>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Meal Plans Section */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Meal Plans</h2>
-            <p className="text-lg text-gray-600">Different options to suit your lifestyle and preferences</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            {mealTypes.map((mealType) => {
-              const getIcon = () => {
-                switch (mealType.name) {
-                  case 'Regular': return <Utensils className="w-6 h-6" />;
-                  case 'Diet': return <Heart className="w-6 h-6" />;
-                  case 'Premium': return <Crown className="w-6 h-6" />;
-                  default: return <Utensils className="w-6 h-6" />;
-                }
-              };
-
-              const getColor = () => {
-                switch (mealType.name) {
-                  case 'Regular': return 'border-blue-200 hover:border-blue-400';
-                  case 'Diet': return 'border-green-200 hover:border-green-400';
-                  case 'Premium': return 'border-purple-200 hover:border-purple-400';
-                  default: return 'border-gray-200 hover:border-gray-400';
-                }
-              };
-
-              const getBgColor = () => {
-                switch (mealType.name) {
-                  case 'Regular': return 'bg-blue-50';
-                  case 'Diet': return 'bg-green-50';
-                  case 'Premium': return 'bg-purple-50';
-                  default: return 'bg-gray-50';
-                }
-              };
-
-              const getIconColor = () => {
-                switch (mealType.name) {
-                  case 'Regular': return 'text-blue-600';
-                  case 'Diet': return 'text-green-600';
-                  case 'Premium': return 'text-purple-600';
-                  default: return 'text-gray-600';
-                }
-              };
-
-              return (
-                <Card key={mealType.id} className={`border-2 transition-all duration-300 hover:shadow-lg ${getColor()}`}>
-                  <CardHeader className="text-center">
-                    <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${getBgColor()}`}>
-                      <div className={getIconColor()}>
-                        {getIcon()}
-                      </div>
-                    </div>
-                    <CardTitle className="text-xl">{mealType.name} Plan</CardTitle>
-                    <CardDescription>{mealType.description}</CardDescription>
-                  </CardHeader>
-                </Card>
-              );
-            })}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Featured Products */}
       {featuredProducts.length > 0 && (
-        <section className="py-16 bg-gray-50">
+        <section className="py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Featured Items</h2>
