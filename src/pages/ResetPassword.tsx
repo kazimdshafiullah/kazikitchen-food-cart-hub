@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 
 const ResetPassword = () => {
@@ -13,16 +13,27 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isValidating, setIsValidating] = useState(true);
+  const [isValidSession, setIsValidSession] = useState(false);
+  const { updatePassword, signOut } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleAuthFlow = async () => {
+    // Check if we have a valid recovery session
+    const checkRecoverySession = async () => {
       try {
-        // Get the current session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError || !session) {
-          console.log("No valid session found for password reset");
+        // Check URL parameters for recovery token
+        const urlParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = urlParams.get('access_token');
+        const refreshToken = urlParams.get('refresh_token');
+        const type = urlParams.get('type');
+
+        console.log('Checking recovery session:', { type, hasAccessToken: !!accessToken });
+
+        if (type === 'recovery' && accessToken) {
+          console.log('Valid recovery session found');
+          setIsValidSession(true);
+        } else {
+          console.log('No valid recovery session found');
           toast({
             title: "Invalid Reset Link",
             description: "The reset link is invalid or has expired. Please request a new one.",
@@ -31,21 +42,20 @@ const ResetPassword = () => {
           navigate("/admin/login");
           return;
         }
-
-        console.log("Valid session found for password reset");
-        setIsValidating(false);
       } catch (error) {
-        console.error("Error in auth flow:", error);
+        console.error("Error checking recovery session:", error);
         toast({
           title: "Error",
           description: "An error occurred while processing the reset link.",
           variant: "destructive"
         });
         navigate("/admin/login");
+      } finally {
+        setIsValidating(false);
       }
     };
 
-    handleAuthFlow();
+    checkRecoverySession();
   }, [navigate]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -72,31 +82,26 @@ const ResetPassword = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: password
-      });
+      const result = await updatePassword(password);
 
-      if (error) {
-        console.error("Password update error:", error);
+      if (result.success) {
+        toast({
+          title: "Password Reset Successful",
+          description: "Your password has been updated successfully. You can now log in with your new password."
+        });
+
+        // Sign out and redirect after a short delay
+        setTimeout(async () => {
+          await signOut();
+          navigate("/admin/login");
+        }, 2000);
+      } else {
         toast({
           title: "Password Reset Failed",
-          description: error.message,
+          description: result.error || "Failed to update password",
           variant: "destructive"
         });
-        return;
       }
-
-      toast({
-        title: "Password Reset Successful",
-        description: "Your password has been updated successfully. You can now log in with your new password."
-      });
-
-      // Sign out and redirect after a short delay
-      setTimeout(async () => {
-        await supabase.auth.signOut();
-        navigate("/admin/login");
-      }, 2000);
-
     } catch (error) {
       console.error("Unexpected error:", error);
       toast({
@@ -122,6 +127,10 @@ const ResetPassword = () => {
         </Card>
       </div>
     );
+  }
+
+  if (!isValidSession) {
+    return null; // Component will redirect
   }
 
   return (
@@ -173,6 +182,16 @@ const ResetPassword = () => {
             >
               {isLoading ? "Updating..." : "Update Password"}
             </Button>
+
+            <div className="text-center">
+              <button
+                type="button"
+                className="text-sm text-blue-600 hover:text-blue-500"
+                onClick={() => navigate("/admin/login")}
+              >
+                Back to Login
+              </button>
+            </div>
           </form>
         </CardContent>
       </Card>

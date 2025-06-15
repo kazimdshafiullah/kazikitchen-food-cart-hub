@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -20,6 +19,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   signUp: (email: string, password: string, username: string, role: string) => Promise<{ success: boolean; error?: string }>;
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
+  updatePassword: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
   // Legacy methods for backward compatibility
   logout: () => Promise<void>;
   login: (credentials: { username: string; password: string; role: string }) => Promise<boolean>;
@@ -48,6 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state change:', event, session?.user?.email);
       setUser(session?.user ?? null);
       
       if (session?.user) {
@@ -135,7 +136,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const resetPassword = async (email: string) => {
     try {
-      // Use the correct redirect URL for password reset page
+      // Use the correct redirect URL for password reset - this should go to admin login after reset
       const redirectTo = window.location.hostname === 'localhost' 
         ? 'http://localhost:3000/reset-password'
         : 'https://preview--kazikitchen-food-cart-hub.lovable.app/reset-password';
@@ -155,6 +156,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { success: true };
     } catch (error) {
       console.error('Unexpected error in resetPassword:', error);
+      return { success: false, error: 'An unexpected error occurred' };
+    }
+  };
+
+  // New method for updating password during reset flow
+  const updatePassword = async (newPassword: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        console.error('Password update error:', error);
+        return { success: false, error: error.message };
+      }
+
+      console.log('Password updated successfully');
+      return { success: true };
+    } catch (error) {
+      console.error('Unexpected error in updatePassword:', error);
       return { success: false, error: 'An unexpected error occurred' };
     }
   };
@@ -309,6 +330,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       signOut,
       signUp,
       resetPassword,
+      updatePassword,
       logout,
       login,
       createUser,
