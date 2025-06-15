@@ -24,9 +24,29 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const StoreSettingsTab = () => {
+  const [storeInfo, setStoreInfo] = useState({
+    name: "Kazi Kitchen",
+    description: "Authentic and delicious food delivered to your doorstep",
+    email: "contact@kazikitchen.com",
+    phone: "+1 (555) 123-4567",
+    address: "123 Main Street, Suite 101, Anytown, CA 12345"
+  });
+
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('storeSettings');
+    if (savedSettings) {
+      setStoreInfo(JSON.parse(savedSettings));
+    }
+  }, []);
+
+  const handleSaveStoreInfo = () => {
+    localStorage.setItem('storeSettings', JSON.stringify(storeInfo));
+    toast.success("Store information updated!");
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -39,33 +59,51 @@ const StoreSettingsTab = () => {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Store Name</label>
-            <Input defaultValue="Kazi Kitchen" />
+            <Input 
+              value={storeInfo.name}
+              onChange={(e) => setStoreInfo({...storeInfo, name: e.target.value})}
+            />
           </div>
           
           <div className="space-y-2">
             <label className="text-sm font-medium">Store Description</label>
-            <Textarea defaultValue="Authentic and delicious food delivered to your doorstep" rows={3} />
+            <Textarea 
+              value={storeInfo.description}
+              onChange={(e) => setStoreInfo({...storeInfo, description: e.target.value})}
+              rows={3} 
+            />
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Email Address</label>
-              <Input type="email" defaultValue="contact@kazikitchen.com" />
+              <Input 
+                type="email" 
+                value={storeInfo.email}
+                onChange={(e) => setStoreInfo({...storeInfo, email: e.target.value})}
+              />
             </div>
             
             <div className="space-y-2">
               <label className="text-sm font-medium">Phone Number</label>
-              <Input defaultValue="+1 (555) 123-4567" />
+              <Input 
+                value={storeInfo.phone}
+                onChange={(e) => setStoreInfo({...storeInfo, phone: e.target.value})}
+              />
             </div>
           </div>
           
           <div className="space-y-2">
             <label className="text-sm font-medium">Store Address</label>
-            <Textarea defaultValue="123 Main Street, Suite 101, Anytown, CA 12345" rows={2} />
+            <Textarea 
+              value={storeInfo.address}
+              onChange={(e) => setStoreInfo({...storeInfo, address: e.target.value})}
+              rows={2} 
+            />
           </div>
         </CardContent>
         <CardFooter>
-          <Button className="ml-auto" onClick={() => toast.success("Store information updated!")}>
+          <Button className="ml-auto" onClick={handleSaveStoreInfo}>
             Save Changes
           </Button>
         </CardFooter>

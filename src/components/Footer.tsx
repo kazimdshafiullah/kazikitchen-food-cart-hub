@@ -1,7 +1,11 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
+import { useStoreSettings } from "@/hooks/useStoreSettings";
 
 const Footer = () => {
+  const storeSettings = useStoreSettings();
+
   return (
     <footer className="bg-amber-900 text-white py-8 mt-auto">
       <div className="container mx-auto px-4">
@@ -42,9 +46,9 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-3 text-orange-300">Contact Us</h3>
             <address className="not-italic text-amber-200">
-              <p>Dhaka, Bangladesh</p>
-              <p className="mt-2">Email: info@kazikitchen.com</p>
-              <p>Phone: +880 1234-567890</p>
+              <p>{storeSettings.address}</p>
+              <p className="mt-2">Email: {storeSettings.email}</p>
+              <p>Phone: {storeSettings.phone}</p>
             </address>
           </div>
         </div>
