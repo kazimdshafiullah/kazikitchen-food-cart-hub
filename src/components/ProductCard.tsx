@@ -33,6 +33,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
     toast.success(`Added ${product.name} to cart`);
   };
 
+  // Convert USD to BDT for display
+  const bdtPrice = Number(product.price) * 110;
+
   return (
     <Link 
       to={`/product/${product.id}`} 
@@ -54,9 +57,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
               : product.description
           ) : "Delicious food item"}
         </p>
+        {product.is_frozen_food && (
+          <span className="inline-block text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full mb-2 self-start">
+            Frozen Food
+          </span>
+        )}
         <div className="flex items-center justify-between mt-auto">
           <span className="text-base md:text-lg font-bold text-kazi-red">
-            ৳{Number(product.price).toFixed(2)}
+            ৳{bdtPrice.toFixed(2)}
           </span>
           <Button 
             size="sm" 

@@ -7,6 +7,9 @@ import { Plus, Minus, Trash, ShoppingCart } from "lucide-react";
 const Cart = () => {
   const { cart, removeFromCart, updateQuantity, subtotal, clearCart } = useCart();
   
+  // Convert USD to BDT (approximate rate: 1 USD = 110 BDT)
+  const bdtSubtotal = subtotal * 110;
+  
   if (cart.length === 0) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
@@ -53,14 +56,19 @@ const Cart = () => {
                       {item.product.name}
                     </Link>
                     <p className="text-sm text-gray-500 sm:hidden">
-                      ${item.product.price.toFixed(2)}
+                      ৳{(item.product.price * 110).toFixed(2)}
                     </p>
+                    {item.product.is_frozen_food && (
+                      <span className="inline-block text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full mt-1">
+                        Frozen Food
+                      </span>
+                    )}
                   </div>
                 </div>
                 
                 {/* Price */}
                 <div className="hidden sm:block sm:col-span-2 text-center">
-                  ${item.product.price.toFixed(2)}
+                  ৳{(item.product.price * 110).toFixed(2)}
                 </div>
                 
                 {/* Quantity */}
@@ -93,7 +101,7 @@ const Cart = () => {
                 <div className="sm:col-span-2 flex justify-between items-center">
                   <span className="sm:hidden">Total:</span>
                   <span className="font-medium sm:ml-auto">
-                    ${(item.product.price * item.quantity).toFixed(2)}
+                    ৳{(item.product.price * item.quantity * 110).toFixed(2)}
                   </span>
                   <button 
                     onClick={() => removeFromCart(item.product.id)}
@@ -132,7 +140,7 @@ const Cart = () => {
             <div className="space-y-3 mb-6">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal</span>
-                <span className="font-medium">${subtotal.toFixed(2)}</span>
+                <span className="font-medium">৳{bdtSubtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Shipping</span>
@@ -140,7 +148,7 @@ const Cart = () => {
               </div>
               <div className="pt-3 border-t border-gray-200 flex justify-between">
                 <span className="font-semibold">Total</span>
-                <span className="font-bold text-kazi-red">${subtotal.toFixed(2)}</span>
+                <span className="font-bold text-kazi-red">৳{bdtSubtotal.toFixed(2)}</span>
               </div>
             </div>
             
