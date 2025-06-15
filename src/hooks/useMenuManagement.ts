@@ -58,6 +58,7 @@ export const useMainCategories = () => {
   return useQuery({
     queryKey: ['main-categories'],
     queryFn: async () => {
+      console.log('Fetching main categories...');
       const { data, error } = await supabase
         .from('main_categories')
         .select('*')
@@ -68,6 +69,7 @@ export const useMainCategories = () => {
         throw error;
       }
       
+      console.log('Main categories fetched:', data);
       return data as MainCategory[];
     },
   });
@@ -77,6 +79,7 @@ export const useSubCategories = (mainCategoryId?: string) => {
   return useQuery({
     queryKey: ['sub-categories', mainCategoryId],
     queryFn: async () => {
+      console.log('Fetching sub categories for:', mainCategoryId);
       let query = supabase
         .from('sub_categories')
         .select('*')
@@ -93,6 +96,7 @@ export const useSubCategories = (mainCategoryId?: string) => {
         throw error;
       }
       
+      console.log('Sub categories fetched:', data);
       return data as SubCategory[];
     },
   });
@@ -102,6 +106,7 @@ export const useMealTypes = () => {
   return useQuery({
     queryKey: ['meal-types'],
     queryFn: async () => {
+      console.log('Fetching meal types...');
       const { data, error } = await supabase
         .from('meal_types')
         .select('*')
@@ -112,6 +117,7 @@ export const useMealTypes = () => {
         throw error;
       }
       
+      console.log('Meal types fetched:', data);
       return data as MealType[];
     },
   });
@@ -121,44 +127,53 @@ export const useMenuItems = () => {
   return useQuery({
     queryKey: ['menu-items'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('menu_items')
-        .select(`
-          *,
-          main_categories (
-            id,
-            name,
-            description,
-            advance_days,
-            order_cutoff_time,
-            is_enabled,
-            created_at,
-            updated_at
-          ),
-          sub_categories (
-            id,
-            name,
-            main_category_id,
-            description,
-            is_enabled,
-            created_at
-          ),
-          meal_types (
-            id,
-            name,
-            description,
-            is_enabled,
-            created_at
-          )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching menu items:', error);
-        throw error;
-      }
+      console.log('Fetching menu items...');
       
-      return data as MenuItemWithRelations[];
+      // First check if the table exists by trying a simple query
+      try {
+        const { data, error } = await supabase
+          .from('menu_items')
+          .select(`
+            *,
+            main_categories (
+              id,
+              name,
+              description,
+              advance_days,
+              order_cutoff_time,
+              is_enabled,
+              created_at,
+              updated_at
+            ),
+            sub_categories (
+              id,
+              name,
+              main_category_id,
+              description,
+              is_enabled,
+              created_at
+            ),
+            meal_types (
+              id,
+              name,
+              description,
+              is_enabled,
+              created_at
+            )
+          `)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching menu items:', error);
+          throw error;
+        }
+        
+        console.log('Menu items fetched:', data);
+        return data as MenuItemWithRelations[];
+      } catch (error) {
+        console.error('Menu items table might not exist:', error);
+        throw new Error('Menu items table not available yet. Please ensure database migration has been done.');
+      }
     },
   });
 };
@@ -169,28 +184,45 @@ export const useCreateMenuItem = () => {
 
   return useMutation({
     mutationFn: async (itemData: Omit<MenuItem, 'id' | 'created_at' | 'updated_at'>) => {
-      const { data, error } = await supabase
-        .from('menu_items')
-        .insert({
-          name: itemData.name,
-          description: itemData.description,
-          price: itemData.price,
-          image_url: itemData.image_url,
-          main_category_id: itemData.main_category_id,
-          sub_category_id: itemData.sub_category_id,
-          meal_type_id: itemData.meal_type_id,
-          specific_date: itemData.specific_date,
-          stock_limit: itemData.stock_limit,
-          is_active: itemData.is_active,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        throw error;
+      console.log('Creating menu item with data:', itemData);
+      
+      // Validate required fields
+      if (!itemData.name || !itemData.price || !itemData.main_category_id) {
+        throw new Error('Missing required fields: name, price, or main_category_id');
       }
 
-      return data;
+      try {
+        const { data, error } = await supabase
+          .from('menu_items')
+          .insert({
+            name: itemData.name,
+            description: itemData.description,
+            price: itemData.price,
+            image_url: itemData.image_url,
+            main_category_id: itemData.main_category_id,
+            sub_category_id: itemData.sub_category_id,
+            meal_type_id: itemData.meal_type_id,
+            specific_date: itemData.specific_date,
+            stock_limit: itemData.stock_limit,
+            is_active: itemData.is_active,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Database error creating menu item:', error);
+          throw error;
+        }
+
+        console.log('Menu item created successfully:', data);
+        return data;
+      } catch (error: any) {
+        console.error('Error in createMenuItem mutation:', error);
+        if (error.message?.includes('relation "menu_items" does not exist')) {
+          throw new Error('Menu items table not available yet. Please ensure database migration has been done.');
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['menu-items'] });
@@ -199,7 +231,7 @@ export const useCreateMenuItem = () => {
         description: "Menu item created successfully",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Error creating menu item:', error);
       toast({
         title: "Error",

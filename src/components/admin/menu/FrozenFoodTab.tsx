@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,16 +17,39 @@ const FrozenFoodTab = () => {
     stock_limit: "100",
   });
 
-  const { data: mainCategories } = useMainCategories();
+  const { data: mainCategories, isLoading: categoriesLoading, error: categoriesError } = useMainCategories();
   const createMenuItem = useCreateMenuItem();
 
+  console.log('Main categories data:', mainCategories);
+  console.log('Categories loading:', categoriesLoading);
+  console.log('Categories error:', categoriesError);
+
   const frozenFoodCategory = mainCategories?.find(cat => cat.name === 'frozen_food');
+  console.log('Frozen food category found:', frozenFoodCategory);
 
   const handleCreateItem = () => {
-    if (!newItem.name || !newItem.price || !frozenFoodCategory) {
+    console.log('Handle create item called with:', newItem);
+    
+    if (!newItem.name || !newItem.price) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in the required fields (name and price)",
+        variant: "destructive",
+      });
       return;
     }
 
+    if (!frozenFoodCategory) {
+      console.error('Frozen food category not found');
+      toast({
+        title: "Error",
+        description: "Frozen food category not found. Please check your main categories setup.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log('Creating menu item...');
     createMenuItem.mutate({
       name: newItem.name,
       description: newItem.description || null,
@@ -56,6 +80,40 @@ const FrozenFoodTab = () => {
       setNewItem(prev => ({ ...prev, image_url: imageUrl }));
     }
   };
+
+  if (categoriesLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center">Loading categories...</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (categoriesError) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-red-600">
+            Error loading categories: {categoriesError.message}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!frozenFoodCategory) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-yellow-600">
+            Frozen food category not found. Please ensure your main categories are set up correctly.
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
