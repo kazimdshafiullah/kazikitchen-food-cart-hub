@@ -10,23 +10,74 @@ import {
   CardTitle,
   CardFooter
 } from "@/components/ui/card";
-import { toast } from "@/components/ui/sonner";
-import { useState } from "react";
+import { useDeliverySettings, useUpdateDeliverySettings } from "@/hooks/useDeliverySettings";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect, useState } from "react";
 
 export const DeliverySettingsTab = () => {
-  const [deliverySettings, setDeliverySettings] = useState({
-    freeDeliveryThreshold: 500,
-    standardDeliveryFee: 50,
-    fastDeliveryFee: 100,
-    deliveryTimeSlots: true,
-    weekendDelivery: true,
-    expressDelivery: false
+  const { settings, loading, error } = useDeliverySettings();
+  const { updateSettings, updating } = useUpdateDeliverySettings();
+  
+  const [localSettings, setLocalSettings] = useState({
+    free_delivery_threshold: 500,
+    frozen_food_delivery_fee: 70,
+    weekend_menu_free_delivery: true
   });
 
-  const handleSave = () => {
-    localStorage.setItem('deliverySettings', JSON.stringify(deliverySettings));
-    toast.success("Delivery settings updated!");
+  useEffect(() => {
+    if (settings) {
+      setLocalSettings({
+        free_delivery_threshold: settings.free_delivery_threshold,
+        frozen_food_delivery_fee: settings.frozen_food_delivery_fee,
+        weekend_menu_free_delivery: settings.weekend_menu_free_delivery
+      });
+    }
+  }, [settings]);
+
+  const handleSave = async () => {
+    if (!settings?.id) {
+      console.error('No settings ID available for update');
+      return;
+    }
+
+    await updateSettings({
+      id: settings.id,
+      ...localSettings
+    });
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Delivery Settings</CardTitle>
+            <CardDescription>Loading delivery settings...</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Delivery Settings</CardTitle>
+            <CardDescription className="text-destructive">
+              Error loading delivery settings: {error}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -34,7 +85,7 @@ export const DeliverySettingsTab = () => {
         <CardHeader>
           <CardTitle>Delivery Pricing</CardTitle>
           <CardDescription>
-            Configure delivery fees and thresholds
+            Configure delivery fees and free delivery thresholds
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -42,96 +93,76 @@ export const DeliverySettingsTab = () => {
             <label className="text-sm font-medium">Free Delivery Threshold (৳)</label>
             <Input 
               type="number"
-              value={deliverySettings.freeDeliveryThreshold}
-              onChange={(e) => setDeliverySettings({
-                ...deliverySettings, 
-                freeDeliveryThreshold: Number(e.target.value)
+              value={localSettings.free_delivery_threshold}
+              onChange={(e) => setLocalSettings({
+                ...localSettings, 
+                free_delivery_threshold: Number(e.target.value)
               })}
             />
+            <p className="text-xs text-muted-foreground">
+              Orders above this amount get free delivery
+            </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Standard Delivery Fee (৳)</label>
-              <Input 
-                type="number"
-                value={deliverySettings.standardDeliveryFee}
-                onChange={(e) => setDeliverySettings({
-                  ...deliverySettings, 
-                  standardDeliveryFee: Number(e.target.value)
-                })}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Fast Delivery Fee (৳)</label>
-              <Input 
-                type="number"
-                value={deliverySettings.fastDeliveryFee}
-                onChange={(e) => setDeliverySettings({
-                  ...deliverySettings, 
-                  fastDeliveryFee: Number(e.target.value)
-                })}
-              />
-            </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Frozen Food Delivery Fee (৳)</label>
+            <Input 
+              type="number"
+              value={localSettings.frozen_food_delivery_fee}
+              onChange={(e) => setLocalSettings({
+                ...localSettings, 
+                frozen_food_delivery_fee: Number(e.target.value)
+              })}
+            />
+            <p className="text-xs text-muted-foreground">
+              Delivery fee applied only when cart contains frozen food items
+            </p>
           </div>
         </CardContent>
         <CardFooter>
-          <Button className="ml-auto" onClick={handleSave}>
-            Save Settings
+          <Button 
+            className="ml-auto" 
+            onClick={handleSave}
+            disabled={updating}
+          >
+            {updating ? "Saving..." : "Save Settings"}
           </Button>
         </CardFooter>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Delivery Options</CardTitle>
+          <CardTitle>Weekend Menu Delivery</CardTitle>
           <CardDescription>
-            Enable or disable delivery features
+            Configure delivery options for weekend menu items
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <label className="text-sm font-medium">Time Slot Selection</label>
-              <p className="text-sm text-muted-foreground">Allow customers to choose delivery time slots</p>
+              <label className="text-sm font-medium">Free Weekend Menu Delivery</label>
+              <p className="text-sm text-muted-foreground">Always provide free delivery for weekend menu orders</p>
             </div>
             <Switch 
-              checked={deliverySettings.deliveryTimeSlots}
-              onCheckedChange={(checked) => setDeliverySettings({
-                ...deliverySettings,
-                deliveryTimeSlots: checked
+              checked={localSettings.weekend_menu_free_delivery}
+              onCheckedChange={(checked) => setLocalSettings({
+                ...localSettings,
+                weekend_menu_free_delivery: checked
               })}
             />
           </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <label className="text-sm font-medium">Weekend Delivery</label>
-              <p className="text-sm text-muted-foreground">Enable delivery on weekends</p>
-            </div>
-            <Switch 
-              checked={deliverySettings.weekendDelivery}
-              onCheckedChange={(checked) => setDeliverySettings({
-                ...deliverySettings,
-                weekendDelivery: checked
-              })}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div>
-              <label className="text-sm font-medium">Express Delivery</label>
-              <p className="text-sm text-muted-foreground">Offer same-day express delivery</p>
-            </div>
-            <Switch 
-              checked={deliverySettings.expressDelivery}
-              onCheckedChange={(checked) => setDeliverySettings({
-                ...deliverySettings,
-                expressDelivery: checked
-              })}
-            />
-          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-blue-50 border-blue-200">
+        <CardHeader>
+          <CardTitle className="text-blue-900">New Delivery System Overview</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-blue-800 space-y-2">
+          <p>• <strong>Frozen Food Only:</strong> Delivery charges apply only when the cart contains frozen food items</p>
+          <p>• <strong>Free Delivery:</strong> Orders above ৳{localSettings.free_delivery_threshold} get free delivery</p>
+          <p>• <strong>Weekend Menu:</strong> {localSettings.weekend_menu_free_delivery ? 'Always free delivery' : 'Standard delivery charges apply'}</p>
+          <p>• <strong>Payment Methods:</strong> All existing payment options (Cash on Delivery, bKash, SSL Commerz) remain available</p>
         </CardContent>
       </Card>
     </div>

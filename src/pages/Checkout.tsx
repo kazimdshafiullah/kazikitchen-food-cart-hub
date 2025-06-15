@@ -8,15 +8,17 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/sonner";
-import { ChevronLeft, FileText, Package } from "lucide-react";
+import { ChevronLeft, FileText } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { usePaymentSettings } from "@/hooks/usePaymentSettings";
+import { useDeliverySettings } from "@/hooks/useDeliverySettings";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Checkout = () => {
   const navigate = useNavigate();
   const { cart, subtotal, clearCart } = useCart();
   const { settings: paymentSettings, loading: paymentLoading, error: paymentError, refetch } = usePaymentSettings();
+  const { settings: deliverySettings, loading: deliveryLoading } = useDeliverySettings();
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "bkash" | "ssl" | "">("");
   const [deliveryLocation, setDeliveryLocation] = useState<string>("");
   const [orderPlaced, setOrderPlaced] = useState(false);
@@ -47,12 +49,44 @@ const Checkout = () => {
     "ORD-1006", "ORD-1007", "ORD-1008", "ORD-1009", "ORD-1010"
   ];
 
+  // Check if cart contains frozen food items
+  const hasFrozenFood = cart.some(item => item.product.is_frozen_food);
+  
+  // Calculate delivery fee based on new logic
+  const calculateDeliveryFee = () => {
+    if (!deliverySettings) return 0;
+    
+    // Weekend menu always has free delivery
+    const isWeekendMenu = cart.some(item => item.product.category === 'weekend-menu');
+    if (isWeekendMenu && deliverySettings.weekend_menu_free_delivery) {
+      return 0;
+    }
+    
+    // Free delivery if order is above threshold
+    if (bdtSubtotal >= deliverySettings.free_delivery_threshold) {
+      return 0;
+    }
+    
+    // Delivery charge only applies if cart has frozen food
+    if (hasFrozenFood) {
+      return deliverySettings.frozen_food_delivery_fee;
+    }
+    
+    return 0;
+  };
+
+  const deliveryFee = calculateDeliveryFee();
+  const totalAmount = bdtSubtotal + deliveryFee;
+
   // Debug payment settings with more detailed logging
   useEffect(() => {
     console.log('=== CHECKOUT PAYMENT DEBUG ===');
     console.log('Payment settings object:', paymentSettings);
     console.log('Payment loading state:', paymentLoading);
     console.log('Payment error:', paymentError);
+    console.log('Delivery settings:', deliverySettings);
+    console.log('Has frozen food:', hasFrozenFood);
+    console.log('Delivery fee:', deliveryFee);
     
     if (paymentSettings) {
       console.log('Individual payment settings:');
@@ -62,13 +96,12 @@ const Checkout = () => {
       console.log('- Settings ID:', paymentSettings.id);
     } else {
       console.log('No payment settings found - attempting refetch...');
-      // Try to refetch if we don't have settings
       if (!paymentLoading && !paymentError) {
         refetch();
       }
     }
     console.log('=== END CHECKOUT PAYMENT DEBUG ===');
-  }, [paymentSettings, paymentLoading, paymentError, refetch]);
+  }, [paymentSettings, paymentLoading, paymentError, refetch, deliverySettings, hasFrozenFood, deliveryFee]);
 
   // Get available payment methods based on admin settings
   const getAvailablePaymentMethods = () => {
@@ -174,11 +207,11 @@ const Checkout = () => {
 
     // Check COD order limits if applicable
     if (paymentMethod === "cash" && paymentSettings) {
-      if (paymentSettings.cod_min_order > 0 && bdtSubtotal < paymentSettings.cod_min_order) {
+      if (paymentSettings.cod_min_order > 0 && totalAmount < paymentSettings.cod_min_order) {
         toast.error(`Minimum order value for Cash on Delivery is ৳${paymentSettings.cod_min_order}`);
         return;
       }
-      if (paymentSettings.cod_max_order > 0 && bdtSubtotal > paymentSettings.cod_max_order) {
+      if (paymentSettings.cod_max_order > 0 && totalAmount > paymentSettings.cod_max_order) {
         toast.error(`Maximum order value for Cash on Delivery is ৳${paymentSettings.cod_max_order}`);
         return;
       }
@@ -244,7 +277,7 @@ const Checkout = () => {
               
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="deliveryLocation">Delivery Location</Label>
+                  <Label htmlFor="deliveryLocation">Delivery Area</Label>
                   <Select value={deliveryLocation} onValueChange={setDeliveryLocation} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Select delivery area" />
@@ -279,20 +312,52 @@ const Checkout = () => {
               </div>
             </div>
             
+            {/* Delivery Information */}
+            {deliverySettings && (
+              <div className="bg-white rounded-lg shadow p-6 mb-6">
+                <h2 className="text-xl font-bold mb-4">Delivery Information</h2>
+                
+                <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Contains Frozen Food:</span>
+                    <span className="text-sm">{hasFrozenFood ? 'Yes' : 'No'}</span>
+                  </div>
+                  
+                  {hasFrozenFood && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Delivery Fee:</span>
+                      <span className="text-sm">
+                        {deliveryFee === 0 ? 'FREE' : `৳${deliveryFee.toFixed(2)}`}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {deliveryFee === 0 && bdtSubtotal >= deliverySettings.free_delivery_threshold && (
+                    <div className="text-sm text-green-600 font-medium">
+                      ✓ Free delivery on orders above ৳{deliverySettings.free_delivery_threshold}
+                    </div>
+                  )}
+                  
+                  {cart.some(item => item.product.category === 'weekend-menu') && deliverySettings.weekend_menu_free_delivery && (
+                    <div className="text-sm text-green-600 font-medium">
+                      ✓ Free delivery for weekend menu items
+                    </div>
+                  )}
+                  
+                  {!hasFrozenFood && (
+                    <div className="text-sm text-green-600 font-medium">
+                      ✓ No delivery charge (no frozen items in cart)
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
             {/* Payment Method */}
             <div className="bg-white rounded-lg shadow p-6 mb-6">
               <h2 className="text-xl font-bold mb-4">Payment Method</h2>
               
-              {/* Debug Information (visible in development) */}
-              <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
-                <strong>Debug Info:</strong><br/>
-                Loading: {paymentLoading ? 'Yes' : 'No'}<br/>
-                Error: {paymentError || 'None'}<br/>
-                Settings Available: {paymentSettings ? 'Yes' : 'No'}<br/>
-                Available Methods: [{availablePaymentMethods.join(', ')}]
-              </div>
-              
-              {paymentLoading ? (
+              {paymentLoading || deliveryLoading ? (
                 <div className="space-y-2">
                   <Skeleton className="h-8 w-full" />
                   <Skeleton className="h-8 w-full" />
@@ -409,9 +474,9 @@ const Checkout = () => {
             <Button
               type="submit"
               className="w-full lg:w-auto bg-kazi-orange hover:bg-opacity-90"
-              disabled={paymentLoading || availablePaymentMethods.length === 0}
+              disabled={paymentLoading || deliveryLoading || availablePaymentMethods.length === 0}
             >
-              {paymentLoading ? "Loading..." : "Place Order"}
+              {paymentLoading || deliveryLoading ? "Loading..." : "Place Order"}
             </Button>
           </form>
         </div>
@@ -435,6 +500,7 @@ const Checkout = () => {
                     <div className="flex justify-between">
                       <h3 className="font-medium text-sm">
                         {item.product.name} <span className="text-gray-500">x{item.quantity}</span>
+                        {item.product.is_frozen_food && <span className="text-blue-500 ml-1">❄️</span>}
                       </h3>
                       <span className="text-sm font-medium">
                         ৳{(item.product.price * item.quantity * 110).toFixed(2)}
@@ -452,11 +518,13 @@ const Checkout = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Delivery</span>
-                <span className="font-medium">৳120.00</span>
+                <span className={`font-medium ${deliveryFee === 0 ? 'text-green-600' : ''}`}>
+                  {deliveryFee === 0 ? 'FREE' : `৳${deliveryFee.toFixed(2)}`}
+                </span>
               </div>
               <div className="pt-3 border-t border-gray-200 flex justify-between">
                 <span className="font-semibold">Total</span>
-                <span className="font-bold text-kazi-red">৳{(bdtSubtotal + 120).toFixed(2)}</span>
+                <span className="font-bold text-kazi-red">৳{totalAmount.toFixed(2)}</span>
               </div>
             </div>
             

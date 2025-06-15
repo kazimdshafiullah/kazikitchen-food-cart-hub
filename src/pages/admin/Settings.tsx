@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/tabs";
 import { StoreSettingsTab } from "@/components/admin/settings/StoreSettingsTab";
 import { DeliverySettingsTab } from "@/components/admin/settings/DeliverySettingsTab";
-import { PaymentSettingsTab } from "@/components/admin/settings/PaymentSettingsTab";
 import { MapsSettingsTab } from "@/components/admin/settings/MapsSettingsTab";
 import { NotificationSettingsTab } from "@/components/admin/settings/NotificationSettingsTab";
 import { AccountSettingsTab } from "@/components/admin/settings/AccountSettingsTab";
@@ -24,7 +23,6 @@ const Settings = () => {
         <TabsList>
           <TabsTrigger value="store">Store</TabsTrigger>
           <TabsTrigger value="delivery">Delivery</TabsTrigger>
-          <TabsTrigger value="payment">Payment</TabsTrigger>
           <TabsTrigger value="maps">Maps</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="account">Account</TabsTrigger>
@@ -36,10 +34,6 @@ const Settings = () => {
         
         <TabsContent value="delivery">
           <DeliverySettingsTab />
-        </TabsContent>
-        
-        <TabsContent value="payment">
-          <PaymentSettingsTab />
         </TabsContent>
         
         <TabsContent value="maps">
