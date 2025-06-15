@@ -20,8 +20,9 @@ const ResetPassword = () => {
 
   useEffect(() => {
     const checkRecoverySession = async () => {
+      console.log('=== Starting Recovery Session Check ===');
+      
       try {
-        console.log('=== Reset Password Debug Info ===');
         console.log('Full URL:', window.location.href);
         console.log('Hash:', window.location.hash);
         console.log('Search params:', window.location.search);
@@ -59,54 +60,72 @@ const ResetPassword = () => {
 
         // Check current session first
         console.log('Checking current session...');
+        const sessionCheckStart = Date.now();
+        
         const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+        
+        console.log('Session check completed in:', Date.now() - sessionCheckStart, 'ms');
         console.log('Current session result:', { 
           hasSession: !!currentSession, 
           error: sessionError,
-          userId: currentSession?.user?.id 
+          userId: currentSession?.user?.id,
+          userEmail: currentSession?.user?.email
         });
 
         if (type === 'recovery' && accessToken && refreshToken) {
           console.log('Setting session with recovery tokens...');
-          console.log('Token lengths:', {
-            accessToken: accessToken.length,
-            refreshToken: refreshToken.length
+          console.log('Token preview:', {
+            accessToken: accessToken.substring(0, 50) + '...',
+            refreshToken: refreshToken.substring(0, 20) + '...'
           });
+          
+          const setSessionStart = Date.now();
           
           const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
           });
 
+          console.log('setSession completed in:', Date.now() - setSessionStart, 'ms');
           console.log('setSession result:', {
+            success: !error,
             hasData: !!data,
             hasUser: !!data?.user,
             hasSession: !!data?.session,
-            error: error
+            userEmail: data?.user?.email,
+            error: error?.message
           });
 
           if (error) {
-            console.error('Session set error:', error);
+            console.error('Session set error details:', {
+              message: error.message,
+              name: error.name,
+              status: error.status
+            });
+            
             toast({
               title: "Invalid Reset Link",
               description: `Session error: ${error.message}`,
               variant: "destructive"
             });
+            
+            console.log('Redirecting to login due to session error');
             navigate("/admin/login");
             return;
           }
 
-          console.log('Session set successfully, user:', data.user?.email);
+          console.log('Session set successfully for user:', data.user?.email);
           setIsValidSession(true);
         } else if (currentSession && currentSession.user) {
           console.log('Using existing session for user:', currentSession.user.email);
           setIsValidSession(true);
         } else {
           console.log('No valid recovery parameters or session found');
-          console.log('Missing:', {
-            type: !type ? 'type parameter' : null,
-            accessToken: !accessToken ? 'access_token' : null,
-            refreshToken: !refreshToken ? 'refresh_token' : null
+          console.log('Missing components:', {
+            type: !type ? 'type parameter missing' : 'type: ' + type,
+            accessToken: !accessToken ? 'access_token missing' : 'access_token present',
+            refreshToken: !refreshToken ? 'refresh_token missing' : 'refresh_token present',
+            currentSession: !currentSession ? 'no current session' : 'current session exists'
           });
           
           toast({
@@ -115,27 +134,56 @@ const ResetPassword = () => {
             variant: "destructive"
           });
           
-          // Give user a moment to see the error before redirecting
+          console.log('Scheduling redirect to login in 3 seconds');
           setTimeout(() => {
+            console.log('Executing redirect to login');
             navigate("/admin/login");
           }, 3000);
           return;
         }
       } catch (error) {
-        console.error("Error in recovery session check:", error);
+        console.error("Critical error in recovery session check:", {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        });
+        
         toast({
           title: "Error",
           description: "An error occurred while processing the reset link.",
           variant: "destructive"
         });
+        
+        console.log('Redirecting to login due to critical error');
         navigate("/admin/login");
       } finally {
+        console.log('=== Recovery Session Check Complete ===');
         console.log('Setting isValidating to false');
         setIsValidating(false);
       }
     };
 
+    // Add a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      console.log('Session validation timeout reached (10 seconds)');
+      if (isValidating) {
+        console.log('Force completing validation due to timeout');
+        setIsValidating(false);
+        toast({
+          title: "Timeout",
+          description: "Session validation timed out. Please try the reset link again.",
+          variant: "destructive"
+        });
+        navigate("/admin/login");
+      }
+    }, 10000);
+
     checkRecoverySession();
+
+    return () => {
+      console.log('Cleaning up timeout');
+      clearTimeout(timeoutId);
+    };
   }, [navigate]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -203,7 +251,10 @@ const ResetPassword = () => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
               <div>Validating reset link...</div>
               <div className="text-sm text-gray-500 mt-2">
-                If this takes too long, check the browser console for details.
+                Check the browser console (F12) for detailed progress.
+              </div>
+              <div className="text-xs text-gray-400 mt-1">
+                This should complete within 10 seconds.
               </div>
             </div>
           </CardContent>
