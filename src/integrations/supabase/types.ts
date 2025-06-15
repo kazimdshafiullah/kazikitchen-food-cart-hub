@@ -63,24 +63,30 @@ export type Database = {
         }
         Relationships: []
       }
-      location_pricing: {
+      delivery_settings: {
         Row: {
-          base_delivery_fee: number | null
-          created_at: string | null
+          created_at: string
+          free_delivery_threshold: number
+          frozen_food_delivery_fee: number
           id: string
-          location: Database["public"]["Enums"]["location_enum"]
+          updated_at: string
+          weekend_menu_free_delivery: boolean
         }
         Insert: {
-          base_delivery_fee?: number | null
-          created_at?: string | null
+          created_at?: string
+          free_delivery_threshold?: number
+          frozen_food_delivery_fee?: number
           id?: string
-          location: Database["public"]["Enums"]["location_enum"]
+          updated_at?: string
+          weekend_menu_free_delivery?: boolean
         }
         Update: {
-          base_delivery_fee?: number | null
-          created_at?: string | null
+          created_at?: string
+          free_delivery_threshold?: number
+          frozen_food_delivery_fee?: number
           id?: string
-          location?: Database["public"]["Enums"]["location_enum"]
+          updated_at?: string
+          weekend_menu_free_delivery?: boolean
         }
         Relationships: []
       }
@@ -279,6 +285,7 @@ export type Database = {
           id: string
           image_url: string | null
           in_stock: boolean | null
+          is_frozen_food: boolean
           name: string
           popular: boolean | null
           price: number
@@ -292,6 +299,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           in_stock?: boolean | null
+          is_frozen_food?: boolean
           name: string
           popular?: boolean | null
           price: number
@@ -305,6 +313,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           in_stock?: boolean | null
+          is_frozen_food?: boolean
           name?: string
           popular?: boolean | null
           price?: number

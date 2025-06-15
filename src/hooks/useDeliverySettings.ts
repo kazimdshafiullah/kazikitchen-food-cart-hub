@@ -54,10 +54,10 @@ export const useDeliverySettings = () => {
         }
 
         console.log('Created default settings:', newData);
-        setSettings(newData as DeliverySettings);
+        setSettings(newData as unknown as DeliverySettings);
       } else {
         console.log('Found existing settings:', data[0]);
-        setSettings(data[0] as DeliverySettings);
+        setSettings(data[0] as unknown as DeliverySettings);
       }
       
       setError(null);
@@ -88,10 +88,10 @@ export const useDeliverySettings = () => {
           
           if (payload.eventType === 'UPDATE' && payload.new) {
             console.log('Updating settings state with new data:', payload.new);
-            setSettings(payload.new as DeliverySettings);
+            setSettings(payload.new as unknown as DeliverySettings);
           } else if (payload.eventType === 'INSERT' && payload.new) {
             console.log('New settings inserted:', payload.new);
-            setSettings(payload.new as DeliverySettings);
+            setSettings(payload.new as unknown as DeliverySettings);
           } else {
             console.log('Refetching settings due to unknown change type');
             fetchSettings();
