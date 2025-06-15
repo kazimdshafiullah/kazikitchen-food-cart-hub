@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import {
   Card,
   CardContent,
@@ -38,9 +37,10 @@ export const StoreSettingsTab = () => {
   }, []);
 
   const handleSaveStoreInfo = () => {
-    // Save with the exact structure that useStoreSettings expects
+    // Save with complete structure including description
     const settingsToSave = {
       name: storeInfo.name,
+      description: storeInfo.description,
       email: storeInfo.email,
       phone: storeInfo.phone,
       address: storeInfo.address

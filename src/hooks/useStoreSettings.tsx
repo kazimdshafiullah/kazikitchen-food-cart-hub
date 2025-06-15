@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 
 interface StoreSettings {
   name: string;
+  description?: string;
   email: string;
   phone: string;
   address: string;
@@ -11,6 +12,7 @@ interface StoreSettings {
 export const useStoreSettings = () => {
   const [settings, setSettings] = useState<StoreSettings>({
     name: "Kazi Kitchen",
+    description: "Authentic and delicious food delivered to your doorstep",
     email: "info@kazikitchen.com", 
     phone: "+880 1234-567890",
     address: "Dhaka, Bangladesh"
@@ -20,7 +22,14 @@ export const useStoreSettings = () => {
   const loadSettings = () => {
     const savedSettings = localStorage.getItem('storeSettings');
     if (savedSettings) {
-      setSettings(JSON.parse(savedSettings));
+      const parsed = JSON.parse(savedSettings);
+      setSettings({
+        name: parsed.name || "Kazi Kitchen",
+        description: parsed.description || "Authentic and delicious food delivered to your doorstep",
+        email: parsed.email || "info@kazikitchen.com",
+        phone: parsed.phone || "+880 1234-567890",
+        address: parsed.address || "Dhaka, Bangladesh"
+      });
     }
   };
 
@@ -31,7 +40,14 @@ export const useStoreSettings = () => {
     // Listen for storage events (when localStorage changes in other tabs/windows)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'storeSettings' && e.newValue) {
-        setSettings(JSON.parse(e.newValue));
+        const parsed = JSON.parse(e.newValue);
+        setSettings({
+          name: parsed.name || "Kazi Kitchen",
+          description: parsed.description || "Authentic and delicious food delivered to your doorstep",
+          email: parsed.email || "info@kazikitchen.com",
+          phone: parsed.phone || "+880 1234-567890",
+          address: parsed.address || "Dhaka, Bangladesh"
+        });
       }
     };
 
