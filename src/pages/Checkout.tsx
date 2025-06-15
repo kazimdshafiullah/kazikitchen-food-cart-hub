@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
@@ -303,7 +302,7 @@ const Checkout = () => {
                   <strong>Delivery Fee:</strong> ৳{deliveryFee} (Frozen food delivery charge)
                 </p>
                 <p className="text-amber-700 text-xs mt-1">
-                  Free delivery on frozen food orders above ৳500
+                  Free delivery over ৳500
                 </p>
               </div>
             )}
@@ -311,15 +310,15 @@ const Checkout = () => {
             {hasFrozenFood && deliveryFee === 0 && bdtSubtotal >= 500 && (
               <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
                 <p className="text-green-800 text-sm">
-                  <strong>Free Delivery!</strong> (Frozen food order above ৳500)
+                  <strong>Free Delivery!</strong> (Order over ৳500)
                 </p>
               </div>
             )}
 
             {!hasFrozenFood && (
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                <p className="text-blue-800 text-sm">
-                  <strong>Free Delivery!</strong> (No frozen food items)
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                <p className="text-green-800 text-sm">
+                  <strong>Free Delivery!</strong> (Order over ৳500)
                 </p>
               </div>
             )}
@@ -330,14 +329,7 @@ const Checkout = () => {
                 <div className="flex items-center space-x-2 p-3 border rounded-md">
                   <RadioGroupItem value="cash" id="cash" />
                   <Label htmlFor="cash" className="flex-1 cursor-pointer">
-                    <div>
-                      <span className="font-medium">Cash on Delivery</span>
-                      {paymentSettings.cod_min_order && paymentSettings.cod_max_order && (
-                        <p className="text-sm text-gray-500">
-                          Available for orders between ৳{paymentSettings.cod_min_order} - ৳{paymentSettings.cod_max_order}
-                        </p>
-                      )}
-                    </div>
+                    <span className="font-medium">Cash on Delivery</span>
                   </Label>
                 </div>
               )}
