@@ -1,264 +1,144 @@
 
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { User } from '@supabase/supabase-js';
 
 interface Profile {
   id: string;
-  username: string;
-  email: string;
-  role: 'admin' | 'kitchen' | 'rider' | 'manager';
-  can_create_users: boolean;
-}
-
-interface AuthUser {
-  id: string;
-  email: string;
-  profile?: Profile;
+  username: string | null;
+  email: string | null;
+  role: string;
+  can_create_users: boolean | null;
 }
 
 interface AuthContextType {
-  user: AuthUser | null;
+  user: User | null;
   profile: Profile | null;
   loading: boolean;
-  login: (credentials: LoginCredentials) => Promise<boolean>;
-  logout: () => Promise<void>;
-  createUser: (userData: CreateUserData) => Promise<boolean>;
-  resetPassword: (email: string) => Promise<boolean>;
-  updatePassword: (userId: string, newPassword: string) => Promise<boolean>;
-  changeOwnPassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
+  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signOut: () => Promise<void>;
+  signUp: (email: string, password: string, username: string, role: string) => Promise<{ success: boolean; error?: string }>;
+  resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
 }
-
-interface LoginCredentials {
-  username: string;
-  password: string;
-  role: 'admin' | 'kitchen' | 'rider' | 'manager';
-}
-
-interface CreateUserData {
-  username: string;
-  email: string;
-  password: string;
-  role: 'admin' | 'kitchen' | 'rider' | 'manager';
-}
-
-// Predefined users for testing
-const PREDEFINED_USERS = [
-  {
-    id: '1',
-    username: 'shafiullah',
-    email: 'kazimdshafiullah@gmail.com',
-    password: 'admin123',
-    role: 'admin' as const,
-    can_create_users: true
-  },
-  {
-    id: '2',
-    username: 'kitchen1',
-    email: 'kitchen@test.com',
-    password: 'kitchen123',
-    role: 'kitchen' as const,
-    can_create_users: false
-  },
-  {
-    id: '3',
-    username: 'rider1',
-    email: 'rider@test.com',
-    password: 'rider123',
-    role: 'rider' as const,
-    can_create_users: false
-  },
-  {
-    id: '4',
-    username: 'manager1',
-    email: 'manager@test.com',
-    password: 'manager123',
-    role: 'manager' as const,
-    can_create_users: false
-  }
-];
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Check for existing authentication on app load
   useEffect(() => {
-    const storedUser = localStorage.getItem('auth_user');
-    const storedProfile = localStorage.getItem('auth_profile');
-    
-    if (storedUser && storedProfile) {
-      setUser(JSON.parse(storedUser));
-      setProfile(JSON.parse(storedProfile));
-    }
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        await fetchProfile(session.user.id);
+      } else {
+        setProfile(null);
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (credentials: LoginCredentials): Promise<boolean> => {
+  const fetchProfile = async (userId: string) => {
     try {
-      console.log('Login attempt:', { username: credentials.username, role: credentials.role });
-      
-      // Find user by username, password, and role
-      const foundUser = PREDEFINED_USERS.find(
-        u => u.username === credentials.username && 
-             u.password === credentials.password && 
-             u.role === credentials.role
-      );
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
 
-      if (!foundUser) {
-        toast({
-          title: "Login Failed",
-          description: "Invalid username, password, or role",
-          variant: "destructive"
-        });
-        return false;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        setProfile(null);
+      } else {
+        setProfile(data);
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      setProfile(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
       }
 
-      const authUser: AuthUser = {
-        id: foundUser.id,
-        email: foundUser.email
-      };
-
-      const userProfile: Profile = {
-        id: foundUser.id,
-        username: foundUser.username,
-        email: foundUser.email,
-        role: foundUser.role,
-        can_create_users: foundUser.can_create_users
-      };
-
-      setUser(authUser);
-      setProfile(userProfile);
-      
-      // Store in localStorage for persistence
-      localStorage.setItem('auth_user', JSON.stringify(authUser));
-      localStorage.setItem('auth_profile', JSON.stringify(userProfile));
-
-      toast({
-        title: "Login Successful",
-        description: `Welcome back, ${foundUser.username}!`
-      });
-      
-      return true;
+      return { success: true };
     } catch (error) {
-      console.error('Login error:', error);
-      toast({
-        title: "Login Failed",
-        description: "An error occurred during login",
-        variant: "destructive"
-      });
-      return false;
+      return { success: false, error: 'An unexpected error occurred' };
     }
   };
 
-  const createUser = async (userData: CreateUserData): Promise<boolean> => {
+  const signOut = async () => {
     try {
-      // Only allow master account to create users
-      if (!profile?.can_create_users) {
-        toast({
-          title: "Access Denied",
-          description: "You don't have permission to create users",
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      toast({
-        title: "User Created Successfully",
-        description: `User ${userData.username} has been created`
-      });
-      return true;
-    } catch (error) {
-      toast({
-        title: "User Creation Failed",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive"
-      });
-      return false;
-    }
-  };
-
-  const resetPassword = async (email: string): Promise<boolean> => {
-    try {
-      toast({
-        title: "Password Reset",
-        description: "Password reset functionality is not available in this demo version"
-      });
-      return true;
-    } catch (error) {
-      toast({
-        title: "Password Reset Failed",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive"
-      });
-      return false;
-    }
-  };
-
-  const updatePassword = async (userId: string, newPassword: string): Promise<boolean> => {
-    try {
-      // Only allow master account to update passwords
-      if (!profile?.can_create_users) {
-        toast({
-          title: "Access Denied",
-          description: "You don't have permission to update passwords",
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      toast({
-        title: "Password Updated Successfully",
-        description: "The user's password has been updated"
-      });
-      return true;
-    } catch (error) {
-      toast({
-        title: "Password Update Failed",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive"
-      });
-      return false;
-    }
-  };
-
-  const changeOwnPassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
-    try {
-      toast({
-        title: "Password Changed Successfully",
-        description: "Your password has been updated"
-      });
-      return true;
-    } catch (error) {
-      toast({
-        title: "Password Change Failed",
-        description: error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive"
-      });
-      return false;
-    }
-  };
-
-  const logout = async (): Promise<void> => {
-    try {
+      await supabase.auth.signOut();
       setUser(null);
       setProfile(null);
-      
-      // Clear localStorage
-      localStorage.removeItem('auth_user');
-      localStorage.removeItem('auth_profile');
-      
-      toast({
-        title: "Logged Out",
-        description: "You have been successfully logged out"
-      });
     } catch (error) {
-      console.error('Logout error:', error);
-      setUser(null);
-      setProfile(null);
-      localStorage.removeItem('auth_user');
-      localStorage.removeItem('auth_profile');
+      console.error('Error signing out:', error);
+    }
+  };
+
+  const signUp = async (email: string, password: string, username: string, role: string) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username,
+            role
+          }
+        }
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: 'An unexpected error occurred' };
+    }
+  };
+
+  const resetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: 'An unexpected error occurred' };
     }
   };
 
@@ -267,12 +147,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       user,
       profile,
       loading,
-      login,
-      logout,
-      createUser,
-      resetPassword,
-      updatePassword,
-      changeOwnPassword
+      signIn,
+      signOut,
+      signUp,
+      resetPassword
     }}>
       {children}
     </AuthContext.Provider>

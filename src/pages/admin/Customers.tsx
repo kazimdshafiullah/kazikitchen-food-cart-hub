@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +36,6 @@ const Customers = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isAddCustomerDialogOpen, setIsAddCustomerDialogOpen] = useState(false);
   const [isViewCustomerDialogOpen, setIsViewCustomerDialogOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerOrders, setCustomerOrders] = useState<any[]>([]);
@@ -133,16 +131,6 @@ const Customers = () => {
     );
   });
   
-  const handleAddCustomer = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsAddCustomerDialogOpen(false);
-    // Note: Customer registration should be done through the customer-facing signup form
-    toast({
-      title: "Info",
-      description: "Customers should register through the customer signup page",
-    });
-  };
-  
   const handleViewCustomer = async (customer: Customer) => {
     setSelectedCustomer(customer);
     const orders = await fetchCustomerOrders(customer.id);
@@ -165,10 +153,6 @@ const Customers = () => {
           <h2 className="text-3xl font-bold tracking-tight">Customers</h2>
           <p className="text-muted-foreground">View and manage your customer database</p>
         </div>
-        <Button className="flex items-center" onClick={() => setIsAddCustomerDialogOpen(true)}>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Add Customer
-        </Button>
       </div>
       
       <div className="flex items-center space-x-2">
@@ -229,28 +213,6 @@ const Customers = () => {
           )}
         </div>
       </Card>
-      
-      {/* Add Customer Dialog */}
-      <Dialog open={isAddCustomerDialogOpen} onOpenChange={setIsAddCustomerDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add Customer</DialogTitle>
-            <DialogDescription>
-              Note: Customers should register through the customer signup page for proper authentication.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-sm text-gray-600">
-              Direct customers to the customer login page to create their own accounts with proper security.
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddCustomerDialogOpen(false)}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       
       {/* View Customer Dialog */}
       {selectedCustomer && (

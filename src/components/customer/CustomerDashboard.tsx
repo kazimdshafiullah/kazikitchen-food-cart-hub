@@ -7,15 +7,15 @@ import { useCustomerAuth } from '@/hooks/useCustomerAuth';
 import { User, Package, Phone, Mail, Calendar } from 'lucide-react';
 
 const CustomerDashboard: React.FC = () => {
-  const { customer, signOut, getCustomerOrders } = useCustomerAuth();
+  const { customer, user, signOut, getCustomerOrders } = useCustomerAuth();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (customer) {
+    if (user) {
       fetchOrders();
     }
-  }, [customer]);
+  }, [user]);
 
   const fetchOrders = async () => {
     try {
@@ -48,8 +48,14 @@ const CustomerDashboard: React.FC = () => {
     }
   };
 
-  if (!customer) {
-    return null;
+  if (!user || !customer) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <p>Loading your account...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

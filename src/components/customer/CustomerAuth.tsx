@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCustomerAuth } from '@/hooks/useCustomerAuth';
 
 interface CustomerAuthProps {
@@ -12,57 +13,69 @@ interface CustomerAuthProps {
 }
 
 const CustomerAuth: React.FC<CustomerAuthProps> = ({ onAuthSuccess }) => {
-  const { signIn, signUp, loading } = useCustomerAuth();
   const [activeTab, setActiveTab] = useState('signin');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  // Sign in form state
+  const [signInEmail, setSignInEmail] = useState('');
+  const [signInPassword, setSignInPassword] = useState('');
+  
+  // Sign up form state
+  const [signUpEmail, setSignUpEmail] = useState('');
+  const [signUpPassword, setSignUpPassword] = useState('');
+  const [signUpName, setSignUpName] = useState('');
+  const [signUpPhone, setSignUpPhone] = useState('');
 
-  // Sign In Form State
-  const [signInData, setSignInData] = useState({
-    email: '',
-    password: ''
-  });
-
-  // Sign Up Form State
-  const [signUpData, setSignUpData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    name: '',
-    phone: ''
-  });
+  const { signIn, signUp } = useCustomerAuth();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await signIn(signInData.email, signInData.password);
-    if (success && onAuthSuccess) {
-      onAuthSuccess();
+    setError('');
+    setLoading(true);
+
+    try {
+      const success = await signIn(signInEmail, signInPassword);
+      if (success && onAuthSuccess) {
+        onAuthSuccess();
+      }
+    } catch (error) {
+      setError('An unexpected error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (signUpData.password !== signUpData.confirmPassword) {
-      return;
-    }
+    setError('');
+    setLoading(true);
 
-    const success = await signUp(
-      signUpData.email,
-      signUpData.password,
-      signUpData.name,
-      signUpData.phone || undefined
-    );
-    
-    if (success && onAuthSuccess) {
-      onAuthSuccess();
+    try {
+      const success = await signUp(signUpEmail, signUpPassword, signUpName, signUpPhone);
+      if (success) {
+        // Switch to sign in tab after successful registration
+        setActiveTab('signin');
+        setSignInEmail(signUpEmail);
+        // Clear sign up form
+        setSignUpEmail('');
+        setSignUpPassword('');
+        setSignUpName('');
+        setSignUpPhone('');
+      }
+    } catch (error) {
+      setError('An unexpected error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Customer Account</CardTitle>
+        <CardTitle>Customer Portal</CardTitle>
         <CardDescription>
-          Sign in to your account or create a new one to track your orders
+          Sign in to your account or create a new one
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -71,95 +84,103 @@ const CustomerAuth: React.FC<CustomerAuthProps> = ({ onAuthSuccess }) => {
             <TabsTrigger value="signin">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="signin">
             <form onSubmit={handleSignIn} className="space-y-4">
-              <div>
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="space-y-2">
                 <Label htmlFor="signin-email">Email</Label>
                 <Input
                   id="signin-email"
                   type="email"
-                  placeholder="your@email.com"
-                  value={signInData.email}
-                  onChange={(e) => setSignInData({ ...signInData, email: e.target.value })}
+                  placeholder="Enter your email"
+                  value={signInEmail}
+                  onChange={(e) => setSignInEmail(e.target.value)}
                   required
                 />
               </div>
-              <div>
+
+              <div className="space-y-2">
                 <Label htmlFor="signin-password">Password</Label>
                 <Input
                   id="signin-password"
                   type="password"
                   placeholder="Enter your password"
-                  value={signInData.password}
-                  onChange={(e) => setSignInData({ ...signInData, password: e.target.value })}
+                  value={signInPassword}
+                  onChange={(e) => setSignInPassword(e.target.value)}
                   required
                 />
               </div>
+
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Signing In...' : 'Sign In'}
+                {loading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
           </TabsContent>
-          
+
           <TabsContent value="signup">
             <form onSubmit={handleSignUp} className="space-y-4">
-              <div>
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="space-y-2">
                 <Label htmlFor="signup-name">Full Name</Label>
                 <Input
                   id="signup-name"
                   type="text"
-                  placeholder="John Doe"
-                  value={signUpData.name}
-                  onChange={(e) => setSignUpData({ ...signUpData, name: e.target.value })}
+                  placeholder="Enter your full name"
+                  value={signUpName}
+                  onChange={(e) => setSignUpName(e.target.value)}
                   required
                 />
               </div>
-              <div>
+
+              <div className="space-y-2">
                 <Label htmlFor="signup-email">Email</Label>
                 <Input
                   id="signup-email"
                   type="email"
-                  placeholder="your@email.com"
-                  value={signUpData.email}
-                  onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
+                  placeholder="Enter your email"
+                  value={signUpEmail}
+                  onChange={(e) => setSignUpEmail(e.target.value)}
                   required
                 />
               </div>
-              <div>
-                <Label htmlFor="signup-phone">Phone (Optional)</Label>
+
+              <div className="space-y-2">
+                <Label htmlFor="signup-phone">Phone Number</Label>
                 <Input
                   id="signup-phone"
                   type="tel"
-                  placeholder="+880 1234-567890"
-                  value={signUpData.phone}
-                  onChange={(e) => setSignUpData({ ...signUpData, phone: e.target.value })}
+                  placeholder="Enter your phone number"
+                  value={signUpPhone}
+                  onChange={(e) => setSignUpPhone(e.target.value)}
                 />
               </div>
-              <div>
+
+              <div className="space-y-2">
                 <Label htmlFor="signup-password">Password</Label>
                 <Input
                   id="signup-password"
                   type="password"
                   placeholder="Create a password"
-                  value={signUpData.password}
-                  onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
+                  value={signUpPassword}
+                  onChange={(e) => setSignUpPassword(e.target.value)}
                   required
+                  minLength={6}
                 />
               </div>
-              <div>
-                <Label htmlFor="signup-confirm-password">Confirm Password</Label>
-                <Input
-                  id="signup-confirm-password"
-                  type="password"
-                  placeholder="Confirm your password"
-                  value={signUpData.confirmPassword}
-                  onChange={(e) => setSignUpData({ ...signUpData, confirmPassword: e.target.value })}
-                  required
-                />
-              </div>
+
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Creating Account...' : 'Create Account'}
+                {loading ? 'Creating account...' : 'Create Account'}
               </Button>
             </form>
           </TabsContent>

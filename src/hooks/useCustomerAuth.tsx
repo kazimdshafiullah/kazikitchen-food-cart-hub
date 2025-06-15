@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { User } from '@supabase/supabase-js';
 
 interface Customer {
   id: string;
@@ -13,6 +14,7 @@ interface Customer {
 
 interface CustomerAuthContextType {
   customer: Customer | null;
+  user: User | null;
   loading: boolean;
   signUp: (email: string, password: string, name: string, phone?: string) => Promise<boolean>;
   signIn: (email: string, password: string) => Promise<boolean>;
@@ -24,21 +26,58 @@ const CustomerAuthContext = createContext<CustomerAuthContextType | undefined>(u
 
 export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   const [customer, setCustomer] = useState<Customer | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkSession();
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchCustomerProfile(session.user.id);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        await fetchCustomerProfile(session.user.id);
+      } else {
+        setCustomer(null);
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const checkSession = async () => {
+  const fetchCustomerProfile = async (userId: string) => {
     try {
-      const sessionData = localStorage.getItem('customer_session');
-      if (sessionData) {
-        const parsedCustomer = JSON.parse(sessionData);
-        setCustomer(parsedCustomer);
+      const { data, error } = await supabase
+        .from('customers')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching customer profile:', error);
+        setCustomer(null);
+      } else if (data) {
+        setCustomer({
+          id: data.id,
+          email: data.email,
+          name: data.name,
+          phone: data.phone,
+          created_at: data.created_at
+        });
       }
     } catch (error) {
-      console.error('Session check error:', error);
+      console.error('Error fetching customer profile:', error);
+      setCustomer(null);
     } finally {
       setLoading(false);
     }
@@ -47,55 +86,65 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (email: string, password: string, name: string, phone?: string): Promise<boolean> => {
     try {
       setLoading(true);
-      
-      // Hash password (in a real app, this should be done on the server)
-      const bcrypt = await import('bcryptjs');
-      const passwordHash = await bcrypt.hash(password, 10);
 
-      const { data, error } = await supabase
-        .from('customers')
-        .insert([
-          {
-            email,
-            password_hash: passwordHash,
+      // Create auth user with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
             name,
             phone
           }
-        ])
-        .select()
-        .single();
-
-      if (error) {
-        if (error.code === '23505') { // Unique constraint violation
-          toast({
-            title: "Registration Failed",
-            description: "An account with this email already exists.",
-            variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "Registration Failed",
-            description: error.message,
-            variant: "destructive"
-          });
         }
+      });
+
+      if (authError) {
+        toast({
+          title: "Registration Failed",
+          description: authError.message,
+          variant: "destructive"
+        });
         return false;
       }
 
-      const newCustomer: Customer = {
-        id: data.id,
-        email: data.email,
-        name: data.name,
-        phone: data.phone,
-        created_at: data.created_at
-      };
+      if (!authData.user) {
+        toast({
+          title: "Registration Failed",
+          description: "Failed to create user account.",
+          variant: "destructive"
+        });
+        return false;
+      }
 
-      setCustomer(newCustomer);
-      localStorage.setItem('customer_session', JSON.stringify(newCustomer));
+      // Create customer profile
+      const { error: profileError } = await supabase
+        .from('customers')
+        .insert([
+          {
+            id: authData.user.id,
+            email,
+            name,
+            phone,
+            password_hash: '' // Not used with Supabase Auth
+          }
+        ]);
+
+      if (profileError) {
+        console.error('Error creating customer profile:', profileError);
+        // Try to clean up the auth user if profile creation fails
+        await supabase.auth.signOut();
+        toast({
+          title: "Registration Failed",
+          description: "Failed to create customer profile.",
+          variant: "destructive"
+        });
+        return false;
+      }
 
       toast({
         title: "Registration Successful",
-        description: "Welcome! Your account has been created."
+        description: "Please check your email to verify your account."
       });
 
       return true;
@@ -116,13 +165,12 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoading(true);
 
-      const { data, error } = await supabase
-        .from('customers')
-        .select('*')
-        .eq('email', email)
-        .single();
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
-      if (error || !data) {
+      if (error) {
         toast({
           title: "Login Failed",
           description: "Invalid email or password.",
@@ -130,34 +178,10 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
         });
         return false;
       }
-
-      // Verify password
-      const bcrypt = await import('bcryptjs');
-      const isValidPassword = await bcrypt.compare(password, data.password_hash);
-
-      if (!isValidPassword) {
-        toast({
-          title: "Login Failed",
-          description: "Invalid email or password.",
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      const loggedInCustomer: Customer = {
-        id: data.id,
-        email: data.email,
-        name: data.name,
-        phone: data.phone,
-        created_at: data.created_at
-      };
-
-      setCustomer(loggedInCustomer);
-      localStorage.setItem('customer_session', JSON.stringify(loggedInCustomer));
 
       toast({
         title: "Login Successful",
-        description: `Welcome back, ${data.name}!`
+        description: "Welcome back!"
       });
 
       return true;
@@ -176,8 +200,14 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async (): Promise<void> => {
     try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Sign out error:', error);
+      }
+      
       setCustomer(null);
-      localStorage.removeItem('customer_session');
+      setUser(null);
+      
       toast({
         title: "Signed Out",
         description: "You have been successfully signed out."
@@ -188,7 +218,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const getCustomerOrders = async (): Promise<any[]> => {
-    if (!customer) return [];
+    if (!user) return [];
 
     try {
       const { data, error } = await supabase
@@ -200,7 +230,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
             products (name, price)
           )
         `)
-        .eq('customer_id', customer.id)
+        .eq('customer_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -218,6 +248,7 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <CustomerAuthContext.Provider value={{
       customer,
+      user,
       loading,
       signUp,
       signIn,
@@ -229,14 +260,13 @@ export const CustomerAuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Make the hook optional - don't throw error if used outside provider
 export const useCustomerAuth = () => {
   const context = useContext(CustomerAuthContext);
   
-  // Return default values if used outside provider (for guest users)
   if (context === undefined) {
     return {
       customer: null,
+      user: null,
       loading: false,
       signUp: async () => false,
       signIn: async () => false,
