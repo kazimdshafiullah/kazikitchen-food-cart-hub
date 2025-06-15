@@ -135,10 +135,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const resetPassword = async (email: string) => {
     try {
-      // Use the correct redirect URL for admin password reset
+      // Use the correct redirect URL for password reset page
       const redirectTo = window.location.hostname === 'localhost' 
-        ? 'http://localhost:3000/admin/login'
-        : 'https://preview--kazikitchen-food-cart-hub.lovable.app/admin/login';
+        ? 'http://localhost:3000/reset-password'
+        : 'https://preview--kazikitchen-food-cart-hub.lovable.app/reset-password';
 
       console.log('Sending reset password email with redirect:', redirectTo);
 
