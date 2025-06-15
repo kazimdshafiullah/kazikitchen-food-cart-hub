@@ -123,26 +123,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Legacy method for kitchen/rider login
   const login = async (credentials: { username: string; password: string; role: string }) => {
     try {
+      console.log('=== LOGIN ATTEMPT ===');
+      console.log('Credentials:', { username: credentials.username, role: credentials.role, password: '***' });
+      
       // Get users from localStorage
       const storedUsers = localStorage.getItem('custom_users');
+      console.log('Raw stored users:', storedUsers);
+      
       const users = storedUsers ? JSON.parse(storedUsers) : [];
+      console.log('Parsed users:', users);
+      console.log('Number of users found:', users.length);
       
-      console.log('Login attempt:', { username: credentials.username, role: credentials.role });
-      console.log('Available users:', users);
+      // Log each user for debugging
+      users.forEach((u: any, index: number) => {
+        console.log(`User ${index}:`, {
+          id: u.id,
+          username: u.username,
+          role: u.role,
+          email: u.email,
+          hasPassword: !!u.password
+        });
+      });
       
-      const user = users.find((u: any) => 
-        u.username === credentials.username && 
-        u.password === credentials.password && 
-        u.role === credentials.role
-      );
+      const user = users.find((u: any) => {
+        const usernameMatch = u.username === credentials.username;
+        const passwordMatch = u.password === credentials.password;
+        const roleMatch = u.role === credentials.role;
+        
+        console.log(`Checking user ${u.username}:`, {
+          usernameMatch,
+          passwordMatch,
+          roleMatch,
+          storedUsername: u.username,
+          providedUsername: credentials.username,
+          storedRole: u.role,
+          providedRole: credentials.role
+        });
+        
+        return usernameMatch && passwordMatch && roleMatch;
+      });
 
-      console.log('Found user:', user);
+      console.log('Found matching user:', user);
 
       if (!user) {
-        console.log('Login failed: No matching user found');
+        console.log('LOGIN FAILED: No matching user found');
         toast({
           title: "Login Failed",
-          description: "Invalid credentials",
+          description: "Invalid username, password, or role",
           variant: "destructive"
         });
         return false;
@@ -156,7 +183,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         can_create_users: false
       };
 
-      console.log('Login successful, setting user profile:', userProfile);
+      console.log('LOGIN SUCCESSFUL, setting user profile:', userProfile);
 
       setUser(user);
       setProfile(userProfile);
@@ -172,7 +199,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       return true;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('LOGIN ERROR:', error);
       toast({
         title: "Login Failed",
         description: "An unexpected error occurred",
@@ -194,8 +221,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
+      console.log('=== CREATE USER ===');
+      console.log('Creating user with data:', userData);
+
       const storedUsers = localStorage.getItem('custom_users');
       const users = storedUsers ? JSON.parse(storedUsers) : [];
+      
+      console.log('Existing users before creation:', users);
       
       // Check if username already exists
       if (users.find((u: any) => u.username === userData.username)) {
@@ -216,10 +248,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         created_at: new Date().toISOString()
       };
 
-      console.log('Creating new user:', newUser);
+      console.log('New user object:', newUser);
 
       users.push(newUser);
       localStorage.setItem('custom_users', JSON.stringify(users));
+
+      console.log('Users after creation:', users);
+      console.log('Stored in localStorage:', localStorage.getItem('custom_users'));
 
       toast({
         title: "User Created",
@@ -227,7 +262,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
       return true;
     } catch (error) {
-      console.error('Create user error:', error);
+      console.error('CREATE USER ERROR:', error);
       toast({
         title: "User Creation Failed",
         description: "An unexpected error occurred",
