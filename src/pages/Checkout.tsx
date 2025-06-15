@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 const Checkout = () => {
   const navigate = useNavigate();
   const { cart, subtotal, clearCart } = useCart();
-  const { settings: paymentSettings, loading: paymentLoading, error: paymentError } = usePaymentSettings();
+  const { settings: paymentSettings, loading: paymentLoading, error: paymentError, refetch } = usePaymentSettings();
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "bkash" | "ssl" | "">("");
   const [deliveryLocation, setDeliveryLocation] = useState<string>("");
   const [orderPlaced, setOrderPlaced] = useState(false);
@@ -47,28 +47,63 @@ const Checkout = () => {
     "ORD-1006", "ORD-1007", "ORD-1008", "ORD-1009", "ORD-1010"
   ];
 
-  // Debug payment settings
+  // Debug payment settings with more detailed logging
   useEffect(() => {
-    console.log('Payment settings debug:', {
-      settings: paymentSettings,
-      loading: paymentLoading,
-      error: paymentError
-    });
-  }, [paymentSettings, paymentLoading, paymentError]);
+    console.log('=== CHECKOUT PAYMENT DEBUG ===');
+    console.log('Payment settings object:', paymentSettings);
+    console.log('Payment loading state:', paymentLoading);
+    console.log('Payment error:', paymentError);
+    
+    if (paymentSettings) {
+      console.log('Individual payment settings:');
+      console.log('- bKash enabled:', paymentSettings.bkash_enabled);
+      console.log('- SSL enabled:', paymentSettings.ssl_enabled);
+      console.log('- COD enabled:', paymentSettings.cod_enabled);
+      console.log('- Settings ID:', paymentSettings.id);
+    } else {
+      console.log('No payment settings found - attempting refetch...');
+      // Try to refetch if we don't have settings
+      if (!paymentLoading && !paymentError) {
+        refetch();
+      }
+    }
+    console.log('=== END CHECKOUT PAYMENT DEBUG ===');
+  }, [paymentSettings, paymentLoading, paymentError, refetch]);
 
   // Get available payment methods based on admin settings
   const getAvailablePaymentMethods = () => {
+    console.log('Getting available payment methods...');
+    
     if (!paymentSettings) {
-      console.log('No payment settings available');
+      console.log('No payment settings available - returning empty array');
       return [];
     }
     
     const methods = [];
-    if (paymentSettings.cod_enabled) methods.push("cash");
-    if (paymentSettings.bkash_enabled) methods.push("bkash");
-    if (paymentSettings.ssl_enabled) methods.push("ssl");
     
-    console.log('Available payment methods:', methods);
+    // Check each payment method
+    if (paymentSettings.cod_enabled === true) {
+      console.log('Adding COD to available methods');
+      methods.push("cash");
+    } else {
+      console.log('COD not enabled:', paymentSettings.cod_enabled);
+    }
+    
+    if (paymentSettings.bkash_enabled === true) {
+      console.log('Adding bKash to available methods');
+      methods.push("bkash");
+    } else {
+      console.log('bKash not enabled:', paymentSettings.bkash_enabled);
+    }
+    
+    if (paymentSettings.ssl_enabled === true) {
+      console.log('Adding SSL to available methods');
+      methods.push("ssl");
+    } else {
+      console.log('SSL not enabled:', paymentSettings.ssl_enabled);
+    }
+    
+    console.log('Final available payment methods:', methods);
     return methods;
   };
 
@@ -77,6 +112,7 @@ const Checkout = () => {
   // Auto-select first available payment method
   useEffect(() => {
     if (paymentMethod === "" && availablePaymentMethods.length > 0) {
+      console.log('Auto-selecting first payment method:', availablePaymentMethods[0]);
       setPaymentMethod(availablePaymentMethods[0] as "cash" | "bkash" | "ssl");
     }
   }, [availablePaymentMethods, paymentMethod]);
@@ -247,6 +283,15 @@ const Checkout = () => {
             <div className="bg-white rounded-lg shadow p-6 mb-6">
               <h2 className="text-xl font-bold mb-4">Payment Method</h2>
               
+              {/* Debug Information (visible in development) */}
+              <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
+                <strong>Debug Info:</strong><br/>
+                Loading: {paymentLoading ? 'Yes' : 'No'}<br/>
+                Error: {paymentError || 'None'}<br/>
+                Settings Available: {paymentSettings ? 'Yes' : 'No'}<br/>
+                Available Methods: [{availablePaymentMethods.join(', ')}]
+              </div>
+              
               {paymentLoading ? (
                 <div className="space-y-2">
                   <Skeleton className="h-8 w-full" />
@@ -257,11 +302,37 @@ const Checkout = () => {
                 <div className="text-center py-8">
                   <p className="text-red-500 mb-2">Error loading payment settings</p>
                   <p className="text-sm text-gray-400">{paymentError}</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => refetch()} 
+                    className="mt-2"
+                  >
+                    Retry Loading
+                  </Button>
+                </div>
+              ) : !paymentSettings ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-2">Payment settings not found</p>
+                  <p className="text-sm text-gray-400">Please contact support or try again later</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => refetch()} 
+                    className="mt-2"
+                  >
+                    Retry Loading
+                  </Button>
                 </div>
               ) : availablePaymentMethods.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500 mb-2">No payment methods are currently available</p>
                   <p className="text-sm text-gray-400">Please contact support or try again later</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => refetch()} 
+                    className="mt-2"
+                  >
+                    Refresh Payment Options
+                  </Button>
                 </div>
               ) : (
                 <RadioGroup

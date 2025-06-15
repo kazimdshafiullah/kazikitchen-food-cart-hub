@@ -23,27 +23,60 @@ export const usePaymentSettings = () => {
 
   const fetchSettings = async () => {
     try {
-      console.log('Fetching payment settings...');
+      console.log('=== FETCHING PAYMENT SETTINGS ===');
       setLoading(true);
+      setError(null);
+      
       const { data, error } = await supabase
         .from('payment_settings')
         .select('*')
-        .limit(1)
-        .single();
+        .limit(1);
+
+      console.log('Supabase response:', { data, error });
 
       if (error) {
+        console.error('Supabase error:', error);
         throw error;
       }
 
-      console.log('Fetched settings:', data);
-      setSettings(data);
+      if (!data || data.length === 0) {
+        console.log('No payment settings found, creating default settings...');
+        
+        // Create default settings if none exist
+        const { data: newData, error: insertError } = await supabase
+          .from('payment_settings')
+          .insert({
+            bkash_enabled: true,
+            ssl_enabled: true,
+            cod_enabled: true,
+            bkash_live_mode: false,
+            ssl_live_mode: false,
+            cod_min_order: 250,
+            cod_max_order: 5000
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error('Error creating default settings:', insertError);
+          throw insertError;
+        }
+
+        console.log('Created default settings:', newData);
+        setSettings(newData);
+      } else {
+        console.log('Found existing settings:', data[0]);
+        setSettings(data[0]);
+      }
+      
       setError(null);
-    } catch (err) {
-      console.error('Error fetching payment settings:', err);
-      setError('Failed to load payment settings');
+    } catch (err: any) {
+      console.error('Error in fetchSettings:', err);
+      setError(err.message || 'Failed to load payment settings');
       setSettings(null);
     } finally {
       setLoading(false);
+      console.log('=== FETCH SETTINGS COMPLETE ===');
     }
   };
 
@@ -76,11 +109,11 @@ export const usePaymentSettings = () => {
         }
       )
       .subscribe((status) => {
-        console.log('Subscription status:', status);
+        console.log('Payment settings subscription status:', status);
       });
 
     return () => {
-      console.log('Cleaning up subscription');
+      console.log('Cleaning up payment settings subscription');
       supabase.removeChannel(channel);
     };
   }, []);
@@ -94,7 +127,8 @@ export const useUpdatePaymentSettings = () => {
 
   const updateSettings = async (updates: Partial<PaymentSettings>) => {
     try {
-      console.log('Starting payment settings update with:', updates);
+      console.log('=== UPDATING PAYMENT SETTINGS ===');
+      console.log('Updates to apply:', updates);
       setUpdating(true);
       
       const { data, error } = await supabase
@@ -117,7 +151,7 @@ export const useUpdatePaymentSettings = () => {
       });
 
       return { success: true, data };
-    } catch (err) {
+    } catch (err: any) {
       console.error('Payment settings update failed:', err);
       toast({
         title: "Error",
@@ -127,6 +161,7 @@ export const useUpdatePaymentSettings = () => {
       return { success: false, error: err };
     } finally {
       setUpdating(false);
+      console.log('=== UPDATE SETTINGS COMPLETE ===');
     }
   };
 
