@@ -38,6 +38,8 @@ export const StoreSettingsTab = () => {
   }, []);
 
   const handleSaveStoreInfo = () => {
+    console.log('Saving store info:', storeInfo);
+    
     // Save with complete structure including description
     const settingsToSave = {
       name: storeInfo.name,
@@ -48,8 +50,10 @@ export const StoreSettingsTab = () => {
     };
     
     localStorage.setItem('storeSettings', JSON.stringify(settingsToSave));
+    console.log('Settings saved to localStorage:', settingsToSave);
     
     // Dispatch custom event to notify other components
+    console.log('Dispatching storeSettingsUpdated event');
     window.dispatchEvent(new CustomEvent('storeSettingsUpdated'));
     
     toast.success("Store information updated!");
