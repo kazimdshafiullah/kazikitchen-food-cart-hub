@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -39,7 +38,7 @@ const UserManagement = () => {
   const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
   const [changeOwnPasswordOpen, setChangeOwnPasswordOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
-  const { profile, createUser, updatePassword, changeOwnPassword } = useAuth();
+  const { profile, createUser, updateUserPassword, changeOwnPassword } = useAuth();
   
   // New user form state
   const [newUser, setNewUser] = useState({
@@ -122,7 +121,7 @@ const UserManagement = () => {
       return;
     }
 
-    const success = await updatePassword(selectedUser.id, newPassword);
+    const success = await updateUserPassword(selectedUser.id, newPassword);
     if (success) {
       setNewPassword("");
       setConfirmNewPassword("");

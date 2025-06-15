@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -24,7 +25,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   login: (credentials: { username: string; password: string; role: string }) => Promise<boolean>;
   createUser: (userData: { username: string; email: string; role: 'admin' | 'kitchen' | 'rider' | 'manager'; password: string }) => Promise<boolean>;
-  updatePassword: (userId: string, newPassword: string) => Promise<boolean>;
+  updateUserPassword: (userId: string, newPassword: string) => Promise<boolean>;
   changeOwnPassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
 }
 
@@ -269,8 +270,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Legacy method for updating password
-  const updatePassword = async (userId: string, newPassword: string) => {
+  // Legacy method for updating user password (renamed to avoid conflict)
+  const updateUserPassword = async (userId: string, newPassword: string) => {
     try {
       // Note: This requires admin privileges in Supabase
       // For now, we'll just show a message
@@ -334,7 +335,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       logout,
       login,
       createUser,
-      updatePassword,
+      updateUserPassword,
       changeOwnPassword
     }}>
       {children}
