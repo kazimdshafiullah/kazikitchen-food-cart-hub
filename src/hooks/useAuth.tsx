@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { toast } from '@/hooks/use-toast';
 
@@ -212,7 +213,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Method for creating users (admin only)
   const createUser = async (userData: { username: string; email: string; role: 'admin' | 'kitchen' | 'rider' | 'manager'; password: string }) => {
     try {
+      console.log('=== CREATE USER FUNCTION START ===');
+      console.log('Current profile:', profile);
+      console.log('User data received:', userData);
+
       if (!profile || profile.role !== 'admin') {
+        console.log('ACCESS DENIED: Not admin user');
         toast({
           title: "Access Denied",
           description: "Only administrators can create users",
@@ -221,16 +227,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
-      console.log('=== CREATE USER ===');
-      console.log('Creating user with data:', userData);
-
+      // Get existing users from localStorage
       const storedUsers = localStorage.getItem('custom_users');
-      const users = storedUsers ? JSON.parse(storedUsers) : [];
+      console.log('Current stored users before creation:', storedUsers);
       
-      console.log('Existing users before creation:', users);
+      const users = storedUsers ? JSON.parse(storedUsers) : [];
+      console.log('Parsed existing users:', users);
       
       // Check if username already exists
-      if (users.find((u: any) => u.username === userData.username)) {
+      const existingUser = users.find((u: any) => u.username === userData.username);
+      if (existingUser) {
+        console.log('USERNAME ALREADY EXISTS:', userData.username);
         toast({
           title: "User Creation Failed",
           description: "Username already exists",
@@ -239,6 +246,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return false;
       }
 
+      // Create new user object
       const newUser = {
         id: Date.now().toString(),
         username: userData.username,
@@ -248,18 +256,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         created_at: new Date().toISOString()
       };
 
-      console.log('New user object:', newUser);
+      console.log('New user object created:', newUser);
 
+      // Add to users array
       users.push(newUser);
-      localStorage.setItem('custom_users', JSON.stringify(users));
+      console.log('Users array after adding new user:', users);
 
-      console.log('Users after creation:', users);
-      console.log('Stored in localStorage:', localStorage.getItem('custom_users'));
+      // Save back to localStorage
+      const usersJsonString = JSON.stringify(users);
+      localStorage.setItem('custom_users', usersJsonString);
+      console.log('Saved to localStorage:', usersJsonString);
+
+      // Verify it was saved
+      const verifyStored = localStorage.getItem('custom_users');
+      console.log('Verification - what is now in localStorage:', verifyStored);
 
       toast({
         title: "User Created",
         description: `User "${userData.username}" has been created successfully`
       });
+      
+      console.log('=== CREATE USER FUNCTION SUCCESS ===');
       return true;
     } catch (error) {
       console.error('CREATE USER ERROR:', error);
