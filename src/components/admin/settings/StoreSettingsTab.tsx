@@ -47,6 +47,10 @@ export const StoreSettingsTab = () => {
     };
     
     localStorage.setItem('storeSettings', JSON.stringify(settingsToSave));
+    
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new CustomEvent('storeSettingsUpdated'));
+    
     toast.success("Store information updated!");
   };
 

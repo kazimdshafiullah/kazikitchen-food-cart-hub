@@ -16,13 +16,37 @@ export const useStoreSettings = () => {
     address: "Dhaka, Bangladesh"
   });
 
-  // In a real app, this would fetch from your admin settings API
-  // For now, we'll use localStorage to simulate the admin settings
-  useEffect(() => {
+  // Load settings from localStorage
+  const loadSettings = () => {
     const savedSettings = localStorage.getItem('storeSettings');
     if (savedSettings) {
       setSettings(JSON.parse(savedSettings));
     }
+  };
+
+  useEffect(() => {
+    // Load settings initially
+    loadSettings();
+
+    // Listen for storage events (when localStorage changes in other tabs/windows)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'storeSettings' && e.newValue) {
+        setSettings(JSON.parse(e.newValue));
+      }
+    };
+
+    // Listen for custom events (when localStorage changes in same tab)
+    const handleSettingsUpdate = () => {
+      loadSettings();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('storeSettingsUpdated', handleSettingsUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('storeSettingsUpdated', handleSettingsUpdate);
+    };
   }, []);
 
   return settings;
