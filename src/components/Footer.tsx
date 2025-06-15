@@ -4,7 +4,20 @@ import { Link } from "react-router-dom";
 import { useStoreSettings } from "@/hooks/useStoreSettings";
 
 const Footer = () => {
-  const storeSettings = useStoreSettings();
+  const { settings: storeSettings, isLoading } = useStoreSettings();
+
+  if (isLoading) {
+    return (
+      <footer className="bg-amber-900 text-white py-8 mt-auto">
+        <div className="container mx-auto px-4">
+          <div className="animate-pulse">
+            <div className="h-4 bg-amber-800 rounded w-1/4 mb-4"></div>
+            <div className="h-4 bg-amber-800 rounded w-1/3"></div>
+          </div>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer className="bg-amber-900 text-white py-8 mt-auto">
@@ -19,7 +32,7 @@ const Footer = () => {
               />
             </Link>
             <p className="mt-2 text-sm text-amber-200">
-              Delicious food delivered to your doorstep. We make food with passion.
+              {storeSettings.description || "Delicious food delivered to your doorstep. We make food with passion."}
             </p>
           </div>
           
@@ -54,7 +67,7 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-amber-700 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-amber-300">© {new Date().getFullYear()} Kazi Kitchen. All rights reserved.</p>
+          <p className="text-sm text-amber-300">© {new Date().getFullYear()} {storeSettings.name}. All rights reserved.</p>
           <div className="mt-4 md:mt-0">
             <ul className="flex space-x-4">
               <li><a href="#" className="text-amber-300 hover:text-white transition-colors">Privacy Policy</a></li>

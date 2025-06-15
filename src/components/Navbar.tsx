@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ const Navbar = () => {
   const location = useLocation();
   const { itemCount } = useCart();
   const { customer } = useCustomerAuth();
-  const storeSettings = useStoreSettings();
+  const { settings: storeSettings, isLoading } = useStoreSettings();
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -57,14 +58,18 @@ const Navbar = () => {
 
           <div className="flex items-center space-x-4">
             <div className="hidden lg:flex items-center space-x-4 text-sm text-gray-600">
-              <div className="flex items-center space-x-1">
-                <Phone className="h-4 w-4" />
-                <span>{storeSettings.phone}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <MapPin className="h-4 w-4" />
-                <span>{storeSettings.address}</span>
-              </div>
+              {!isLoading && (
+                <>
+                  <div className="flex items-center space-x-1">
+                    <Phone className="h-4 w-4" />
+                    <span>{storeSettings.phone}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <MapPin className="h-4 w-4" />
+                    <span>{storeSettings.address}</span>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Customer Account Button */}
@@ -138,16 +143,18 @@ const Navbar = () => {
                     )}
                   </div>
                   
-                  <div className="pt-4 border-t">
-                    <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
-                      <Phone className="h-4 w-4" />
-                      <span>{storeSettings.phone}</span>
+                  {!isLoading && (
+                    <div className="pt-4 border-t">
+                      <div className="flex items-center space-x-2 text-sm text-gray-600 mb-2">
+                        <Phone className="h-4 w-4" />
+                        <span>{storeSettings.phone}</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm text-gray-600">
+                        <MapPin className="h-4 w-4" />
+                        <span>{storeSettings.address}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2 text-sm text-gray-600">
-                      <MapPin className="h-4 w-4" />
-                      <span>{storeSettings.address}</span>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>
