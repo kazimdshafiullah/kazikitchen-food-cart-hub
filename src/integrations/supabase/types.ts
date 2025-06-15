@@ -33,6 +33,84 @@ export type Database = {
         }
         Relationships: []
       }
+      combo_offer_items: {
+        Row: {
+          combo_offer_id: string
+          created_at: string
+          id: string
+          product_id: string
+          quantity: number
+        }
+        Insert: {
+          combo_offer_id: string
+          created_at?: string
+          id?: string
+          product_id: string
+          quantity?: number
+        }
+        Update: {
+          combo_offer_id?: string
+          created_at?: string
+          id?: string
+          product_id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "combo_offer_items_combo_offer_id_fkey"
+            columns: ["combo_offer_id"]
+            isOneToOne: false
+            referencedRelation: "combo_offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "combo_offer_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      combo_offers: {
+        Row: {
+          combo_price: number
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          original_price: number
+          stock_limit: number
+          updated_at: string
+        }
+        Insert: {
+          combo_price: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          original_price: number
+          stock_limit?: number
+          updated_at?: string
+        }
+        Update: {
+          combo_price?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          original_price?: number
+          stock_limit?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           created_at: string

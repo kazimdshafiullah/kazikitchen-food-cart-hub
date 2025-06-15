@@ -6,119 +6,46 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShoppingCart, Star } from "lucide-react";
-
-// Mock data for frozen food items
-const frozenFoodItems = [
-  {
-    id: "1",
-    name: "Alu Shingara",
-    price: 45,
-    image: "https://images.unsplash.com/photo-1601314002957-4edc5a6b8c24?w=400",
-    description: "Crispy potato-filled triangular pastry",
-    rating: 4.5
-  },
-  {
-    id: "2",
-    name: "Veg Samosa",
-    price: 40,
-    image: "https://images.unsplash.com/photo-1601314002957-4edc5a6b8c24?w=400",
-    description: "Traditional vegetable samosa with spices",
-    rating: 4.3
-  },
-  {
-    id: "3",
-    name: "Chicken Roll",
-    price: 85,
-    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400",
-    description: "Delicious chicken wrapped in soft paratha",
-    rating: 4.7
-  },
-  {
-    id: "4",
-    name: "Half Moon",
-    price: 35,
-    image: "https://images.unsplash.com/photo-1586511925558-a4c6376fe65f?w=400",
-    description: "Sweet half-moon shaped traditional dessert",
-    rating: 4.2
-  }
-];
-
-const comboItems = [
-  {
-    id: "combo-1",
-    name: "Combo-1",
-    price: 180,
-    originalPrice: 200,
-    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400",
-    description: "2 Alu Shingara + 2 Veg Samosa + 1 Chicken Roll",
-    items: ["2x Alu Shingara", "2x Veg Samosa", "1x Chicken Roll"],
-    rating: 4.6
-  },
-  {
-    id: "combo-2", 
-    name: "Combo-2",
-    price: 250,
-    originalPrice: 280,
-    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400",
-    description: "Family combo with variety of items",
-    items: ["3x Chicken Roll", "4x Alu Shingara", "2x Half Moon"],
-    rating: 4.8
-  },
-  {
-    id: "combo-3",
-    name: "Combo-3",
-    price: 320,
-    originalPrice: 360,
-    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400",
-    description: "Premium combo for large families",
-    items: ["4x Chicken Roll", "6x Alu Shingara", "4x Veg Samosa", "3x Half Moon"],
-    rating: 4.9
-  },
-  {
-    id: "children-combo",
-    name: "Children Chicken Combo",
-    price: 120,
-    originalPrice: 140,
-    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400",
-    description: "Kid-friendly combo with chicken items",
-    items: ["2x Mini Chicken Roll", "2x Alu Shingara", "1x Half Moon"],
-    rating: 4.4
-  }
-];
+import { useProducts } from "@/hooks/useProducts";
+import { useComboOffers } from "@/hooks/useComboOffers";
 
 const FrozenFood = () => {
   const [activeTab, setActiveTab] = useState("all-items");
+  const { data: products = [] } = useProducts();
+  const { data: comboOffers = [] } = useComboOffers();
+
+  const frozenFoodItems = products.filter(product => product.is_frozen_food);
 
   const ItemCard = ({ item, isCombo = false }: { item: any, isCombo?: boolean }) => (
     <Card className="group hover:shadow-lg transition-all duration-300 border border-orange-200 hover:border-orange-400">
       <CardHeader className="p-0">
         <div className="relative overflow-hidden rounded-t-lg">
           <img
-            src={item.image}
+            src={item.image_url || "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400"}
             alt={item.name}
             className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
           />
-          {isCombo && item.originalPrice && (
+          {isCombo && item.original_price && (
             <Badge className="absolute top-2 right-2 bg-red-500 text-white">
-              Save ৳{item.originalPrice - item.price}
+              Save ৳{item.original_price - item.combo_price}
             </Badge>
           )}
           <div className="absolute bottom-2 left-2 flex items-center bg-white/90 rounded px-2 py-1">
             <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
-            <span className="text-sm font-medium">{item.rating}</span>
+            <span className="text-sm font-medium">4.5</span>
           </div>
         </div>
       </CardHeader>
       <CardContent className="p-4">
         <CardTitle className="text-lg text-orange-800 mb-2">{item.name}</CardTitle>
-        <p className="text-orange-600 text-sm mb-3">{item.description}</p>
+        <p className="text-orange-600 text-sm mb-3">{item.description || "Delicious frozen food item"}</p>
         
-        {isCombo && item.items && (
+        {isCombo && item.combo_offer_items && (
           <div className="mb-3">
             <p className="text-xs font-medium text-orange-700 mb-1">Includes:</p>
             <ul className="text-xs text-orange-600">
-              {item.items.map((subItem: string, index: number) => (
-                <li key={index}>• {subItem}</li>
+              {item.combo_offer_items.map((subItem: any, index: number) => (
+                <li key={index}>• {subItem.quantity}x {subItem.products.name}</li>
               ))}
             </ul>
           </div>
@@ -126,9 +53,11 @@ const FrozenFood = () => {
         
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-orange-800">৳{item.price}</span>
-            {isCombo && item.originalPrice && (
-              <span className="text-sm text-gray-400 line-through">৳{item.originalPrice}</span>
+            <span className="text-xl font-bold text-orange-800">
+              ৳{isCombo ? item.combo_price : Number(item.price) * 110}
+            </span>
+            {isCombo && item.original_price && (
+              <span className="text-sm text-gray-400 line-through">৳{item.original_price}</span>
             )}
           </div>
           <Button 
@@ -178,7 +107,7 @@ const FrozenFood = () => {
 
           <TabsContent value="combo">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {comboItems.map((item) => (
+              {comboOffers.map((item) => (
                 <ItemCard key={item.id} item={item} isCombo={true} />
               ))}
             </div>
