@@ -47,26 +47,28 @@ export const categories = [
 // Remove all mock products - the app will now use real data from Supabase
 export const products: Product[] = [];
 
+// Update helper functions to work with the new database structure
 export const getProductsByCategory = (categoryId: string): Product[] => {
-  return products.filter(product => product.category === categoryId);
+  // This will be replaced by database queries in the frontend components
+  return [];
 };
 
 export const getProductById = (id: string): Product | undefined => {
-  return products.find(product => product.id === id);
+  // This will be replaced by database queries in the frontend components
+  return undefined;
 };
 
 export const getFeaturedProducts = (): Product[] => {
-  return products.filter(product => product.featured);
+  // This will be replaced by database queries for featured menu items
+  return [];
 };
 
 export const getPopularProducts = (): Product[] => {
-  return products.filter(product => product.popular);
+  // This will be replaced by database queries for popular menu items
+  return [];
 };
 
 export const searchProducts = (query: string): Product[] => {
-  const lowercaseQuery = query.toLowerCase();
-  return products.filter(product => 
-    product.name.toLowerCase().includes(lowercaseQuery) || 
-    product.description.toLowerCase().includes(lowercaseQuery)
-  );
+  // This will be replaced by database queries with search functionality
+  return [];
 };
