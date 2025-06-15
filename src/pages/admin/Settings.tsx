@@ -30,20 +30,35 @@ const StoreSettingsTab = () => {
   const [storeInfo, setStoreInfo] = useState({
     name: "Kazi Kitchen",
     description: "Authentic and delicious food delivered to your doorstep",
-    email: "contact@kazikitchen.com",
-    phone: "+1 (555) 123-4567",
-    address: "123 Main Street, Suite 101, Anytown, CA 12345"
+    email: "info@kazikitchen.com",
+    phone: "+880 1234-567890",
+    address: "Dhaka, Bangladesh"
   });
 
   useEffect(() => {
     const savedSettings = localStorage.getItem('storeSettings');
     if (savedSettings) {
-      setStoreInfo(JSON.parse(savedSettings));
+      const settings = JSON.parse(savedSettings);
+      setStoreInfo({
+        name: settings.name || "Kazi Kitchen",
+        description: settings.description || "Authentic and delicious food delivered to your doorstep", 
+        email: settings.email || "info@kazikitchen.com",
+        phone: settings.phone || "+880 1234-567890",
+        address: settings.address || "Dhaka, Bangladesh"
+      });
     }
   }, []);
 
   const handleSaveStoreInfo = () => {
-    localStorage.setItem('storeSettings', JSON.stringify(storeInfo));
+    // Save with the exact structure that useStoreSettings expects
+    const settingsToSave = {
+      name: storeInfo.name,
+      email: storeInfo.email,
+      phone: storeInfo.phone,
+      address: storeInfo.address
+    };
+    
+    localStorage.setItem('storeSettings', JSON.stringify(settingsToSave));
     toast.success("Store information updated!");
   };
 
