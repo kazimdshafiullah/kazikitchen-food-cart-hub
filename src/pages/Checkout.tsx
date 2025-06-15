@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 const Checkout = () => {
   const navigate = useNavigate();
   const { cart, subtotal, clearCart } = useCart();
-  const { settings: paymentSettings, loading: paymentLoading } = usePaymentSettings();
+  const { settings: paymentSettings, loading: paymentLoading, error: paymentError } = usePaymentSettings();
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "bkash" | "ssl" | "">("");
   const [deliveryLocation, setDeliveryLocation] = useState<string>("");
   const [orderPlaced, setOrderPlaced] = useState(false);
@@ -46,24 +47,39 @@ const Checkout = () => {
     "ORD-1006", "ORD-1007", "ORD-1008", "ORD-1009", "ORD-1010"
   ];
 
+  // Debug payment settings
+  useEffect(() => {
+    console.log('Payment settings debug:', {
+      settings: paymentSettings,
+      loading: paymentLoading,
+      error: paymentError
+    });
+  }, [paymentSettings, paymentLoading, paymentError]);
+
   // Get available payment methods based on admin settings
   const getAvailablePaymentMethods = () => {
-    if (!paymentSettings) return [];
+    if (!paymentSettings) {
+      console.log('No payment settings available');
+      return [];
+    }
     
     const methods = [];
     if (paymentSettings.cod_enabled) methods.push("cash");
     if (paymentSettings.bkash_enabled) methods.push("bkash");
     if (paymentSettings.ssl_enabled) methods.push("ssl");
     
+    console.log('Available payment methods:', methods);
     return methods;
   };
 
   const availablePaymentMethods = getAvailablePaymentMethods();
 
   // Auto-select first available payment method
-  if (paymentMethod === "" && availablePaymentMethods.length > 0) {
-    setPaymentMethod(availablePaymentMethods[0] as "cash" | "bkash" | "ssl");
-  }
+  useEffect(() => {
+    if (paymentMethod === "" && availablePaymentMethods.length > 0) {
+      setPaymentMethod(availablePaymentMethods[0] as "cash" | "bkash" | "ssl");
+    }
+  }, [availablePaymentMethods, paymentMethod]);
   
   if (cart.length === 0 && !orderPlaced) {
     return (
@@ -236,6 +252,11 @@ const Checkout = () => {
                   <Skeleton className="h-8 w-full" />
                   <Skeleton className="h-8 w-full" />
                   <Skeleton className="h-8 w-full" />
+                </div>
+              ) : paymentError ? (
+                <div className="text-center py-8">
+                  <p className="text-red-500 mb-2">Error loading payment settings</p>
+                  <p className="text-sm text-gray-400">{paymentError}</p>
                 </div>
               ) : availablePaymentMethods.length === 0 ? (
                 <div className="text-center py-8">

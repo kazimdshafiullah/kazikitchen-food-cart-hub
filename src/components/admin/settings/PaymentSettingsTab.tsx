@@ -10,21 +10,83 @@ import {
   CardTitle,
   CardFooter
 } from "@/components/ui/card";
-import { toast } from "@/components/ui/sonner";
-import { useState } from "react";
+import { usePaymentSettings, useUpdatePaymentSettings } from "@/hooks/usePaymentSettings";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect, useState } from "react";
 
 export const PaymentSettingsTab = () => {
-  const [paymentSettings, setPaymentSettings] = useState({
-    bkash: { enabled: true, liveMode: false },
-    ssl: { enabled: true, liveMode: false },
-    cod: { enabled: true, minOrder: 250, maxOrder: 5000 },
-    onlinePaymentFee: 0
+  const { settings, loading, error } = usePaymentSettings();
+  const { updateSettings, updating } = useUpdatePaymentSettings();
+  
+  const [localSettings, setLocalSettings] = useState({
+    bkash_enabled: true,
+    ssl_enabled: true,
+    cod_enabled: true,
+    bkash_live_mode: false,
+    ssl_live_mode: false,
+    cod_min_order: 250,
+    cod_max_order: 5000
   });
 
-  const handleSave = () => {
-    localStorage.setItem('paymentSettings', JSON.stringify(paymentSettings));
-    toast.success("Payment settings updated!");
+  // Update local settings when Supabase settings are loaded
+  useEffect(() => {
+    if (settings) {
+      setLocalSettings({
+        bkash_enabled: settings.bkash_enabled,
+        ssl_enabled: settings.ssl_enabled,
+        cod_enabled: settings.cod_enabled,
+        bkash_live_mode: settings.bkash_live_mode,
+        ssl_live_mode: settings.ssl_live_mode,
+        cod_min_order: settings.cod_min_order,
+        cod_max_order: settings.cod_max_order
+      });
+    }
+  }, [settings]);
+
+  const handleSave = async () => {
+    if (!settings?.id) {
+      console.error('No settings ID available for update');
+      return;
+    }
+
+    await updateSettings({
+      id: settings.id,
+      ...localSettings
+    });
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Payment Methods</CardTitle>
+            <CardDescription>Loading payment settings...</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Payment Methods</CardTitle>
+            <CardDescription className="text-destructive">
+              Error loading payment settings: {error}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -44,22 +106,22 @@ export const PaymentSettingsTab = () => {
                 <p className="text-sm text-muted-foreground">Enable bKash mobile payments</p>
               </div>
               <Switch 
-                checked={paymentSettings.bkash.enabled}
-                onCheckedChange={(checked) => setPaymentSettings({
-                  ...paymentSettings,
-                  bkash: { ...paymentSettings.bkash, enabled: checked }
+                checked={localSettings.bkash_enabled}
+                onCheckedChange={(checked) => setLocalSettings({
+                  ...localSettings,
+                  bkash_enabled: checked
                 })}
               />
             </div>
             
-            {paymentSettings.bkash.enabled && (
+            {localSettings.bkash_enabled && (
               <div className="flex items-center justify-between ml-4">
                 <label className="text-sm font-medium">Live Mode</label>
                 <Switch 
-                  checked={paymentSettings.bkash.liveMode}
-                  onCheckedChange={(checked) => setPaymentSettings({
-                    ...paymentSettings,
-                    bkash: { ...paymentSettings.bkash, liveMode: checked }
+                  checked={localSettings.bkash_live_mode}
+                  onCheckedChange={(checked) => setLocalSettings({
+                    ...localSettings,
+                    bkash_live_mode: checked
                   })}
                 />
               </div>
@@ -74,22 +136,22 @@ export const PaymentSettingsTab = () => {
                 <p className="text-sm text-muted-foreground">Enable credit/debit card payments</p>
               </div>
               <Switch 
-                checked={paymentSettings.ssl.enabled}
-                onCheckedChange={(checked) => setPaymentSettings({
-                  ...paymentSettings,
-                  ssl: { ...paymentSettings.ssl, enabled: checked }
+                checked={localSettings.ssl_enabled}
+                onCheckedChange={(checked) => setLocalSettings({
+                  ...localSettings,
+                  ssl_enabled: checked
                 })}
               />
             </div>
             
-            {paymentSettings.ssl.enabled && (
+            {localSettings.ssl_enabled && (
               <div className="flex items-center justify-between ml-4">
                 <label className="text-sm font-medium">Live Mode</label>
                 <Switch 
-                  checked={paymentSettings.ssl.liveMode}
-                  onCheckedChange={(checked) => setPaymentSettings({
-                    ...paymentSettings,
-                    ssl: { ...paymentSettings.ssl, liveMode: checked }
+                  checked={localSettings.ssl_live_mode}
+                  onCheckedChange={(checked) => setLocalSettings({
+                    ...localSettings,
+                    ssl_live_mode: checked
                   })}
                 />
               </div>
@@ -104,24 +166,24 @@ export const PaymentSettingsTab = () => {
                 <p className="text-sm text-muted-foreground">Allow payment upon delivery</p>
               </div>
               <Switch 
-                checked={paymentSettings.cod.enabled}
-                onCheckedChange={(checked) => setPaymentSettings({
-                  ...paymentSettings,
-                  cod: { ...paymentSettings.cod, enabled: checked }
+                checked={localSettings.cod_enabled}
+                onCheckedChange={(checked) => setLocalSettings({
+                  ...localSettings,
+                  cod_enabled: checked
                 })}
               />
             </div>
             
-            {paymentSettings.cod.enabled && (
+            {localSettings.cod_enabled && (
               <div className="grid grid-cols-2 gap-4 ml-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Minimum Order (৳)</label>
                   <Input 
                     type="number"
-                    value={paymentSettings.cod.minOrder}
-                    onChange={(e) => setPaymentSettings({
-                      ...paymentSettings,
-                      cod: { ...paymentSettings.cod, minOrder: Number(e.target.value) }
+                    value={localSettings.cod_min_order}
+                    onChange={(e) => setLocalSettings({
+                      ...localSettings,
+                      cod_min_order: Number(e.target.value)
                     })}
                   />
                 </div>
@@ -129,10 +191,10 @@ export const PaymentSettingsTab = () => {
                   <label className="text-sm font-medium">Maximum Order (৳)</label>
                   <Input 
                     type="number"
-                    value={paymentSettings.cod.maxOrder}
-                    onChange={(e) => setPaymentSettings({
-                      ...paymentSettings,
-                      cod: { ...paymentSettings.cod, maxOrder: Number(e.target.value) }
+                    value={localSettings.cod_max_order}
+                    onChange={(e) => setLocalSettings({
+                      ...localSettings,
+                      cod_max_order: Number(e.target.value)
                     })}
                   />
                 </div>
@@ -141,8 +203,12 @@ export const PaymentSettingsTab = () => {
           </div>
         </CardContent>
         <CardFooter>
-          <Button className="ml-auto" onClick={handleSave}>
-            Save Settings
+          <Button 
+            className="ml-auto" 
+            onClick={handleSave}
+            disabled={updating}
+          >
+            {updating ? "Saving..." : "Save Settings"}
           </Button>
         </CardFooter>
       </Card>
